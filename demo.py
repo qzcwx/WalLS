@@ -7,26 +7,33 @@ import math
 import time
 import pdb
 
-def compFit(model):
+def globalOpt(model):
+    """ find the global optimum on the fly """
     n = model.getN()
-    fit = np.zeros(math.pow(2,n))
-    bitStr = nk.genSeqBits(n)
     for i in range(int(math.pow(2,n))):
-       fit[i] = model.compFit(bitStr[i])
-    return bitStr, fit
+        bit = bin(i)
+        bit = bit[2:]
+        if len(bit) < n:
+            bit = (n - len(bit))*'0' + bit
+        if i == 0:
+            bestFit = model.compFit(bit)
+        else:
+            curFit = model.compFit(bit)
+            if curFit < bestFit:
+                bestFit = curFit
+    return bestFit
 
 """ consider as a minimization problem """
-n = 20
-k = 15
+n = 15
+k = 10
 runs = 25
-maxFit = 3000
-popSize = 30
+maxFit = 5000
+popSize = 50
 rseed = 0
 
 random.seed(rseed)
 model = nk.NKLandscape(n,k)
-#bitStr, fit = compFit(model)
-#print 'Global Optimum', min(fit)
+print 'Global Optimum', globalOpt(model)
 algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
 
 sols1 = np.zeros(runs)

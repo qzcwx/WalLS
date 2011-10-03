@@ -1,5 +1,8 @@
 # Genetic algorithm 
 # g(x): the estimate best value of neighborhood, mean(N(x)) - std(N(x))
+# crossover: one-point crossover with crossover rate
+# mutation: one-bit flip mutation with mutation rate
+# selection: truncation
 
 import numpy as np
 import random
@@ -19,6 +22,8 @@ class GeneticAlgorithm:
             self.numOfGen = math.floor(MaxFit/popSize) - 1
         else:
             self.numOfGen = math.floor(MaxFit/popSize) 
+        self.crossoverR = 0.5
+        self.mutationR = 0.5
     def popInit(self, popSize, dim):
         """ initial population with random bit string """
         pop = []
@@ -43,7 +48,9 @@ class GeneticAlgorithm:
             self.oldpop = np.copy(self.pop)
             self.oldfit = np.copy(self.fit)
             gen = gen + 1
-            self.mutation()
+            self.crossover()
+            if random.random()<self.mutationR:
+                self.mutation()
             self.evalPop()
             self.selectionFit()
             bestFit = min(self.fit)
@@ -65,7 +72,9 @@ class GeneticAlgorithm:
             self.oldfit = np.copy(self.fit)
             self.oldfitG = np.copy(self.fitG)
             gen = gen + 1
-            self.mutation()
+            self.crossover()
+            if random.random()<self.mutationR:
+                self.mutation()
             self.evalPopNeigh()
             self.selectionNeigh()
             bestFit = min(self.fit)
@@ -117,6 +126,24 @@ class GeneticAlgorithm:
                 self.pop[i][flipBit] = '0'
             else:
                 self.pop[i][flipBit] = '1'
+    def crossover(self):
+        """ one point cross """
+        for i in range( int(self.popSize * self.crossoverR /2.0) ):
+            selectedIndex = random.sample(range(self.popSize), 2)
+#            print 'selectedIndex', selectedIndex
+            pop0 = np.copy(self.pop[selectedIndex[0]])
+            pop1 = np.copy(self.pop[selectedIndex[1]])
+#            print 'pop0', pop0
+#            print 'pop1', pop1
+            crossPos = int(random.sample(range(self.dim - 1), 1)[0])
+#            print 'crossPos', crossPos
+            for j in range(self.dim - crossPos - 1):
+                pop0[j+crossPos+1] = np.copy( self.pop[selectedIndex[1]][j+crossPos+1] )
+                pop1[j+crossPos+1] = np.copy( self.pop[selectedIndex[0]][j+crossPos+1] )
+            self.pop[selectedIndex[0]] = np.copy(pop0)
+            self.pop[selectedIndex[1]] = np.copy(pop1)
+#            print 'self.pop0', pop0
+#            print 'self.pop1', pop1
     def selectionFit(self):
         """ truncation selection based on fitness """
         # concatenate genotype of population
