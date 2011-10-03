@@ -15,6 +15,10 @@ class GeneticAlgorithm:
         self.popSize = popSize
         self.dim = dim
         self.fit = np.zeros(popSize)
+        if (MaxFit % popSize) == 0:
+            self.numOfGen = math.floor(MaxFit/popSize) - 1
+        else:
+            self.numOfGen = math.floor(MaxFit/popSize) 
     def popInit(self, popSize, dim):
         """ initial population with random bit string """
         pop = []
@@ -32,23 +36,27 @@ class GeneticAlgorithm:
         self.pop = self.popInit(self.popSize, self.dim)
         gen = 0
         self.fitEval = 0
+        allFit = np.zeros(self.numOfGen)
         self.evalPop()
         while self.fitEval < self.MaxFit:
             #pdb.set_trace()
             self.oldpop = np.copy(self.pop)
             self.oldfit = np.copy(self.fit)
             gen = gen + 1
-            print 'GENERATION', gen
             self.mutation()
             self.evalPop()
             self.selectionFit()
-            print 'bestVal', min(self.fit)
-            print
+            bestFit = min(self.fit)
+            allFit[gen-1] = bestFit
+        print 'allFit\n', allFit
+        return min(allFit)
     def runNeigh(self):
         """ run the experiment with g(x) """
         self.pop = self.popInit(self.popSize, self.dim)
         gen = 0
         self.fitEval = 0
+        allFit = np.zeros(self.numOfGen)
+        allFitG = np.zeros(self.numOfGen)
         self.fitG = np.zeros(self.popSize)
         self.evalPopNeigh()
         while self.fitEval < self.MaxFit:
@@ -57,13 +65,16 @@ class GeneticAlgorithm:
             self.oldfit = np.copy(self.fit)
             self.oldfitG = np.copy(self.fitG)
             gen = gen + 1
-            print 'GENERATION', gen
             self.mutation()
             self.evalPopNeigh()
             self.selectionNeigh()
-            print 'bestVal\t\t', min(self.fit)
-            print 'best Neigh fit\t', min(self.fitG)
-            print 
+            bestFit = min(self.fit)
+            bestFitG = min(self.fitG)
+            allFit[gen-1] = bestFit
+            allFitG[gen-1] = bestFitG
+        print 'all fit\n', allFit
+        print 'all fit G\n', allFitG
+        return min(allFit)
     def evalPop(self):
         """ evaluate the population """
         for i in range(self.popSize):
