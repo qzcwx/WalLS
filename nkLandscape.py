@@ -136,8 +136,3 @@ def genSeqBits(n):
            bit = (n - len(bit))*'0' + bit
        bitStr.append(bit)
     return bitStr
-
-#model = NKLandscape(5,2)
-#print model.getNeigh()
-#print model.getFunc()
-#print model.compFit('10001001010101010100')
