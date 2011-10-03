@@ -49,13 +49,12 @@ class GeneticAlgorithm:
             self.oldfit = np.copy(self.fit)
             gen = gen + 1
             self.crossover()
-            if random.random()<self.mutationR:
-                self.mutation()
+            self.mutation()
             self.evalPop()
             self.selectionFit()
             bestFit = min(self.fit)
             allFit[gen-1] = bestFit
-        print 'allFit\n', allFit
+#        print 'allFit\n', allFit
         return min(allFit)
     def runNeigh(self):
         """ run the experiment with g(x) """
@@ -73,16 +72,15 @@ class GeneticAlgorithm:
             self.oldfitG = np.copy(self.fitG)
             gen = gen + 1
             self.crossover()
-            if random.random()<self.mutationR:
-                self.mutation()
+            self.mutation()
             self.evalPopNeigh()
             self.selectionNeigh()
             bestFit = min(self.fit)
             bestFitG = min(self.fitG)
             allFit[gen-1] = bestFit
             allFitG[gen-1] = bestFitG
-        print 'all fit\n', allFit
-        print 'all fit G\n', allFitG
+#        print 'all fit\n', allFit
+#        print 'all fit G\n', allFitG
         return min(allFit)
     def evalPop(self):
         """ evaluate the population """
@@ -119,13 +117,14 @@ class GeneticAlgorithm:
         """ one-bit flip mutation """
         #print self.pop
         for i in range(self.popSize):
-            flipBit = random.sample(range(self.dim),1)
-            flipBit = flipBit[0]
-            #print 'flip bit', flipBit
-            if self.pop[i][flipBit] == '1':
-                self.pop[i][flipBit] = '0'
-            else:
-                self.pop[i][flipBit] = '1'
+            if random.random() < self.mutationR:
+                flipBit = random.sample(range(self.dim),1)
+                flipBit = flipBit[0]
+                #print 'flip bit', flipBit
+                if self.pop[i][flipBit] == '1':
+                    self.pop[i][flipBit] = '0'
+                else:
+                    self.pop[i][flipBit] = '1'
     def crossover(self):
         """ one point cross """
         for i in range( int(self.popSize * self.crossoverR /2.0) ):

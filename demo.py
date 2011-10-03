@@ -27,27 +27,28 @@ def globalOpt(model):
 n = 15
 k = 10
 runs = 25
-maxFit = 5000
+maxFit = 1000
 popSize = 50
 rseed = 0
 
 random.seed(rseed)
 model = nk.NKLandscape(n,k)
-print 'Global Optimum', globalOpt(model)
+#print 'Global Optimum', globalOpt(model)
 algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
 
 sols1 = np.zeros(runs)
 sols2 = np.zeros(runs)
 
-for i in range(runs):
-    print '*********************************************'
-    print 'Run', i
-    sols1[i] = algo.run()
-    print 'solution 1\n', sols1[i] 
-    sols2[i] = algo.runNeigh()
-    print 'solution 2\n', sols2[i]
-    print '*********************************************'
-    print 
-
-print '1. mean', np.mean(sols1), 'worst', max(sols1), 'best', min(sols1)
-print '2. mean', np.mean(sols2), 'worst', max(sols2), 'best', min(sols2)
+for k in range(0,25):
+    for n in [i for i in range(26) if i >= k+1 ]:
+        print 'n', n, 'k', k, 'runs', runs, 'maxFit', maxFit, 'popSize', popSize, 'rseed', rseed
+        start = time.time()
+        model = nk.NKLandscape(n,k)
+        for i in range(runs):
+            sols1[i] = algo.run()
+            sols2[i] = algo.runNeigh()
+        print 'time', time.time() - start
+        print '1. mean', np.mean(sols1), 'worst', max(sols1), 'best', min(sols1)
+        print '2. mean', np.mean(sols2), 'worst', max(sols2), 'best', min(sols2)
+        print '***********************************************************************************'
+        print 
