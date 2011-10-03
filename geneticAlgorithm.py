@@ -1,7 +1,9 @@
-# Genetic algorithm with:
+# Genetic algorithm 
+# g(x): the estimate best value of neighborhood, mean(N(x)) - std(N(x))
 
 import numpy as np
 import random
+import math
 import pdb
 from operator import itemgetter
 
@@ -12,7 +14,6 @@ class GeneticAlgorithm:
         self.MaxFit = MaxFit
         self.popSize = popSize
         self.dim = dim
-        self.pop = self.popInit(popSize, dim)
         self.fit = np.zeros(popSize)
     def popInit(self, popSize, dim):
         """ initial population with random bit string """
@@ -27,26 +28,73 @@ class GeneticAlgorithm:
             pop.append(randBitStr)
         return np.array(pop)
     def run(self):
-        """ run the experiment """
+        """ run the experiment with respect to real fitness """
+        self.pop = self.popInit(self.popSize, self.dim)
         gen = 0
         self.fitEval = 0
         self.evalPop()
-        print 'initial', self.fit
         while self.fitEval < self.MaxFit:
             #pdb.set_trace()
             self.oldpop = np.copy(self.pop)
             self.oldfit = np.copy(self.fit)
             gen = gen + 1
+            print 'GENERATION', gen
             self.mutation()
             self.evalPop()
             self.selectionFit()
             print 'bestVal', min(self.fit)
+            print
+    def runNeigh(self):
+        """ run the experiment with g(x) """
+        self.pop = self.popInit(self.popSize, self.dim)
+        gen = 0
+        self.fitEval = 0
+        self.fitG = np.zeros(self.popSize)
+        self.evalPopNeigh()
+        while self.fitEval < self.MaxFit:
+            #pdb.set_trace()
+            self.oldpop = np.copy(self.pop)
+            self.oldfit = np.copy(self.fit)
+            self.oldfitG = np.copy(self.fitG)
+            gen = gen + 1
+            print 'GENERATION', gen
+            self.mutation()
+            self.evalPopNeigh()
+            self.selectionNeigh()
+            print 'bestVal\t\t', min(self.fit)
+            print 'best Neigh fit\t', min(self.fitG)
             print 
     def evalPop(self):
         """ evaluate the population """
         for i in range(self.popSize):
             self.fit[i] = self.func(self.pop[i])
         self.fitEval = self.fitEval + self.popSize 
+    def evalPopNeigh(self):
+        """ evaluate the population with g(x) """
+        # consider the real fitness
+        for i in range(self.popSize):
+            self.fit[i] = self.func(self.pop[i])
+        self.fitEval = self.fitEval + self.popSize 
+        # consider the fitness g(x)
+        for i in range(self.popSize):
+            fitN = np.zeros(self.dim)
+#            print 'fit of indiv', self.fit[i]
+            for j in range(self.dim):
+                # flip the jth bit in bit-string
+                neighStr = np.copy(self.pop[i])
+#                print 'original indiv ',i 
+#                print neighStr
+                if neighStr[j] == '1':
+                    neighStr[j] = '0'
+                else:
+                    neighStr[j] = '1'
+#                print 'neigh', neighStr
+                fitN[j] = self.func(neighStr)
+#            print 'fitness of neigh\n', fitN
+           #self.fitG[i] = np.mean(fitN) + np.std(fitN)
+            self.fitG[i] = np.mean(fitN) - np.std(fitN)
+#            print 'g(x)', self.fitG[i]
+#            print 
     def mutation(self):
         """ one-bit flip mutation """
         #print self.pop
@@ -60,34 +108,53 @@ class GeneticAlgorithm:
                 self.pop[i][flipBit] = '1'
     def selectionFit(self):
         """ truncation selection based on fitness """
-#        print 'fit', self.fit
         # concatenate genotype of population
-#        print 'old\n', self.oldpop
-#        print 'pop\n', self.pop
         popAll = np.concatenate( (self.oldpop, self.pop), axis = 0 )
-        #print 'all\n', popAll
 
         # concatenate phenotype of population
         oldfitIndex = np.vstack( (self.oldfit, range(self.popSize))  )
-        #print 'oldfitIndex', oldfitIndex
         fitIndex = np.vstack( (self.fit, range(self.popSize, 2*self.popSize)) )
-        #print 'fitIndex', fitIndex
         fitAll = np.hstack( (oldfitIndex, fitIndex) ) 
-        #print 'fitAll', fitAll
 
         # reshape array
         fitAll = [ [fitAll[0][i], fitAll[1][i]] for i in range(2*self.popSize) ]
 
-        # sort on 
-#        tempFit = np.copy(fitAll)
-#        tempFit.sort()
+        # sort on all fitnesses
         fitAll.sort()
-#        print 'after tempFit', tempFit
-#        print 'after fitAll', fitAll
 
         self.pop = [ list(popAll[fitAll[i][1]]) for i in range(self.popSize) ]
         self.fit = [ fitAll[i][0] for i in range(self.popSize) ]
+    def selectionNeigh(self):
+        """ selection base on the statistics of neighborhoods """
+        # concatenate genotype of population
+        popAll = np.concatenate( (self.oldpop, self.pop), axis = 0 )
 
-#        print 'self.pop', self.pop
-#        print 'self.oldfit', self.oldfit
-#        print 'self.fit', self.fit
+        # concatenate fitness of population 
+        fitnessAll = np.hstack( (self.oldfit, self.fit) ) 
+#        print 'fitness All', fitnessAll
+
+        # concatenate g(x) of population
+        oldfitIndex = np.vstack( (self.oldfitG, range(self.popSize))  )
+        fitIndex = np.vstack( (self.fitG, range(self.popSize, 2*self.popSize)) )
+        fitAll = np.hstack( (oldfitIndex, fitIndex) ) 
+
+        # reshape array
+        fitAll = [ [fitAll[0][i], fitAll[1][i]] for i in range(2*self.popSize) ]
+
+        # sort on all fitnesses
+        fitAll.sort()
+#        print 'fitAll index', fitAll
+#        print 'sorted index', [  fitAll[i][1]  for i in range(self.popSize) ]
+
+        self.pop = [ list( popAll[fitAll[i][1]] ) for i in range(self.popSize) ]
+        for i in range(self.popSize):
+            self.fit[i] = fitnessAll[fitAll[i][1]]
+        self.fitG = [ fitAll[i][0] for i in range(self.popSize) ]
+#        print 'old pop\n', self.oldpop
+#        print 'pop\n', self.pop
+#        print
+#        print 'old fit\n', self.oldfit
+#        print 'fit\n', self.fit
+#        print
+#        print 'old fitG\n', self.oldfitG
+#        print 'fitG\n', self.fitG

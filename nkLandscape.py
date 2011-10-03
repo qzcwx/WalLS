@@ -33,7 +33,7 @@ class NKLandscape:
         for i in range(self.n):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
-                oneFunc.append(random.random())
+                oneFunc.append(random.random() * random.randint(1,10000))
             self.func.append(oneFunc)
 #        print 'func', self.func
     def getFunc(self):
