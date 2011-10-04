@@ -1,6 +1,7 @@
 # generate NK-landscapes instances
 ## the encoding is in right to left fashion
 ## 00-0, 01-1, 10-2, 11-3 
+import WalshAnalysis as wal
 import random
 import numpy as np
 import matplotlib.pyplot as plt
