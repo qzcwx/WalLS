@@ -91,6 +91,7 @@ class NKLandscape:
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
 #        print 'subW', subW
+        print 'len', math.pow(2,self.n)
         w = np.zeros(math.pow(2,self.n))
         for i in range(self.n): # i: index of subfunction
             interBits = self.neighs[i][:]
