@@ -36,7 +36,7 @@ def compFit(model):
 
 """ consider as a minimization problem """
 n = 100
-k = 1
+k = 5
 runs = 25
 maxFit = 1000
 popSize = 50 # always keep popSize to even number
@@ -57,14 +57,27 @@ model = nk.NKLandscape(n,k)
 #algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
 print 'model building t0\t\t', time.time() - start
 
-start = time.time()
-w = model.WalCofLinear()
-print 'Walsh t1\t\t\t', time.time() - start
+#start = time.time()
+#w = model.WalCofLinear()
+#print 'w\n', w
+#print 'Walsh t1\t\t\t', time.time() - start
 
 start = time.time()
-autoCo =  ac.autoCorr(s, w) 
-#autoCo = [ ac.autoCorr(i,w) for i in range(0,20) ]
-print "Auto Correlation t2\t\t", time.time() - start
+w0 = model.WalshCofLinearLinklist()
+#print 'w\n', w0
+print 'Walsh t10\t\t\t', time.time() - start
+
+#start = time.time()
+#autoCo =  ac.autoCorr(s, w) 
+##autoCo = [ ac.autoCorr(i,w) for i in range(0,20) ]
+#print 'autoCo\n', autoCo
+#print "Auto Correlation t2\t\t", time.time() - start
+
+start = time.time()
+#autoCo0 = ac.autoCorrLinerSpace(s, w0)
+autoCo0 = [ ac.autoCorrLinerSpace(i,w0) for i in range(0,20) ]
+print 'autoCoLinear\n', autoCo0
+print "Auto Correlation t20\t\t", time.time() - start
 
 #start = time.time()
 #bitStr, fit = compFit(model)
@@ -74,8 +87,6 @@ print "Auto Correlation t2\t\t", time.time() - start
 #numOpt = lo.localOpt(bitStr, fit)
 #print 'Local Optimum t4\t\t', time.time() - start
 
-print 'AutoCorrelation', autoCo
-print 'w', w
 # print 'Num of LocalOptimum', numOpt
 
 #for k in range(0,20):

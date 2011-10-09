@@ -83,11 +83,12 @@ class NKLandscape:
                     extractBit = maskStr
                     w[i] = w[i] + subW[j][int(extractBit, 2)]
         return w
+
     def WalCofLinear(self):
         """ compute the Walsh coefficients in a linear time """
         subW = [] # subW is a N*2^K matrix
         for i in range(self.n):
-            """ 1. Compute coefficients for each sub-functions """
+            """ Compute coefficients for each sub-functions """
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
 #        print 'subW', subW
@@ -104,7 +105,39 @@ class NKLandscape:
 #                print 'i',i,'j', j, 'w', w
         return w
 
+    def WalshCofLinearLinklist(self):
+        """ compute the Walsh Coefficients in a liner time with linear space """
+        subW = [] # subW is a N*2^K matrix
+        for i in range(self.n):
+            """ Compute coefficients for each sub-functions """
+            subWone = wal.computeW(self.Kbits, self.func[i])
+            subW.append(subWone)
+        """ use dict to represent all non-zero Walsh Coefficients"""
+        w = dict()
+        for i in range(self.n): # i: index of subfunction
+            interBits = self.neighs[i][:]
+            interBits.append(i)
+            interBits.sort()
+            for j in range(int(math.pow(2, self.k+1))): # j: index of substrings
+                indexW = self.composeFullBitStr(i, j, interBits, self.n)
+                if w.has_key(indexW):
+                    w[indexW] = w[indexW] + subW[i][j]
+                else:
+                    w[indexW] = subW[i][j]
+        return w
+
     def composeFullStr(self, i, j, interBits, n):
+        """ return the integer representation of Full String """
+        subStr = bin(j)
+        subStr = subStr[2:]
+        if len(subStr) < self.k+1:
+            subStr = '0'*(self.k+1-len(subStr)) + subStr
+#        print 'subStr', subStr
+        indexSubOneBit = self.indexOneBit(subStr)
+#        print 'indexSubOneBit', indexSubOneBit 
+
+    def composeFullStr(self, i, j, interBits, n):
+        """ return the integer representation of Full String """
         subStr = bin(j)
         subStr = subStr[2:]
         if len(subStr) < self.k+1:
@@ -118,6 +151,22 @@ class NKLandscape:
         iStr = ''.join(iStr)
 #        print 'iStr', iStr
         return int(iStr, 2)
+
+    def composeFullBitStr(self, i, j, interBits, n):
+        """ return the original full string """
+        subStr = bin(j)
+        subStr = subStr[2:]
+        if len(subStr) < self.k+1:
+            subStr = '0'*(self.k+1-len(subStr)) + subStr
+#        print 'subStr', subStr
+        indexSubOneBit = self.indexOneBit(subStr)
+#        print 'indexSubOneBit', indexSubOneBit 
+        iStr = ['0']*n
+        for k in range(len(indexSubOneBit)):
+            iStr[interBits[indexSubOneBit[k]]] = subStr[indexSubOneBit[k]]
+        iStr = ''.join(iStr)
+#        print 'iStr', iStr
+        return iStr
 
     def checkInclude(self, occurOneBit, mask):
         for i in range(len(occurOneBit)):
