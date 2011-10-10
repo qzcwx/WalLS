@@ -113,6 +113,7 @@ class GeneticAlgorithm:
                     neighStr[j] = '1'
                 fitN[j] = self.func(neighStr)
             self.pop[i].fitG = np.mean(fitN) - np.std(fitN)
+
     def mutation(self):
         """ one-bit flip mutation """
         for i in range(self.popSize):

@@ -1,0 +1,214 @@
+
+n 2 k 0 runs 25 seed 3
+model building t0		6.69956207275e-05
+Walsh t1			7.39097595215e-05
+Auto Correlation t2		2.21729278564e-05
+Evaluate all candidate t3	4.38690185547e-05
+Run LSs t5			0.0293250083923
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 1405.52339453 mean 1405.52339453 worst 1405.52339453 best 1405.52339453 std 0.0
+2. solution: median 1705.71398476 mean 1935.78895892 worst 2344.81113522 best 1705.71398476 std 306.766632224
+*****************************************
+1. NumOfEvals: median 5.0 mean 5.4 worst 7.0 best 3.0 std 1.38564064606
+2. NumOfEvals: median 3.0 mean 3.88 worst 5.0 best 3.0 std 0.992773891679
+*****************************************
+
+
+n 3 k 0 runs 25 seed 3
+model building t0		6.91413879395e-05
+Walsh t1			8.89301300049e-05
+Auto Correlation t2		1.90734863281e-05
+Evaluate all candidate t3	8.20159912109e-05
+Run LSs t5			0.0506799221039
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 2703.18647129 mean 2703.18647129 worst 2703.18647129 best 2703.18647129 std 4.54747350886e-13
+2. solution: median 5668.09806887 mean 5566.1385229 worst 7796.34434134 best 4498.78933846 std 624.136847142
+*****************************************
+1. NumOfEvals: median 7.0 mean 8.56 worst 13.0 best 4.0 std 2.26415547169
+2. NumOfEvals: median 7.0 mean 5.8 worst 10.0 best 4.0 std 1.8973665961
+*****************************************
+
+
+n 4 k 0 runs 25 seed 3
+model building t0		7.89165496826e-05
+Walsh t1			0.000113964080811
+Auto Correlation t2		2.00271606445e-05
+Evaluate all candidate t3	0.000168085098267
+Run LSs t5			0.0996580123901
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 7708.87273734 mean 7708.87273734 worst 7708.87273734 best 7708.87273734 std 9.09494701773e-13
+2. solution: median 8553.0592092 mean 8755.08617266 worst 9815.72773081 best 8553.0592092 std 462.901926233
+*****************************************
+1. NumOfEvals: median 13.0 mean 12.36 worst 17.0 best 5.0 std 3.52
+2. NumOfEvals: median 13.0 mean 11.56 worst 17.0 best 5.0 std 3.37140920091
+*****************************************
+
+
+n 5 k 0 runs 25 seed 3
+model building t0		9.48905944824e-05
+Walsh t1			0.000139951705933
+Auto Correlation t2		2.31266021729e-05
+Evaluate all candidate t3	0.000365018844604
+Run LSs t5			0.1744389534
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 3165.21316159 mean 3165.21316159 worst 3165.21316159 best 3165.21316159 std 0.0
+2. solution: median 3165.21316159 mean 3165.21316159 worst 3165.21316159 best 3165.21316159 std 0.0
+*****************************************
+1. NumOfEvals: median 16.0 mean 17.6 worst 31.0 best 6.0 std 5.4258639865
+2. NumOfEvals: median 16.0 mean 19.0 worst 31.0 best 11.0 std 5.09901951359
+*****************************************
+
+
+n 6 k 0 runs 25 seed 3
+model building t0		0.000107049942017
+Walsh t1			0.000160932540894
+Auto Correlation t2		2.59876251221e-05
+Evaluate all candidate t3	0.00080394744873
+Run LSs t5			0.282337903976
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 4548.35364272 mean 4548.35364272 worst 4548.35364272 best 4548.35364272 std 0.0
+2. solution: median 4548.35364272 mean 4548.35364272 worst 4548.35364272 best 4548.35364272 std 0.0
+*****************************************
+1. NumOfEvals: median 25.0 mean 25.24 worst 37.0 best 7.0 std 8.73283459136
+2. NumOfEvals: median 25.0 mean 24.28 worst 37.0 best 13.0 std 7.06269070539
+*****************************************
+
+
+n 7 k 0 runs 25 seed 3
+model building t0		0.000115871429443
+Walsh t1			0.000181913375854
+Auto Correlation t2		2.8133392334e-05
+Evaluate all candidate t3	0.00190591812134
+Run LSs t5			0.451256990433
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 8095.6480431 mean 8095.6480431 worst 8095.6480431 best 8095.6480431 std 0.0
+2. solution: median 8095.6480431 mean 8095.6480431 worst 8095.6480431 best 8095.6480431 std 0.0
+*****************************************
+1. NumOfEvals: median 29.0 mean 33.2 worst 50.0 best 15.0 std 9.69948452239
+2. NumOfEvals: median 36.0 mean 33.2 worst 50.0 best 15.0 std 9.286549413
+*****************************************
+
+
+n 8 k 0 runs 25 seed 3
+model building t0		0.000130176544189
+Walsh t1			0.000207185745239
+Auto Correlation t2		3.00407409668e-05
+Evaluate all candidate t3	0.00403594970703
+Run LSs t5			0.621047019958
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 9803.64216278 mean 9803.64216278 worst 9803.64216278 best 9803.64216278 std 0.0
+2. solution: median 9803.64216278 mean 9803.64216278 worst 9803.64216278 best 9803.64216278 std 0.0
+*****************************************
+1. NumOfEvals: median 41.0 mean 38.76 worst 65.0 best 17.0 std 11.4307655037
+2. NumOfEvals: median 41.0 mean 42.6 worst 65.0 best 25.0 std 13.5764501988
+*****************************************
+
+
+n 9 k 0 runs 25 seed 3
+model building t0		0.000144004821777
+Walsh t1			0.000232934951782
+Auto Correlation t2		3.2901763916e-05
+Evaluate all candidate t3	0.00887989997864
+Run LSs t5			0.913010835648
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 9018.61978869 mean 9018.61978869 worst 9018.61978869 best 9018.61978869 std 0.0
+2. solution: median 9018.61978869 mean 9018.61978869 worst 9018.61978869 best 9018.61978869 std 0.0
+*****************************************
+1. NumOfEvals: median 55.0 mean 51.4 worst 73.0 best 19.0 std 14.1732141732
+2. NumOfEvals: median 46.0 mean 48.88 worst 82.0 best 19.0 std 15.6341165404
+*****************************************
+
+
+n 10 k 0 runs 25 seed 3
+model building t0		0.00016713142395
+Walsh t1			0.000257968902588
+Auto Correlation t2		3.60012054443e-05
+Evaluate all candidate t3	0.0193910598755
+Run LSs t5			1.19787716866
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 12486.5617804 mean 12486.5617804 worst 12486.5617804 best 12486.5617804 std 0.0
+2. solution: median 12486.5617804 mean 12486.5617804 worst 12486.5617804 best 12486.5617804 std 0.0
+*****************************************
+1. NumOfEvals: median 71.0 mean 66.2 worst 91.0 best 31.0 std 15.5228863295
+2. NumOfEvals: median 61.0 mean 60.2 worst 81.0 best 21.0 std 16.9516960803
+*****************************************
+
+
+n 11 k 0 runs 25 seed 3
+model building t0		0.000163078308105
+Walsh t1			0.000271081924438
+Auto Correlation t2		3.69548797607e-05
+Evaluate all candidate t3	0.042582988739
+Run LSs t5			1.64106798172
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 15162.3737057 mean 15162.3737057 worst 15162.3737057 best 15162.3737057 std 1.81898940355e-12
+2. solution: median 15162.3737057 mean 15162.3737057 worst 15162.3737057 best 15162.3737057 std 1.81898940355e-12
+*****************************************
+1. NumOfEvals: median 78.0 mean 74.92 worst 122.0 best 45.0 std 20.7594219573
+2. NumOfEvals: median 78.0 mean 71.4 worst 111.0 best 34.0 std 18.9251155875
+*****************************************
+
+
+n 12 k 0 runs 25 seed 3
+model building t0		0.000175952911377
+Walsh t1			0.00029993057251
+Auto Correlation t2		4.29153442383e-05
+Evaluate all candidate t3	0.0935688018799
+Run LSs t5			2.25968813896
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 16058.5965439 mean 16058.5965439 worst 16058.5965439 best 16058.5965439 std 0.0
+2. solution: median 16058.5965439 mean 16058.5965439 worst 16058.5965439 best 16058.5965439 std 0.0
+*****************************************
+1. NumOfEvals: median 85.0 mean 82.6 worst 121.0 best 49.0 std 20.922714929
+2. NumOfEvals: median 97.0 mean 87.88 worst 121.0 best 49.0 std 19.8722318827
+*****************************************
+
+
+n 13 k 0 runs 25 seed 3
+model building t0		0.000185012817383
+Walsh t1			0.000322103500366
+Auto Correlation t2		4.2200088501e-05
+Evaluate all candidate t3	0.197099924088
+Run LSs t5			2.98142290115
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 9218.27021731 mean 9218.27021731 worst 9218.27021731 best 9218.27021731 std 0.0
+2. solution: median 9218.27021731 mean 9218.27021731 worst 9218.27021731 best 9218.27021731 std 0.0
+*****************************************
+1. NumOfEvals: median 105.0 mean 107.6 worst 170.0 best 40.0 std 30.3209498532
+2. NumOfEvals: median 92.0 mean 97.2 worst 131.0 best 53.0 std 19.8010100752
+*****************************************
+
+
+n 14 k 0 runs 25 seed 3
+model building t0		0.000197887420654
+Walsh t1			0.000347852706909
+Auto Correlation t2		4.50611114502e-05
+Evaluate all candidate t3	0.424144029617
+Run LSs t5			3.76089191437
+AutoCorrelation 1.0
+*****************************************
+1. solution: median 14385.3469969 mean 14385.3469969 worst 14385.3469969 best 14385.3469969 std 1.81898940355e-12
+2. solution: median 14385.3469969 mean 14385.3469969 worst 14385.3469969 best 14385.3469969 std 1.81898940355e-12
+*****************************************
+1. NumOfEvals: median 99.0 mean 111.32 worst 169.0 best 71.0 std 23.1977929985
+2. NumOfEvals: median 113.0 mean 115.8 worst 155.0 best 71.0 std 20.1910871426
+*****************************************
+
+
+n 15 k 0 runs 25 seed 3
+model building t0		0.000205993652344
+Walsh t1			0.00037407875061
+Auto Correlation t2		4.6968460083e-05
+Evaluate all candidate t3	0.893689155579

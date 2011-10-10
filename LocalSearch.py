@@ -29,6 +29,18 @@ class LocalSearch:
         indiv = Struct( fit = 0, bit = randBitStr)
         return indiv
 
+    def initIndivNeigh(self, dim):
+        """ initial the search inidividual with random bit string """
+        indiv = Struct(fit = 0, fitG = 0, bit = '0') 
+        randBitStr = []
+        for j in range(dim):
+            if random.random()<0.5:
+                randBitStr.append('0')
+            else:
+                randBitStr.append('1')
+        indiv = Struct( fit = 0, fitG = 0, bit = randBitStr)
+        return indiv
+
     def run(self):
         self.indiv = self.initIndiv(self.dim)
         self.fitEval = 0
@@ -46,6 +58,23 @@ class LocalSearch:
                 return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
         return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
 
+    def runNeigh(self):
+        self.indiv = self.initIndivNeigh(self.dim)
+        self.fitEval = 0
+        self.evalPopNeigh()
+        self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
+        while self.fitEval < self.MaxFit:
+            neighs = self.neighbors()
+            improveN = False
+            for i in neighs:
+                self.indiv.bit = np.copy(i)
+                self.evalPopNeigh()
+                if self.selectionFitNeigh() == True:
+                    improveN = True
+            if improveN == False:
+                return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG }
+        return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG }
+
     def neighbors(self):
         neighs = []
         for j in range(self.dim):
@@ -62,9 +91,32 @@ class LocalSearch:
         self.indiv.fit = self.func(self.indiv.bit)
         self.fitEval = self.fitEval + 1
 
+    def evalPopNeigh(self):
+        """ evaluate the individual itself """
+        self.indiv.fit = self.func(self.indiv.bit)
+        self.fitEval = self.fitEval + 1
+        """ evaluate all neighborhood """
+        fitN = np.zeros(self.dim)
+        for j in range(self.dim):
+            # flip the jth bit in bit-string
+            neighStr = np.copy(self.indiv.bit)
+            if neighStr[j] == '1':
+                neighStr[j] = '0'
+            else:
+                neighStr[j] = '1'
+            fitN[j] = self.func(neighStr)
+        self.indiv.fitG = np.mean(fitN) - np.std(fitN)
+
     def selectionFit(self):
         if self.oldindiv.fit > self.indiv.fit:
             self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
+            return True
+        else:
+            return False
+
+    def selectionFitNeigh(self):
+        if self.oldindiv.fitG > self.indiv.fitG:
+            self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
             return True
         else:
             return False
