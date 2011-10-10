@@ -8,7 +8,6 @@ import numpy as np
 import random
 import math
 import pdb
-from operator import itemgetter
 
 class Struct:
     def __init__(self, **kwds):
