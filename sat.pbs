@@ -1,0 +1,14 @@
+#!/bin/sh
+#PBS -N STA-$fun-$strat-$dim
+#PBS -M chenwx.ustc@gmail.com
+#PBS -l cput=480:0:00
+#PBS -l walltime=300:0:0
+
+echo "I ran on:"
+cat $PBS_NODEFILE
+
+cd ~/lustrefs/SumSat
+
+echo Start Time is `date`
+python demo.py $N $K
+echo Finish Time is `date`

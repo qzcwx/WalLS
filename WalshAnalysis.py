@@ -21,9 +21,10 @@ def subsum(i,j,f):
     return s
 
 def bc(x,y):
-    """ return the bit count of x and y """
-    return bin( int(x,2) & int(y,2) ).count('1')
-#    sum = 0;
-#    for i in range(len(x)):
-#        if x[i] == '1' and y[i] == '1':
-#            sum = sum + 1
+    """ return the bit count of x AND y """
+#    return bin( int(x,2) & int(y,2) ).count('1')
+    sum = 0
+    for i in range(len(x)):
+        if x[i] == '1' and y[i] == '1':
+           sum = sum + 1
+    return sum 
