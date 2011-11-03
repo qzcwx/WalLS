@@ -66,7 +66,7 @@ class GeneticAlgorithm:
             self.selectionFit()
             bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
             allFit[gen-1] = bestFit
-        return min(allFit)
+        return {'nEvals': self.fitEval, 'sol': min(allFit)}
     def runNeigh(self, crossoverR, mutationR):
         """ run the experiment with g(x) """
         self.pop = self.popInit(self.popSize, self.dim)
@@ -89,7 +89,7 @@ class GeneticAlgorithm:
             bestFitG = min( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
             allFit[gen-1] = bestFit
             allFitG[gen-1] = bestFitG
-        return min(allFit)
+        return {'nEvals': self.fitEval, 'sol': min(allFit), 'fitG': min(allFitG)}
     def evalPop(self):
         """ evaluate the population """
         for i in range(self.popSize):

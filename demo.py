@@ -40,102 +40,60 @@ def compFit(model):
 n = 50
 k = 20
 runs = 25
-maxFit = 100000
+maxFit = 10000
 popSize = 50 # always keep popSize to even number
 crossoverR = 0.8 # typically in (0.6, 0.9)
-mutationR = 1.0/n # typically between 1/popSize and 1/dim
+mutationR = 1.0/float(n) # typically between 1/popSize and 1/dim
 rseed = 3
-s = 1
+s = 0
 nameOfDir = 'result'
 
-random.seed(rseed)
 
-sols1 = np.zeros(runs)
-nIter1 = np.zeros(runs)
-sols2 = np.zeros(runs)
-solsG = np.zeros(runs)
-nIter2 = np.zeros(runs)
+random.seed(rseed)
 
 """ create files for storing results """
 if os.path.isdir(nameOfDir) == False:
     os.mkdir(nameOfDir)
 
 
-#print 'n', n, 'k', k, 'runs', runs, 'maxFit', maxFit, 'popSize', popSize, 'crossoverR', crossoverR, 'mutationR', mutationR, 'seed', rseed
-#start = time.time()
-#model = nk.NKLandscape(n,k)
-##print 'Global Optimum', globalOpt(model)
-##algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
-#print 'model building t0\t\t', time.time() - start
-#
-#lSearch = ls.LocalSearch(model.compFit, maxFit, n)
-#
-#print '**********************************'
-#res = lSearch.run()
-#print 'fitRes', res
-#resG = lSearch.runNeigh()
-#print 'fitGRes', resG
-#print '**********************************'
+algoName = sys.argv[1]
+n = int(sys.argv[2])
+k = int(sys.argv[3])
 
-
-n = int(sys.argv[1])
-k = int(sys.argv[2])
-print 
 print 'n', n, 'k', k, 'runs', runs, 'seed', rseed
+
 start = time.time()
 model = nk.NKLandscape(n,k)
-lSearch = ls.LocalSearch(model.compFit, maxFit, n)
-#print 'Global Optimum', globalOpt(model)
 print 'model building t0\t\t', time.time() - start
 
-
-#        start = time.time()
-#        w = model.WalshCofLinearLinklist()
-#        print 'Walsh t1\t\t\t', time.time() - start
-#
-#        start = time.time()
-##        autoCo =  ac.autoCorrLinerSpace(s, w) 
-#        autoCo = [ ac.autoCorrLinerSpace(i,w) for i in range(0,20) ]
-#        print "Auto Correlation t2\t\t", time.time() - start
-
-#        start = time.time()
-#        bitStr, fit = compFit(model)
-#        print "Evaluate all candidate t3\t", time.time() - start
-
-#        start = time.time()
-#        numOpt = lo.localOpt(bitStr, fit)
-#        print 'Local Optimum t4\t\t', time.time() - start
+if algoName.find('LS') != -1:
+    algo = ls.LocalSearch(model.compFit, maxFit, n)
+elif algoName.find('GA') != -1:
+    algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
 
 start = time.time()
+res = []
 for i in range(runs):
-    sols1[i] = lSearch.run()['sol']
-    nIter1[i] = lSearch.run()['nEvals']
-    sols2[i] = lSearch.runNeigh()['sol']
-    solsG[i] = lSearch.runNeigh()['fitG']
-    nIter2[i] = lSearch.runNeigh()['nEvals']
+    if algoName.find('SATGA') != -1:
+        res.append(algo.runNeigh(crossoverR, mutationR))
+    elif algoName.find('GA') != -1:
+        res.append(algo.run(crossoverR, mutationR))
+    elif algoName.find('SATLS') != -1:
+        res.append(algo.runNeigh())
+    elif algoName.find('LS') != -1:
+        res.append(algo.run())
 
 """ store to files """
-nameOfF = './result/LS-N'+str(n)+'-K'+str(k)+'.txt'
+nameOfF = './result/'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
 f = open(nameOfF, 'w')
-for s, n in zip(sols1.flatten().tolist(), nIter1.flatten().tolist()):
-    print >>f,"%g\t%g" % (s, n)
-f.close()
 
-nameOfF = './result/SATLS-N'+str(n)+'-K'+str(k)+'.txt'
-f = open(nameOfF, 'w')
-for s, sg, n in zip(sols2.flatten().tolist(), solsG.flatten().tolist(), nIter1.flatten().tolist()):
-    print >>f,"%g\t%g\t%g" % (s, sg, n)
-f.close()
+for i in range(len(res)):
+    if algoName.find('SAT') != -1:
+        print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+    else:
+        print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
 
-print '*****************************************'
-print '1. solution: median\t', np.median(sols1), '\tmean', np.mean(sols1), '\tworst', max(sols1), '\tbest', min(sols1), '\tstd', np.std(sols1)
-print '2. solution: median\t', np.median(sols2), '\tmean', np.mean(sols2), '\tworst', max(sols2), '\tbest', min(sols2), '\tstd', np.std(sols2)
-print '2. solutionG: median\t', np.median(solsG), '\tmean', np.mean(solsG), '\tworst', max(solsG), '\tbest', min(solsG), '\tstd', np.std(solsG)
-print '*****************************************'
-print '1. NumOfEvals: median', np.median(nIter1), '\tmean', np.mean(nIter1), '\tworst', max(nIter1), '\tbest', min(nIter1), '\tstd', np.std(nIter1)
-print '2. NumOfEvals: median', np.median(nIter2), '\tmean', np.mean(nIter2), '\tworst', max(nIter2), '\tbest', min(nIter2), '\tstd', np.std(nIter2)
-print '*****************************************'
-print 
+f.close()
 
 #start = time.time()
 #w = model.WalCofLinear()
