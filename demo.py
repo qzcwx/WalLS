@@ -3,6 +3,7 @@ import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
+import MAXSAT as mx
 import LocalSearch as ls
 import LocalOptima as lo
 import numpy as np
@@ -63,33 +64,60 @@ k = int(sys.argv[4])
 
 if probName == 'NK':
     model = nk.NKLandscape(n,k)
+elif probName == 'SAT':
+    model = mx.MAXSAT()
 elif probName == 'NKQ':
     q = int(sys.argv[5])
     model = nkq.NKQLandcape(n, k, q)
 
-print 'probName', probName, 'algoName', algoName,  'n', n, 'k', k, 
+print 'probName', probName, 'algoName', algoName,  'n', n, 'k', k
 
-if algoName.find('LS') != -1:
-    algo = ls.LocalSearch(model.compFit, maxFit, n)
-elif algoName.find('GA') != -1:
-    algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+if probName == 'SAT':
+    """ need to perform multiple runs for each instance """
+    res = []
+    noInstance = 1
+    #for noInstance in range(1,1001):
+    model.setInstance(noInstance)
+    print 'No. Instance', noInstance
 
-res = []
-for i in range(runs):
-    if algoName.find('SATGA') != -1:
-        res.append(algo.runNeigh(crossoverR, mutationR))
+    if algoName.find('LS') != -1:
+        algo = ls.LocalSearch(model.compFit, maxFit, n)
     elif algoName.find('GA') != -1:
-        res.append(algo.run(crossoverR, mutationR))
-    elif algoName.find('SATLS') != -1:
-        res.append(algo.runNeigh())
-    elif algoName.find('LS') != -1:
-        res.append(algo.run())
+        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+
+    for i in range(runs):
+        if algoName.find('SATGA') != -1:
+            res.append(algo.runNeigh(crossoverR, mutationR))
+        elif algoName.find('GA') != -1:
+            res.append(algo.run(crossoverR, mutationR))
+        elif algoName.find('SATLS') != -1:
+            res.append(algo.runNeigh())
+        elif algoName.find('LS') != -1:
+            print algo.run()
+            res.append(algo.run())
+
+else:
+    if algoName.find('LS') != -1:
+        algo = ls.LocalSearch(model.compFit, maxFit, n)
+    elif algoName.find('GA') != -1:
+        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+
+    res = []
+    for i in range(runs):
+        if algoName.find('SATGA') != -1:
+            res.append(algo.runNeigh(crossoverR, mutationR))
+        elif algoName.find('GA') != -1:
+            res.append(algo.run(crossoverR, mutationR))
+        elif algoName.find('SATLS') != -1:
+            res.append(algo.runNeigh())
+        elif algoName.find('LS') != -1:
+            res.append(algo.run())
 
 """ store to files """
-if probName == 'NK':
-    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
-elif probName == 'NKQ':
+if probName == 'NKQ':
     nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+else:
+    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
 
 f = open(nameOfF, 'w')
 
@@ -100,75 +128,3 @@ for i in range(len(res)):
         print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
 
 f.close()
-
-#start = time.time()
-#w = model.WalCofLinear()
-#print 'Walsh t1\t\t\t', time.time() - start
-
-#start = time.time()
-#w0 = model.WalshCofLinearLinklist()
-##print 'w\n', w0
-#print 'Walsh t10\t\t\t', time.time() - start
-
-#start = time.time()
-#autoCo =  ac.autoCorr(s, w) 
-##autoCo = [ ac.autoCorr(i,w) for i in range(0,20) ]
-#print 'autoCo\n', autoCo
-#print "Auto Correlation t2\t\t", time.time() - start
-
-#start = time.time()
-##autoCo0 = ac.autoCorrLinerSpace(s, w0)
-#autoCo0 = [ ac.autoCorrLinerSpace(i,w0) for i in range(0,20) ]
-#print 'autoCoLinear\n', autoCo0
-#print "Auto Correlation t20\t\t", time.time() - start
-
-#start = time.time()
-#bitStr, fit = compFit(model)
-#print "Evaluate all candidate t3\t", time.time() - start
-#print 'Global Optimum', min(fit)
-#print 'bitStr', bitStr
-#print 'fit', fit
-#
-#start = time.time()
-#numOpt = lo.localOpt(bitStr, fit)
-#print 'Local Optimum t4\t\t', time.time() - start
-#
-#print 'Num of LocalOptimum', numOpt
-
-#for k in range(0,20):
-#    for n in [i for i in range(2, 20) if i >= k+1 ]:
-#        mutationR = 1.0/n # typically between 1/popSize and 1/dim
-#        print 
-#        print 'n', n, 'k', k, 'runs', runs, 'maxFit', maxFit, 'popSize', popSize, 'crossoverR', crossoverR, 'mutationR', mutationR, 'seed', rseed
-#        start = time.time()
-#        model = nk.NKLandscape(n,k)
-#        #print 'Global Optimum', globalOpt(model)
-#        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
-#        print 'model building t0\t\t', time.time() - start
-#
-#
-#        start = time.time()
-#        w = model.WalCofLinear()
-#        print 'Walsh t1\t\t\t', time.time() - start
-#
-#        start = time.time()
-#        autoCo =  ac.autoCorr(s, w) 
-#        print "Auto Correlation t2\t\t", time.time() - start
-#
-#        start = time.time()
-#        bitStr, fit = compFit(model)
-#        print "Evaluate all candidate t3\t", time.time() - start
-#
-#        start = time.time()
-#        numOpt = lo.localOpt(bitStr, fit)
-#        print 'Local Optimum t4\t\t', time.time() - start
-#
-#        start = time.time()
-#        for i in range(runs):
-#            sols1[i] = algo.run(crossoverR, mutationR)
-#            sols2[i] = algo.runNeigh(crossoverR, mutationR)
-#        print 'Run GAs t5\t\t\t', time.time() - start
-#        print 'AutoCorrelation', autoCo, 'Num of LocalOptimum', numOpt, 'Global Optimum', min(fit)
-#        print '1. median', np.median(sols1), 'mean', np.mean(sols1), 'worst', max(sols1), 'best', min(sols1), 'std', np.std(sols1)
-#        print '2. median', np.median(sols2), 'mean', np.mean(sols2), 'worst', max(sols2), 'best', min(sols2), 'std', np.std(sols2)
-#        print 
