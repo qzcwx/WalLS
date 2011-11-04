@@ -1,4 +1,5 @@
 import nkLandscape as nk
+import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
@@ -55,23 +56,24 @@ random.seed(rseed)
 if os.path.isdir(nameOfDir) == False:
     os.mkdir(nameOfDir)
 
+probName = sys.argv[1]
+algoName = sys.argv[2]
+n = int(sys.argv[3])
+k = int(sys.argv[4])
 
-algoName = sys.argv[1]
-n = int(sys.argv[2])
-k = int(sys.argv[3])
+if probName == 'NK':
+    model = nk.NKLandscape(n,k)
+elif probName == 'NKQ':
+    q = int(sys.argv[5])
+    model = nkq.NKQLandcape(n, k, q)
 
-print 'n', n, 'k', k, 'runs', runs, 'seed', rseed
-
-start = time.time()
-model = nk.NKLandscape(n,k)
-print 'model building t0\t\t', time.time() - start
+print 'probName', probName, 'algoName', algoName,  'n', n, 'k', k, 
 
 if algoName.find('LS') != -1:
     algo = ls.LocalSearch(model.compFit, maxFit, n)
 elif algoName.find('GA') != -1:
     algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
 
-start = time.time()
 res = []
 for i in range(runs):
     if algoName.find('SATGA') != -1:
@@ -84,7 +86,11 @@ for i in range(runs):
         res.append(algo.run())
 
 """ store to files """
-nameOfF = './result/'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
+if probName == 'NK':
+    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
+elif probName == 'NKQ':
+    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+
 f = open(nameOfF, 'w')
 
 for i in range(len(res)):

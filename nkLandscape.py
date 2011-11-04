@@ -24,7 +24,6 @@ class NKLandscape:
             while i in oneNeigh:
                 oneNeigh = random.sample(range(self.n), self.k)
             self.neighs.append(oneNeigh)
-#        print 'neighs', self.neighs
     def getNeigh(self):
         return self.neighs
     """ generate function value """
@@ -33,9 +32,8 @@ class NKLandscape:
         for i in range(self.n):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
-                oneFunc.append(random.random() * random.randint(1,10000))
+                oneFunc.append(random.random())
             self.func.append(oneFunc)
-#        print 'func', self.func
     def getFunc(self):
         return self.func
     def getN(self):
@@ -56,7 +54,7 @@ class NKLandscape:
             """ sum up the sub-function values """ 
             #print 'i', i, 'index in func', int(interStr,2), 'interStr', interStr
             sum = sum + self.func[i][int(interStr,2)]
-        return sum
+        return sum/float(self.n)
     def WalCof(self):
         """ compute the Walsh coefficients """
         subW = [] # subW is a N*2^K matrix
