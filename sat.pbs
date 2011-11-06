@@ -7,7 +7,7 @@
 echo "I ran on:"
 cat $PBS_NODEFILE
 
-cd ~/lustrefs/SumSatNKQ/SumSat
+cd ~/lustrefs/SumSat
 
 echo python demo.py $P $A $N $K $Q
 

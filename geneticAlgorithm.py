@@ -1,13 +1,16 @@
-# Genetic algorithm 
+# Genetic algorithm
 # g(x): the estimate best value of neighborhood, mean(N(x)) - std(N(x))
 # crossover: one-point crossover with crossover rate
 # mutation: one-bit flip mutation with mutation rate
-# selection: truncation
+# selection: deterministic tournament selection with size 2 / fitness-proportional selection
+# Reference: Introduction to Evolutionary Computing - Genetic Algorithms by A.E. Eiben and J.E. Smith
+
 
 import numpy as np
 import random
 import math
 import pdb
+import copy
 
 class Struct:
     def __init__(self, **kwds):
@@ -48,30 +51,41 @@ class GeneticAlgorithm:
                     randBitStr.append('1')
             pop[i] = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return pop
-    def run(self, crossoverR, mutationR):
+    def run(self, crossoverR, mutationR, tourSize = 2):
         """ run the experiment with respect to real fitness """
         self.pop = self.popInit(self.popSize, self.dim)
         self.crossoverR = crossoverR
         self.mutationR = mutationR
+        self.tourSize = tourSize
         gen = 0
         self.fitEval = 0
         allFit = np.zeros(self.numOfGen)
         self.evalPop()
         while self.fitEval < self.MaxFit:
             self.oldpop = np.copy(self.pop)
+#            print 'pop\n', [self.pop[i].bit for i in range(len(self.pop))]
+#            print 'pop fit', [self.pop[i].fit for i in range(len(self.pop))]
             gen = gen + 1
             self.crossover()
+#            print 'pop after crossover\n', [self.pop[i].bit for i in range(len(self.pop))]
             self.mutation()
+#            print 'pop after mutation\n', [self.pop[i].bit for i in range(len(self.pop))]
             self.evalPop()
+#            print 'pop fit', [self.pop[i].fit for i in range(len(self.pop))]
             self.selectionFit()
+#            print 'pop after selection\n', [self.pop[i].bit for i in range(len(self.pop))]
+#            print 'pop fit', [self.pop[i].fit for i in range(len(self.pop))]
             bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
+#            print 'bestFit', bestFit
+#            print 
             allFit[gen-1] = bestFit
         return {'nEvals': self.fitEval, 'sol': min(allFit)}
-    def runNeigh(self, crossoverR, mutationR):
+    def runNeigh(self, crossoverR, mutationR, tourSize = 2):
         """ run the experiment with g(x) """
         self.pop = self.popInit(self.popSize, self.dim)
         self.crossoverR = crossoverR
         self.mutationR = mutationR
+        self.tourSize = tourSize
         gen = 0
         self.fitEval = 0
         allFit = np.zeros(self.numOfGen)
@@ -89,7 +103,7 @@ class GeneticAlgorithm:
             bestFitG = min( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
             allFit[gen-1] = bestFit
             allFitG[gen-1] = bestFitG
-        return {'nEvals': self.fitEval, 'sol': min(allFit), 'fitG': min(allFitG)}
+        return {'nEvals': self.fitEval, 'sol': min(allFit),  'fitG': min(allFitG)}
     def evalPop(self):
         """ evaluate the population """
         for i in range(self.popSize):
@@ -118,8 +132,7 @@ class GeneticAlgorithm:
         """ one-bit flip mutation """
         for i in range(self.popSize):
             if random.random() < self.mutationR:
-                flipBit = random.sample(range(self.dim),1)
-                flipBit = flipBit[0]
+                flipBit = random.sample(range(self.dim),1)[0]
                 if self.pop[i].bit[flipBit] == '1':
                     self.pop[i].bit[flipBit] = '0'
                 else:
@@ -138,7 +151,32 @@ class GeneticAlgorithm:
                     pop1[j+crossPos+1] = np.copy( self.pop[2*i].bit[j+crossPos+1] )
                 self.pop[2*i].bit = np.copy(pop0)
                 self.pop[2*i+1].bit = np.copy(pop1)
+
     def selectionFit(self):
+        self.tournamentSelection(neigh= False)
+    def selectionNeigh(self):
+        self.tournamentSelection(neigh= True)
+
+    def tournamentSelection(self, neigh):
+        popAll = np.hstack((self.oldpop, self.pop))
+        if neigh == False : 
+            popSelect = np.tile(Struct(fit = 0, bit = '0'), (self.popSize))
+            fit = [ popAll[i].fit for i in range(len(popAll)) ]
+        else:
+            popSelect = np.tile(Struct(fit = 0, fitG = 0, bit = '0'), (self.popSize))
+            fit = [ popAll[i].fitG for i in range(len(popAll)) ]
+        for i in range(self.popSize):
+            tourI = random.sample(range(2*self.popSize), self.tourSize)
+            tourPop = popAll[tourI]
+            tourFit = [ fit[j] for j in tourI ]
+            bestI = tourFit.index(min(tourFit))
+            popSelect[i] = copy.deepcopy( popAll[tourI[bestI]] )
+#            pdb.set_trace()
+
+        self.pop = popSelect
+            
+    #############################################################################
+    def proportionalSelectionFit():
         popAll = np.hstack((self.oldpop, self.pop))
         length = len(popAll)
         fitAll = [popAll[i].fit for i in range(length)]
@@ -156,7 +194,7 @@ class GeneticAlgorithm:
         for i in range(length/2):
             selectedI = self.rouletteWheel(accumProb, length)
             self.pop[i] = popAll[selectedI]
-    def selectionNeigh(self):
+    def proportionalSelectionNeigh():
         popAll = np.hstack((self.oldpop, self.pop))
         length = len(popAll)
         fitAll = [popAll[i].fitG for i in range(length)]
