@@ -19,7 +19,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 3
+rseed = 0
 nameOfDir = 'result'
 
 random.seed(rseed)
@@ -39,11 +39,11 @@ elif probName == 'SAT':
     model = mx.MAXSAT()
 elif probName == 'NKQ':
     q = int(sys.argv[5])
-    model = nkq.nkqlandcape(n, k, q)
+    model = nkq.NKQLandcape(n, k, q)
 
 maxFit = 1000 * n
-runs = 1
-popSize = 3 # always keep popSize to even number
+runs = 30
+popSize = 50 # always keep popSize to even number
 crossoverR = 0.8 # typically in (0.6, 0.9)
 mutationR = 1.0/float(n) # typically between 1/popSize and 1/dim
 #maxFit = 100000
@@ -88,7 +88,6 @@ else:
             res.append(algo.runNeigh())
         elif algoName.find('LS') != -1:
             res.append(algo.run())
-        pdb.set_trace()
 
 """ store to files """
 if probName == 'NKQ':
