@@ -1,6 +1,6 @@
 import nkLandscape as nk
 import nkqLandscape as nkq
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
 import numpy as np
 import math

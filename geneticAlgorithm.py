@@ -5,7 +5,6 @@
 # selection: deterministic tournament selection with size 2 / fitness-proportional selection
 # Reference: Introduction to Evolutionary Computing - Genetic Algorithms by A.E. Eiben and J.E. Smith
 
-
 import numpy as np
 import random
 import math
@@ -63,21 +62,12 @@ class GeneticAlgorithm:
         self.evalPop()
         while self.fitEval < self.MaxFit:
             self.oldpop = np.copy(self.pop)
-#            print 'pop\n', [self.pop[i].bit for i in range(len(self.pop))]
-#            print 'pop fit', [self.pop[i].fit for i in range(len(self.pop))]
             gen = gen + 1
             self.crossover()
-#            print 'pop after crossover\n', [self.pop[i].bit for i in range(len(self.pop))]
             self.mutation()
-#            print 'pop after mutation\n', [self.pop[i].bit for i in range(len(self.pop))]
             self.evalPop()
-#            print 'pop fit', [self.pop[i].fit for i in range(len(self.pop))]
             self.selectionFit()
-#            print 'pop after selection\n', [self.pop[i].bit for i in range(len(self.pop))]
-#            print 'pop fit', [self.pop[i].fit for i in range(len(self.pop))]
             bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
-#            print 'bestFit', bestFit
-#            print 
             allFit[gen-1] = bestFit
         return {'nEvals': self.fitEval, 'sol': min(allFit)}
     def runNeigh(self, crossoverR, mutationR, tourSize = 2):

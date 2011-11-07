@@ -3,7 +3,8 @@ import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+import CHC as chc
 import MAXSAT as mx
 import LocalSearch as ls
 import LocalOptima as lo
@@ -44,9 +45,18 @@ elif probName == 'NKQ':
 maxFit = 1000 * n
 runs = 30
 popSize = 50 # always keep popSize to even number
+
+#maxFit = 20
+#runs = 1
+#popSize = 4
+
 crossoverR = 0.8 # typically in (0.6, 0.9)
 mutationR = 1.0/float(n) # typically between 1/popSize and 1/dim
-#maxFit = 100000
+# for CHC 
+D = n/4.0
+DR = 0.35
+M = 1
+
 
 print 'probName', probName, 'algoName', algoName,  'n', n, 'k', k, 'maxFit', maxFit
 
@@ -61,6 +71,8 @@ if probName == 'SAT':
         algo = ls.LocalSearch(model.compFit, maxFit, n)
     elif algoName.find('GA') != -1:
         algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+    elif algoName.find('CHC') != -1:
+        algo = chc.CHC()
 
     for i in range(runs):
         if algoName.find('SATGA') != -1:
@@ -71,12 +83,18 @@ if probName == 'SAT':
             res.append(algo.runNeigh())
         elif algoName.find('LS') != -1:
             res.append(algo.run())
+        elif algoName.find('SATCHC') != -1:
+            res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+        elif algoName.find('CHC') != -1:
+            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
 
 else:
     if algoName.find('LS') != -1:
         algo = ls.LocalSearch(model.compFit, maxFit, n)
     elif algoName.find('GA') != -1:
         algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+    elif algoName.find('CHC') != -1:
+        algo = chc.CHC()
 
     res = []
     for i in range(runs):
@@ -88,6 +106,10 @@ else:
             res.append(algo.runNeigh())
         elif algoName.find('LS') != -1:
             res.append(algo.run())
+        elif algoName.find('SATCHC') != -1:
+            res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+        elif algoName.find('CHC') != -1:
+            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
 
 """ store to files """
 if probName == 'NKQ':

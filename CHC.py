@@ -74,7 +74,7 @@ class CHC:
 #                print 'before restart, pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
 #                print 'before restart, fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
                      
-                self.divergePop()
+                self.divergePop(neigh = False)
                 self.pop = self.evalPop(self.pop)
                 self.D = self.Dinit
 
@@ -82,11 +82,11 @@ class CHC:
 #                print 'after restart, fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
                 continue
 
-            offspring = self.HUXcrossover(matePool)
+            offspring = self.HUXcrossover(matePool, neigh=False)
 #            print 'offspring bits\n', [offspring[i].bit for i in range(len(offspring))]
             offspring = self.evalPop(offspring)
 #            print 'offspring fit\n', [offspring[i].fit for i in range(len(offspring))]
-            self.selectionFit(offspring)
+            self.selectionFit(offspring, neigh = False)
 #            print 'pop size', len(self.pop)
 #            print 'pop fit after selection\n', [self.pop[i].fit for i in range(self.popSize)]
 #            print 'pop bit after selection\n', [self.pop[i].bit for i in range(self.popSize)]
@@ -98,6 +98,77 @@ class CHC:
 #        print 
 #        print 
         return {'nEvals': self.fitEval, 'sol': min(allFit)}
+
+    def runNeigh(self, func, MaxFit, popSize, dim, D, DR, M):
+        """
+            func:   objective function
+            MaxFit: maximum number of fitness evaluation
+            popSize:population size 
+            dim:    length of chromosome
+            D:      Difference threshold
+            DR:     Divergence rate
+            M:      number OF best individuals for restarting
+        """
+        self.func = func
+        self.MaxFit = MaxFit
+        self.popSize = popSize
+        self.dim = dim
+        self.D = D
+        self.Dinit = D
+        self.M = M
+        self.DR = DR
+        if (MaxFit % popSize) == 0:
+            self.numOfGen = math.floor(MaxFit/popSize) - 1
+        else:
+            self.numOfGen = math.floor(MaxFit/popSize) 
+        self.pop = self.popInitNeigh(self.popSize, self.dim)
+        gen = 0
+        self.fitEval = 0
+        allFit = []
+        allG = []
+        self.pop = self.evalPopNeigh(self.pop )
+#        print 'initial pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
+#        print 'initial fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
+#        print 'initial fitG:', [ self.pop[i].fitG for i in range(len(self.pop)) ]
+        while self.fitEval < self.MaxFit:
+            gen = gen + 1
+#            print '********************GEN*********************', gen
+            matePool = self.reproduce()
+            if self.D < 0:
+
+#                print 'before restart, pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
+#                print 'before restart, fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
+#                print 'before restart, G:', [ self.pop[i].fitG for i in range(len(self.pop)) ]
+                     
+                self.divergePop(neigh = False)
+                self.pop = self.evalPopNeigh(self.pop)
+                self.D = self.Dinit
+
+#                print 'after restart, pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
+#                print 'after restart, fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
+#                print 'after restart, G:', [ self.pop[i].fitG for i in range(len(self.pop)) ]
+                continue
+
+            offspring = self.HUXcrossover(matePool, neigh=True)
+#            print 'offspring bits\n', [offspring[i].bit for i in range(len(offspring))]
+            offspring = self.evalPopNeigh(offspring)
+#            print 'offspring fit\n', [offspring[i].fit for i in range(len(offspring))]
+#            print 'offspring fitG\n', [offspring[i].fitG for i in range(len(offspring))]
+            self.selectionFit(offspring, neigh=True)
+#            print 'pop bit after selection\n', [self.pop[i].bit for i in range(self.popSize)]
+#            print 'pop fit after selection\n', [self.pop[i].fit for i in range(self.popSize)]
+#            print 'pop G after selection\n', [self.pop[i].fitG for i in range(self.popSize)]
+            bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
+            bestG = min( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
+#            print 'bestFit', bestFit
+#            print 'bestG', bestG
+            allFit.append( bestFit )
+            allG.append( bestG ) 
+
+#        print allFit
+#        print 
+#        print 
+        return {'nEvals': self.fitEval, 'sol': min(allFit), 'fitG': min(allG)}
 
     def reproduce(self):
         """ 
@@ -129,7 +200,7 @@ class CHC:
                 diffbit.append(i)
         return diffbit
 
-    def HUXcrossover(self, matePool):
+    def HUXcrossover(self, matePool, neigh):
         for i in range(len(matePool)):
             exchangebits = random.sample( matePool[i].bits, int(math.ceil(len(matePool[i].bits)/2.0)) )
             for j in exchangebits:
@@ -140,26 +211,58 @@ class CHC:
                     matePool[i].parents[0][j] = '0'
                     matePool[i].parents[1][j] = '1'
         # compose population from matePool
-        offspring = np.tile(Struct(fit = 0, bit = '0'), 2*len(matePool))
-        for i in range(len(matePool)):
-            offspring[2*i] = Struct( fit=0, bit = matePool[i].parents[0])
-            offspring[2*i+1] = Struct( fit=0, bit = matePool[i].parents[1])
+        if neigh == False:
+            offspring = np.tile(Struct(fit = 0, bit = '0'), 2*len(matePool))
+            for i in range(len(matePool)):
+                offspring[2*i] = Struct( fit=0, bit = matePool[i].parents[0])
+                offspring[2*i+1] = Struct( fit=0, bit = matePool[i].parents[1])
+        else:
+            offspring = np.tile(Struct(fit = 0, fitG = 0, bit = '0'), 2*len(matePool))
+            for i in range(len(matePool)):
+                offspring[2*i] = Struct( fit=0, fitG=0, bit = matePool[i].parents[0])
+                offspring[2*i+1] = Struct( fit=0, fitG=0, bit = matePool[i].parents[1])
         return offspring
-    
+   
     def evalPop(self, pop):
         """ evaluate the population """
         for i in range(len(pop)):
             pop[i].fit = self.func(pop[i].bit)
         self.fitEval = self.fitEval + len(pop)
         return pop
-
-    def selectionFit(self, offspring):
-        popAll = np.hstack((offspring, self.pop))
-        self.pop = np.copy (sorted(popAll,key=lambda p: p.fit)[:self.popSize])
     
-    def divergePop(self):
+    def evalPopNeigh(self, pop):
+        """ evaluate the population with g(x) """
+        # consider the real fitness
+        for i in range(len(pop)):
+            pop[i].fit = self.func(pop[i].bit)
+        self.fitEval = self.fitEval + len(pop)
+        # consider the fitness g(x)
+        for i in range(len(pop)):
+            fitN = np.zeros(self.dim)
+            for j in range(self.dim):
+                # flip the jth bit in bit-string
+                neighStr = np.copy(pop[i].bit)
+                if neighStr[j] == '1':
+                    neighStr[j] = '0'
+                else:
+                    neighStr[j] = '1'
+                fitN[j] = self.func(neighStr)
+            pop[i].fitG = np.mean(fitN) - np.std(fitN)
+        return pop
+
+    def selectionFit(self, offspring, neigh):
+        popAll = np.hstack((offspring, self.pop))
+        if neigh == False :
+            self.pop = np.copy (sorted(popAll,key=lambda p: p.fit)[:self.popSize])
+        else:
+            self.pop = np.copy (sorted(popAll,key=lambda p: p.fitG)[:self.popSize])
+    
+    def divergePop(self, neigh):
         # get the best individual
-        bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fit)[:self.M])
+        if neigh == False:
+            bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fit)[:self.M])
+        else:
+            bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fitG)[:self.M])
         self.pop[:self.M] = bestMpop
         bestIndiv = copy.deepcopy(bestMpop[0])
         for i in range(self.M, self.popSize):
