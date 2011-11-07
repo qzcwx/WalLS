@@ -31,16 +31,10 @@ if os.path.isdir(nameOfDir) == False:
 
 probName = sys.argv[1]
 algoName = sys.argv[2]
-n = int(sys.argv[3])
-k = int(sys.argv[4])
+numOfInstance = int(sys.argv[3])
+n = int(sys.argv[4])
+k = int(sys.argv[5])
 
-if probName == 'NK':
-    model = nk.NKLandscape(n,k)
-elif probName == 'SAT':
-    model = mx.MAXSAT()
-elif probName == 'NKQ':
-    q = int(sys.argv[5])
-    model = nkq.NKQLandcape(n, k, q)
 
 maxFit = 1000 * n
 runs = 30
@@ -58,62 +52,75 @@ DR = 0.35
 M = 1
 
 
-print 'probName', probName, 'algoName', algoName,  'n', n, 'k', k, 'maxFit', maxFit
+print 'probName', probName, 'algoName', algoName, 'num of instances', numOfInstance, 'n', n, 'k', k, 'maxFit', maxFit
 
 if probName == 'SAT':
     """ need to perform multiple runs for each instance """
+    """ with SAT, we are forced to set n to 100 """
+    model = mx.MAXSAT()
     res = []
-    noInstance = 1
-    model.setInstance(noInstance)
-    print 'No. Instance', noInstance
+    instances = random.sample(range(1,1001), numOfInstance)
+    for inst in instances:
+        model.setInstance(inst)
+        print 'Instance', inst
 
-    if algoName.find('LS') != -1:
-        algo = ls.LocalSearch(model.compFit, maxFit, n)
-    elif algoName.find('GA') != -1:
-        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
-    elif algoName.find('CHC') != -1:
-        algo = chc.CHC()
-
-    for i in range(runs):
-        if algoName.find('SATGA') != -1:
-            res.append(algo.runNeigh(crossoverR, mutationR))
+        if algoName.find('LS') != -1:
+            algo = ls.LocalSearch(model.compFit, maxFit, n)
         elif algoName.find('GA') != -1:
-            res.append(algo.run(crossoverR, mutationR))
-        elif algoName.find('SATLS') != -1:
-            res.append(algo.runNeigh())
-        elif algoName.find('LS') != -1:
-            res.append(algo.run())
-        elif algoName.find('SATCHC') != -1:
-            res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+            algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
         elif algoName.find('CHC') != -1:
-            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
+            algo = chc.CHC()
+
+        for i in range(runs):
+            if algoName.find('SATGA') != -1:
+                res.append(algo.runNeigh(crossoverR, mutationR))
+            elif algoName.find('GA') != -1:
+                res.append(algo.run(crossoverR, mutationR))
+            elif algoName.find('SATLS') != -1:
+                res.append(algo.runNeigh())
+            elif algoName.find('LS') != -1:
+                res.append(algo.run())
+            elif algoName.find('SATCHC') != -1:
+                res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+            elif algoName.find('CHC') != -1:
+                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
 
 else:
-    if algoName.find('LS') != -1:
-        algo = ls.LocalSearch(model.compFit, maxFit, n)
-    elif algoName.find('GA') != -1:
-        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
-    elif algoName.find('CHC') != -1:
-        algo = chc.CHC()
-
     res = []
-    for i in range(runs):
-        if algoName.find('SATGA') != -1:
-            res.append(algo.runNeigh(crossoverR, mutationR))
+    for inst in range(numOfInstance):
+
+        if probName == 'NK':
+            model = nk.NKLandscape(n,k)
+        elif probName == 'NKQ':
+            q = int(sys.argv[6])
+            model = nkq.NKQLandcape(n, k, q)
+
+        if algoName.find('LS') != -1:
+            algo = ls.LocalSearch(model.compFit, maxFit, n)
         elif algoName.find('GA') != -1:
-            res.append(algo.run(crossoverR, mutationR))
-        elif algoName.find('SATLS') != -1:
-            res.append(algo.runNeigh())
-        elif algoName.find('LS') != -1:
-            res.append(algo.run())
-        elif algoName.find('SATCHC') != -1:
-            res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+            algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
         elif algoName.find('CHC') != -1:
-            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
+            algo = chc.CHC()
+
+        for i in range(runs):
+            if algoName.find('SATGA') != -1:
+                res.append(algo.runNeigh(crossoverR, mutationR))
+            elif algoName.find('GA') != -1:
+                res.append(algo.run(crossoverR, mutationR))
+            elif algoName.find('SATLS') != -1:
+                res.append(algo.runNeigh())
+            elif algoName.find('LS') != -1:
+                res.append(algo.run())
+            elif algoName.find('SATCHC') != -1:
+                res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+            elif algoName.find('CHC') != -1:
+                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
 
 """ store to files """
 if probName == 'NKQ':
     nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+if probName == 'SAT':
+    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'.txt'
 else:
     nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
 

@@ -1,4 +1,5 @@
 import numpy as np
+import pdb
 from StringIO import StringIO
 
 class MAXSAT:
@@ -19,6 +20,7 @@ class MAXSAT:
         sum = 0
         for i in range(self.data.shape[0]):
             neg = self.data[i] > 0
+            
             sum += np.logical_not( np.logical_xor( int(s[abs(int(self.data[i,0]))-1]), neg[0])  ) or np.logical_not( np.logical_xor( int(s[abs(int(self.data[i,1]))-1]), neg[1])  ) or np.logical_not( np.logical_xor( int(s[abs(int(self.data[i,2]))-1]), neg[2])  )
         return - sum
 

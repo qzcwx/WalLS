@@ -16,4 +16,5 @@ for n in [20, 50, 100] :
                     print 'qsub sat.pbs -v P='+p+',A='+a+',N='+str(n)+',K='+str(k)+',Q='+str(q)
                     os.system( 'qsub sat.pbs -v P='+p+',A='+a+',N='+str(n)+',K='+str(k)+',Q='+str(q) )
 
+os.system( 'qsub sat.pbs -v P='+p+',A='+a+',N='+str(n)+',K='+str(k)+',Q='+str(q) )
 print i, 'jobs submitted'
