@@ -8,8 +8,7 @@ cat $PBS_NODEFILE
 
 cd ~/lustrefs/SumSat
 
-echo python demo.py $P $A $N $K $Q
-
 echo Start Time is `date`
-aprun -n 1 python demo.py $P $A $N $K $Q
+#[NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [S] [N] [K] [Q]
+aprun -n 1 python demo.py $P $A $F $I $S $N $K $Q
 echo Finish Time is `date`

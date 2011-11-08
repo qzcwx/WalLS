@@ -60,8 +60,8 @@ def plotDist():
 
 def checkParam(argv):
     if len(argv) == 1:
-        #print 'Usage: python demo.py [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [N] [K] [Q]'
-        print 'Usage: python demo.py [NameOfProblem] [NameOfAlgorithm] [I] [N] [K] [Q]'
+        print 'Usage: python demo.py [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [N] [K] [Q]'
+        #print 'Usage: python demo.py [NameOfProblem] [NameOfAlgorithm] [I] [N] [K] [Q]'
         sys.exit()
  
 def plotDistMaxK():

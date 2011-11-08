@@ -50,7 +50,13 @@ class GeneticAlgorithm:
                     randBitStr.append('1')
             pop[i] = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return pop
-    def run(self, crossoverR, mutationR, tourSize = 2):
+    def run(self, crossoverR, mutationR,  fitName, tourSize = 2):
+        if fitName == 'fit':
+            return self.runFit(crossoverR, mutationR, tourSize)
+        else :
+            return self.runNeigh(crossoverR, mutationR, tourSize, fitName)
+
+    def runFit(self, crossoverR, mutationR, tourSize):
         """ run the experiment with respect to real fitness """
         self.pop = self.popInit(self.popSize, self.dim)
         self.crossoverR = crossoverR
@@ -70,7 +76,8 @@ class GeneticAlgorithm:
             bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
             allFit[gen-1] = bestFit
         return {'nEvals': self.fitEval, 'sol': min(allFit)}
-    def runNeigh(self, crossoverR, mutationR, tourSize = 2):
+
+    def runNeigh(self, crossoverR, mutationR, tourSize, fitName ):
         """ run the experiment with g(x) """
         self.pop = self.popInit(self.popSize, self.dim)
         self.crossoverR = crossoverR
@@ -81,13 +88,13 @@ class GeneticAlgorithm:
         allFit = np.zeros(self.numOfGen)
         allFitG = np.zeros(self.numOfGen)
         self.fitG = np.zeros(self.popSize)
-        self.evalPopNeigh()
+        self.evalPopNeigh(fitName)
         while self.fitEval < self.MaxFit:
             self.oldpop = np.copy(self.pop)
             gen = gen + 1
             self.crossover()
             self.mutation()
-            self.evalPopNeigh()
+            self.evalPopNeigh(fitName)
             self.selectionNeigh()
             bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
             bestFitG = min( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
@@ -99,7 +106,7 @@ class GeneticAlgorithm:
         for i in range(self.popSize):
             self.pop[i].fit = self.func(self.pop[i].bit)
         self.fitEval = self.fitEval + self.popSize 
-    def evalPopNeigh(self):
+    def evalPopNeigh(self, fitName):
         """ evaluate the population with g(x) """
         # consider the real fitness
         for i in range(self.popSize):
@@ -116,7 +123,10 @@ class GeneticAlgorithm:
                 else:
                     neighStr[j] = '1'
                 fitN[j] = self.func(neighStr)
-            self.pop[i].fitG = np.mean(fitN) - np.std(fitN)
+            if fitName == 'mean':
+                self.pop[i].fitG = np.mean(fitN)
+            else : 
+                self.pop[i].fitG = np.mean(fitN) - np.std(fitN)
 
     def mutation(self):
         """ one-bit flip mutation """

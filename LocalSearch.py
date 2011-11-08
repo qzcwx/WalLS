@@ -41,7 +41,13 @@ class LocalSearch:
         indiv = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return indiv
 
-    def run(self):
+    def run(self, fitName):
+        if fitName =='fit': 
+            return self.runFit()
+        else :
+            return self.runNeigh(fitName)
+
+    def runFit(self):
         self.indiv = self.initIndiv(self.dim)
         self.fitEval = 0
         self.evalPop()
@@ -58,17 +64,17 @@ class LocalSearch:
                 return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
         return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
 
-    def runNeigh(self):
+    def runNeigh(self,fitName):
         self.indiv = self.initIndivNeigh(self.dim)
         self.fitEval = 0
-        self.evalPopNeigh()
+        self.evalPopNeigh(fitName)
         self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
             for i in neighs:
                 self.indiv.bit = np.copy(i)
-                self.evalPopNeigh()
+                self.evalPopNeigh(fitName)
                 if self.selectionFitNeigh() == True:
                     improveN = True
             if improveN == False:
@@ -91,7 +97,7 @@ class LocalSearch:
         self.indiv.fit = self.func(self.indiv.bit)
         self.fitEval = self.fitEval + 1
 
-    def evalPopNeigh(self):
+    def evalPopNeigh(self, fitName):
         """ evaluate the individual itself """
         self.indiv.fit = self.func(self.indiv.bit)
         self.fitEval = self.fitEval + 1
@@ -105,7 +111,10 @@ class LocalSearch:
             else:
                 neighStr[j] = '1'
             fitN[j] = self.func(neighStr)
-        self.indiv.fitG = np.mean(fitN) - np.std(fitN)
+        if fitName == 'mean':
+            self.indiv.fitG = np.mean(fitN)
+        else:
+            self.indiv.fitG = np.mean(fitN) - np.std(fitN)
 
     def selectionFit(self):
         if self.oldindiv.fit > self.indiv.fit:

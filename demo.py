@@ -31,17 +31,20 @@ if os.path.isdir(nameOfDir) == False:
 
 probName = sys.argv[1]
 algoName = sys.argv[2]
-numOfInstance = int(sys.argv[3])
-n = int(sys.argv[4])
-k = int(sys.argv[5])
+fitName = sys.argv[3] # fit/mean/std
+numOfInstance = int(sys.argv[4])
+s = sys.argv[5]
+n = int(sys.argv[6])
+if probName != 'SAT':
+    k = int(sys.argv[7])
 
 
-maxFit = 1000 * n
+maxFit = 100 * n
 runs = 30
 popSize = 50 # always keep popSize to even number
 
-#maxFit = 20
-#runs = 1
+#maxFit = 1000
+#runs = 20
 #popSize = 4
 
 crossoverR = 0.8 # typically in (0.6, 0.9)
@@ -51,8 +54,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-
-print 'probName', probName, 'algoName', algoName, 'num of instances', numOfInstance, 'n', n, 'k', k, 'maxFit', maxFit
+print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  'num of instances', numOfInstance, 'n', n, 'maxFit', maxFit
 
 if probName == 'SAT':
     """ need to perform multiple runs for each instance """
@@ -72,18 +74,12 @@ if probName == 'SAT':
             algo = chc.CHC()
 
         for i in range(runs):
-            if algoName.find('SATGA') != -1:
-                res.append(algo.runNeigh(crossoverR, mutationR))
-            elif algoName.find('GA') != -1:
-                res.append(algo.run(crossoverR, mutationR))
-            elif algoName.find('SATLS') != -1:
-                res.append(algo.runNeigh())
+            if algoName.find('GA') != -1:
+                res.append(algo.run(crossoverR, mutationR, fitName))
             elif algoName.find('LS') != -1:
-                res.append(algo.run())
-            elif algoName.find('SATCHC') != -1:
-                res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+                res.append(algo.run(fitName))
             elif algoName.find('CHC') != -1:
-                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
+                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 
 else:
     res = []
@@ -92,7 +88,7 @@ else:
         if probName == 'NK':
             model = nk.NKLandscape(n,k)
         elif probName == 'NKQ':
-            q = int(sys.argv[6])
+            q = int(sys.argv[8])
             model = nkq.NKQLandcape(n, k, q)
 
         if algoName.find('LS') != -1:
@@ -103,26 +99,20 @@ else:
             algo = chc.CHC()
 
         for i in range(runs):
-            if algoName.find('SATGA') != -1:
-                res.append(algo.runNeigh(crossoverR, mutationR))
-            elif algoName.find('GA') != -1:
-                res.append(algo.run(crossoverR, mutationR))
-            elif algoName.find('SATLS') != -1:
-                res.append(algo.runNeigh())
+            if algoName.find('GA') != -1:
+                res.append(algo.run(crossoverR, mutationR, fitName))
             elif algoName.find('LS') != -1:
-                res.append(algo.run())
-            elif algoName.find('SATCHC') != -1:
-                res.append(algo.runNeigh(model.compFit, maxFit, popSize, n, D, DR, M))
+                res.append(algo.run(fitName))
             elif algoName.find('CHC') != -1:
-                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M))
+                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 
 """ store to files """
 if probName == 'NKQ':
-    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-if probName == 'SAT':
-    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'.txt'
-else:
-    nameOfF = './result/'+probName+'-'+algoName+'-N'+str(n)+'-K'+str(k)+'.txt'
+    nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+elif probName == 'SAT':
+    nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-N'+str(n)+'.txt'
+elif probName == 'NK':
+    nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-N'+str(n)+'-K'+str(k)+'.txt'
 
 f = open(nameOfF, 'w')
 for i in range(len(res)):
