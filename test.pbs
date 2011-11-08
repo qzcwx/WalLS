@@ -1,0 +1,14 @@
+#!/bin/sh
+#PBS -N $P-$A-N$N-K$K-Q$Q
+#PBS -M chenwx@cs.colostate.edu
+#PBS -l mppwidth=1
+
+echo "I ran on:"
+cat $PBS_NODEFILE
+
+cd ~/lustrefs/SumSat
+
+echo Start Time is `date`
+#[NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [S] [N] [K] [Q]
+aprun -n  1 python demo.py NK CHC std 10 100 100 10
+echo Finish Time is `date`
