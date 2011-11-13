@@ -1,14 +1,14 @@
 #!/bin/sh
-#PBS -N $P-$A-N$N-K$K-Q$Q
+#PBS -N SatSum-$n
 #PBS -M chenwx@cs.colostate.edu
 #PBS -l mppwidth=24
+#PBS -l walltime=500:00:00
+#PBS -l pmem=32000mb
+#PBS -l mem=32000mb
 
-echo "I ran on:"
-cat $PBS_NODEFILE
-
-cd ~/lustrefs/SumSat
+cd $PBS_O_WORKDIR
 
 echo Start Time is `date`
 #[NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [S] [N] [K] [Q]
-aprun -n  24 python demo.py $P $A $F $I $S $N $K $Q
+aprun -n 1 -d 24 -cc none -a xt ./run-$n.sh
 echo Finish Time is `date`
