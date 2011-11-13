@@ -37,13 +37,13 @@ class CHC:
             pop[i] = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return pop
 
-    def run(self, func, MaxFit, popSize, dim, D, DR, M, fitName):
+    def run(self, func, MaxFit, popSize, dim, D, DR, M, fitName, minimize):
         if fitName == 'fit':
-            return self.runFit(func, MaxFit, popSize, dim, D, DR, M)
+            return self.runFit(func, MaxFit, popSize, dim, D, DR, M, minimize)
         else :
-            return self.runNeigh( func, MaxFit, popSize, dim, D, DR, M, fitName)
+            return self.runNeigh( func, MaxFit, popSize, dim, D, DR, M, fitName, minimize)
 
-    def runFit(self, func, MaxFit, popSize, dim, D, DR, M):
+    def runFit(self, func, MaxFit, popSize, dim, D, DR, M, minimize):
         """
             func:   objective function
             MaxFit: maximum number of fitness evaluation
@@ -52,6 +52,7 @@ class CHC:
             D:      Difference threshold
             DR:     Divergence rate
             M:      number OF best individuals for restarting
+            minimize: minimize the problem or not
         """
         self.func = func
         self.MaxFit = MaxFit
@@ -80,7 +81,7 @@ class CHC:
 #                print 'before restart, pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
 #                print 'before restart, fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
                      
-                self.divergePop(neigh = False)
+                self.divergePop(neigh = False, minimize = minimize)
                 self.pop = self.evalPop(self.pop)
                 self.D = self.Dinit
 
@@ -92,11 +93,14 @@ class CHC:
 #            print 'offspring bits\n', [offspring[i].bit for i in range(len(offspring))]
             offspring = self.evalPop(offspring)
 #            print 'offspring fit\n', [offspring[i].fit for i in range(len(offspring))]
-            self.selectionFit(offspring, neigh = False)
+            self.selectionFit(offspring, neigh = False, minimize=minimize)
 #            print 'pop size', len(self.pop)
 #            print 'pop fit after selection\n', [self.pop[i].fit for i in range(self.popSize)]
 #            print 'pop bit after selection\n', [self.pop[i].bit for i in range(self.popSize)]
-            bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
+            if minimize == True :
+                bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
+            else :
+                bestFit = max( [ self.pop[i].fit for i in range(len(self.pop)) ] )
 #            print 'bestFit', bestFit
             allFit.append( bestFit )
 
@@ -105,7 +109,7 @@ class CHC:
 #        print 
         return {'nEvals': self.fitEval, 'sol': min(allFit)}
 
-    def runNeigh(self, func, MaxFit, popSize, dim, D, DR, M, fitName):
+    def runNeigh(self, func, MaxFit, popSize, dim, D, DR, M, fitName, minimize):
         """
             func:   objective function
             MaxFit: maximum number of fitness evaluation
@@ -114,6 +118,7 @@ class CHC:
             D:      Difference threshold
             DR:     Divergence rate
             M:      number OF best individuals for restarting
+            minimize: minimize the problem or not
         """
         self.func = func
         self.MaxFit = MaxFit
@@ -132,7 +137,7 @@ class CHC:
         self.fitEval = 0
         allFit = []
         allG = []
-        self.pop = self.evalPopNeigh(self.pop , fitName)
+        self.pop = self.evalPopNeigh(self.pop, fitName, minimize)
 #        print 'initial pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
 #        print 'initial fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
 #        print 'initial fitG:', [ self.pop[i].fitG for i in range(len(self.pop)) ]
@@ -146,8 +151,8 @@ class CHC:
 #                print 'before restart, fit:', [ self.pop[i].fit for i in range(len(self.pop)) ]
 #                print 'before restart, G:', [ self.pop[i].fitG for i in range(len(self.pop)) ]
                      
-                self.divergePop(neigh = False)
-                self.pop = self.evalPopNeigh(self.pop, fitName)
+                self.divergePop(neigh = True, minimize=minimize)
+                self.pop = self.evalPopNeigh(self.pop, fitName, minimize)
                 self.D = self.Dinit
 
 #                print 'after restart, pop:', [ self.pop[i].bit for i in range(len(self.pop)) ]
@@ -157,15 +162,19 @@ class CHC:
 
             offspring = self.HUXcrossover(matePool, neigh=True)
 #            print 'offspring bits\n', [offspring[i].bit for i in range(len(offspring))]
-            offspring = self.evalPopNeigh(offspring, fitName)
+            offspring = self.evalPopNeigh(offspring, fitName, minimize)
 #            print 'offspring fit\n', [offspring[i].fit for i in range(len(offspring))]
 #            print 'offspring fitG\n', [offspring[i].fitG for i in range(len(offspring))]
-            self.selectionFit(offspring, neigh=True)
+            self.selectionFit(offspring, neigh=True, minimize=minimize)
 #            print 'pop bit after selection\n', [self.pop[i].bit for i in range(self.popSize)]
 #            print 'pop fit after selection\n', [self.pop[i].fit for i in range(self.popSize)]
 #            print 'pop G after selection\n', [self.pop[i].fitG for i in range(self.popSize)]
-            bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
-            bestG = min( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
+            if minimize == True:
+                bestFit = min( [ self.pop[i].fit for i in range(len(self.pop)) ] )
+                bestG = min( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
+            else:
+                bestFit = max( [ self.pop[i].fit for i in range(len(self.pop)) ] )
+                bestG = max( [ self.pop[i].fitG for i in range(len(self.pop)) ] )
 #            print 'bestFit', bestFit
 #            print 'bestG', bestG
             allFit.append( bestFit )
@@ -236,7 +245,7 @@ class CHC:
         self.fitEval = self.fitEval + len(pop)
         return pop
     
-    def evalPopNeigh(self, pop, fitName):
+    def evalPopNeigh(self, pop, fitName, minimize):
         """ evaluate the population with g(x) """
         # consider the real fitness
         for i in range(len(pop)):
@@ -255,23 +264,25 @@ class CHC:
                 fitN[j] = self.func(neighStr)
             if fitName == 'mean':
                 self.pop[i].fitG = np.mean(fitN)
-            else : 
+            elif minimize == True: 
                 self.pop[i].fitG = np.mean(fitN) - np.std(fitN)
+            elif minimize == False:
+                self.pop[i].fitG = np.mean(fitN) + np.std(fitN)
         return pop
 
-    def selectionFit(self, offspring, neigh):
+    def selectionFit(self, offspring, neigh, minimize):
         popAll = np.hstack((offspring, self.pop))
         if neigh == False :
-            self.pop = np.copy (sorted(popAll,key=lambda p: p.fit)[:self.popSize])
+            self.pop = np.copy (sorted(popAll,key=lambda p: p.fit, reverse = not minimize)[:self.popSize])
         else:
-            self.pop = np.copy (sorted(popAll,key=lambda p: p.fitG)[:self.popSize])
+            self.pop = np.copy (sorted(popAll,key=lambda p: p.fitG, reverse = not minimize)[:self.popSize])
     
-    def divergePop(self, neigh):
+    def divergePop(self, neigh, minimize):
         # get the best individual
         if neigh == False:
-            bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fit)[:self.M])
+            bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fit, reverse = not minimize)[:self.M])
         else:
-            bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fitG)[:self.M])
+            bestMpop = np.copy (sorted(self.pop, key=lambda p: p.fitG, reverse = not minimize)[:self.M])
         self.pop[:self.M] = bestMpop
         bestIndiv = copy.deepcopy(bestMpop[0])
         for i in range(self.M, self.popSize):

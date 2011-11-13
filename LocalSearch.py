@@ -41,13 +41,13 @@ class LocalSearch:
         indiv = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return indiv
 
-    def run(self, fitName):
+    def run(self, fitName, minimize=True):
         if fitName =='fit': 
-            return self.runFit()
+            return self.runFit(minimize)
         else :
-            return self.runNeigh(fitName)
+            return self.runNeigh(fitName, minimize)
 
-    def runFit(self):
+    def runFit(self, minimize):
         self.indiv = self.initIndiv(self.dim)
         self.fitEval = 0
         self.evalPop()
@@ -58,24 +58,24 @@ class LocalSearch:
             for i in neighs:
                 self.indiv.bit = np.copy(i)
                 self.evalPop()
-                if  self.selectionFit() == True:
+                if  self.selectionFit(minimize) == True:
                     improveN = True
             if improveN == False:
                 return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
         return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
 
-    def runNeigh(self,fitName):
+    def runNeigh(self,fitName, minimize):
         self.indiv = self.initIndivNeigh(self.dim)
         self.fitEval = 0
-        self.evalPopNeigh(fitName)
+        self.evalPopNeigh(fitName, minimize)
         self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
             for i in neighs:
                 self.indiv.bit = np.copy(i)
-                self.evalPopNeigh(fitName)
-                if self.selectionFitNeigh() == True:
+                self.evalPopNeigh(fitName, minimize)
+                if self.selectionFitNeigh(minimize) == True:
                     improveN = True
             if improveN == False:
                 return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG }
@@ -97,7 +97,7 @@ class LocalSearch:
         self.indiv.fit = self.func(self.indiv.bit)
         self.fitEval = self.fitEval + 1
 
-    def evalPopNeigh(self, fitName):
+    def evalPopNeigh(self, fitName, minimize):
         """ evaluate the individual itself """
         self.indiv.fit = self.func(self.indiv.bit)
         self.fitEval = self.fitEval + 1
@@ -113,19 +113,35 @@ class LocalSearch:
             fitN[j] = self.func(neighStr)
         if fitName == 'mean':
             self.indiv.fitG = np.mean(fitN)
-        else:
+        elif minimize == True :
             self.indiv.fitG = np.mean(fitN) - np.std(fitN)
+        elif minimize == False :
+            self.indiv.fitG = np.mean(fitN) + np.std(fitN)
 
-    def selectionFit(self):
-        if self.oldindiv.fit > self.indiv.fit:
-            self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
-            return True
-        else:
-            return False
+    def selectionFit(self, minimize):
+        if minimize == True:
+            if self.oldindiv.fit > self.indiv.fit:
+                self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
+                return True
+            else:
+                return False
+        else: # for maximization
+            if self.oldindiv.fit < self.indiv.fit:
+                self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
+                return True
+            else:
+                return False
 
-    def selectionFitNeigh(self):
-        if self.oldindiv.fitG > self.indiv.fitG:
-            self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
-            return True
-        else:
-            return False
+    def selectionFitNeigh(self, minimize):
+        if minimize == True :
+            if self.oldindiv.fitG > self.indiv.fitG:
+                self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
+                return True
+            else:
+                return False
+        else: # maximization
+            if self.oldindiv.fitG < self.indiv.fitG:
+                self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
+                return True
+            else:
+                return False

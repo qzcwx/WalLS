@@ -34,7 +34,7 @@ if os.path.isdir(nameOfDir) == False:
 probName = sys.argv[1]
 algoName = sys.argv[2]
 fitName = sys.argv[3] # fit/mean/std
-numOfInstance = int(sys.argv[4])
+inst = int(sys.argv[4])
 s = sys.argv[5]
 n = int(sys.argv[6])
 if probName != 'SAT':
@@ -56,78 +56,76 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  'num of instances', numOfInstance, 'n', n, 'maxFit', maxFit
+print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  'instanceNo', inst, 'n', n, 'maxFit', maxFit
 
 if probName == 'SAT':
     """ need to perform multiple runs for each instance """
     """ with SAT, we are forced to set n to 100 """
     model = mx.MAXSAT()
     res = []
-    instances = random.sample(range(1,1001), numOfInstance)
-    for inst in instances:
-        model.setInstance(inst)
-        print 'Instance', inst
 
-        if algoName.find('LS') != -1:
-            algo = ls.LocalSearch(model.compFit, maxFit, n)
-        elif algoName.find('GA') != -1:
-            algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+    model.setInstance(inst)
+    print 'Instance', inst
+
+    if algoName.find('LS') != -1:
+        algo = ls.LocalSearch(model.compFit, maxFit, n)
+    elif algoName.find('GA') != -1:
+        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+    elif algoName.find('CHC') != -1:
+        algo = chc.CHC()
+
+    for i in range(runs):
+        if algoName.find('GA') != -1:
+            res.append(algo.run(crossoverR, mutationR, fitName, minimize = False))
+        elif algoName.find('LS') != -1:
+            res.append(algo.run(fitName, minimize = False))
         elif algoName.find('CHC') != -1:
-            algo = chc.CHC()
+            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
 
-        for i in range(runs):
-            if algoName.find('GA') != -1:
-                res.append(algo.run(crossoverR, mutationR, fitName))
-            elif algoName.find('LS') != -1:
-                res.append(algo.run(fitName))
-            elif algoName.find('CHC') != -1:
-                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
-
-        if probName == 'SAT':
-            nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
-        f = open(nameOfF, 'w')
-        for i in range(len(res)):
-            if fitName != 'fit':
-                print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-            else:
-                print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
-        f.close()
+    if probName == 'SAT':
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
+    f = open(nameOfF, 'w')
+    for i in range(len(res)):
+        if fitName != 'fit':
+            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+        else:
+            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+    f.close()
 
 else:
     res = []
-    for inst in range(numOfInstance):
 
-        if probName == 'NK':
-            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
-        elif probName == 'NKQ':
-            q = int(sys.argv[8])
-            model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
+    if probName == 'NK':
+        model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+    elif probName == 'NKQ':
+        q = int(sys.argv[8])
+        model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
 
-        if algoName.find('LS') != -1:
-            algo = ls.LocalSearch(model.compFit, maxFit, n)
-        elif algoName.find('GA') != -1:
-            algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+    if algoName.find('LS') != -1:
+        algo = ls.LocalSearch(model.compFit, maxFit, n)
+    elif algoName.find('GA') != -1:
+        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+    elif algoName.find('CHC') != -1:
+        algo = chc.CHC()
+
+    for i in range(runs):
+        if algoName.find('GA') != -1:
+            res.append(algo.run(crossoverR, mutationR, fitName))
+        elif algoName.find('LS') != -1:
+            res.append(algo.run(fitName))
         elif algoName.find('CHC') != -1:
-            algo = chc.CHC()
+            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 
-        for i in range(runs):
-            if algoName.find('GA') != -1:
-                res.append(algo.run(crossoverR, mutationR, fitName))
-            elif algoName.find('LS') != -1:
-                res.append(algo.run(fitName))
-            elif algoName.find('CHC') != -1:
-                res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
+    """ store to files """
+    if probName == 'NKQ':
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+    elif probName == 'NK':
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
-        """ store to files """
-        if probName == 'NKQ':
-            nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-        elif probName == 'NK':
-            nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
-
-        f = open(nameOfF, 'w')
-        for i in range(len(res)):
-            if fitName != 'fit':
-                print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-            else:
-                print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
-        f.close()
+    f = open(nameOfF, 'w')
+    for i in range(len(res)):
+        if fitName != 'fit':
+            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+        else:
+            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+    f.close()

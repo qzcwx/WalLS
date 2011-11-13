@@ -2,6 +2,11 @@ import os
 
 #[NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [N] [K] [Q]
 
+""" remember to generate the instances for MAXSAT problem
+
+    instances = random.sample(range(1,1001), numOfInstance)
+"""
+
 i = 0
 for n in [20, 50, 100] :
     for k in [0, 2, 4, 8, 16]:
