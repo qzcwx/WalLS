@@ -37,7 +37,7 @@ class CHC:
             pop[i] = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return pop
 
-    def run(self, func, MaxFit, popSize, dim, D, DR, M, fitName, minimize):
+    def run(self, func, MaxFit, popSize, dim, D, DR, M, fitName, minimize=True):
         if fitName == 'fit':
             return self.runFit(func, MaxFit, popSize, dim, D, DR, M, minimize)
         else :

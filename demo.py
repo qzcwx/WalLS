@@ -20,7 +20,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 1
+rseed = 0
 nameOfDir = 'result'
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
@@ -74,13 +74,13 @@ if probName == 'SAT':
     elif algoName.find('CHC') != -1:
         algo = chc.CHC()
 
-#    for i in range(runs):
-#        if algoName.find('GA') != -1:
-#            res.append(algo.run(crossoverR, mutationR, fitName, minimize = False))
-#        elif algoName.find('LS') != -1:
-#            res.append(algo.run(fitName, minimize = False))
-#        elif algoName.find('CHC') != -1:
-#            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
+    for i in range(runs):
+        if algoName.find('GA') != -1:
+            res.append(algo.run(crossoverR, mutationR, fitName, minimize = False))
+        elif algoName.find('LS') != -1:
+            res.append(algo.run(fitName, minimize = False))
+        elif algoName.find('CHC') != -1:
+            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
 
     if probName == 'SAT':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
@@ -108,13 +108,13 @@ else:
     elif algoName.find('CHC') != -1:
         algo = chc.CHC()
 
-#    for i in range(runs):
-#        if algoName.find('GA') != -1:
-#            res.append(algo.run(crossoverR, mutationR, fitName))
-#        elif algoName.find('LS') != -1:
-#            res.append(algo.run(fitName))
-#        elif algoName.find('CHC') != -1:
-#            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
+    for i in range(runs):
+        if algoName.find('GA') != -1:
+            res.append(algo.run(crossoverR, mutationR, fitName))
+        elif algoName.find('LS') != -1:
+            res.append(algo.run(fitName))
+        elif algoName.find('CHC') != -1:
+            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 
     """ store to files """
     if probName == 'NKQ':
