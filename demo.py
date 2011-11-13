@@ -20,8 +20,10 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 0
+rseed = 1
 nameOfDir = 'result'
+prefixNK = './benchmark/NK/'
+prefixNKQ = './benchmark/NKQ/'
 
 random.seed(rseed)
 
@@ -81,15 +83,25 @@ if probName == 'SAT':
             elif algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 
+        if probName == 'SAT':
+            nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
+        f = open(nameOfF, 'w')
+        for i in range(len(res)):
+            if fitName != 'fit':
+                print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+            else:
+                print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+        f.close()
+
 else:
     res = []
     for inst in range(numOfInstance):
 
         if probName == 'NK':
-            model = nk.NKLandscape(n,k)
+            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
         elif probName == 'NKQ':
             q = int(sys.argv[8])
-            model = nkq.NKQLandcape(n, k, q)
+            model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
 
         if algoName.find('LS') != -1:
             algo = ls.LocalSearch(model.compFit, maxFit, n)
@@ -106,19 +118,16 @@ else:
             elif algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 
-""" store to files """
-if probName == 'NKQ':
-    nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-elif probName == 'SAT':
-    nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-N'+str(n)+'.txt'
-elif probName == 'NK':
-    nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-N'+str(n)+'-K'+str(k)+'.txt'
+        """ store to files """
+        if probName == 'NKQ':
+            nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+        elif probName == 'NK':
+            nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
-f = open(nameOfF, 'w')
-for i in range(len(res)):
-    if algoName.find('SAT') != -1:
-        print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-    else:
-        print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
-f.close()
-
+        f = open(nameOfF, 'w')
+        for i in range(len(res)):
+            if fitName != 'fit':
+                print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+            else:
+                print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+        f.close()

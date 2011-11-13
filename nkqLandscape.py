@@ -5,15 +5,18 @@ import math
 import pdb
 
 class NKQLandcape(nk.NKLandscape):
-    def __init__(self,inN,inK,inQ):
+    def __init__(self, inN, inK, inQ, fileName = None):
         nk.NKLandscape.__init__(self, inN, inK)
         self.q = inQ
-        self.genFuncQ()
+        if fileName == None:
+            self.genFuncQ()
+        else:
+            self.readFile(fileName)
 
     def genFuncQ(self):
         self.func = []
         for i in range(self.n):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
-                oneFunc.append(random.randint(0,self.q))
+                oneFunc.append(np.random.randint(self.q))
             self.func.append(oneFunc)

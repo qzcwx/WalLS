@@ -1,21 +1,38 @@
 # generate NK-landscapes instances
 ## the encoding is in right to left fashion
-## 00-0, 01-1, 10-2, 11-3 
-import WalshAnalysis as wal
+## 00-0, 01-1, 10-2, 11-3 import WalshAnalysis as wal import random import numpy as np import math
 import random
 import numpy as np
 import math
+import pdb
 
 class NKLandscape:
     """ NK-landscape class """
-    def __init__(self,inN,inK):
-       self.n = inN
-       self.k = inK
-       self.genNeigh()
-       self.genFunc()
-       self.Kbits = genSeqBits(self.k+1)
-    def dispNK(self):
-        print self.n, self.k
+    def __init__(self,inN,inK, fileName = None):
+        self.n = inN
+        self.k = inK
+        if fileName == None:
+            self.genNeigh()
+            self.genFunc()
+        else:
+            self.readFile(fileName)
+
+        self.Kbits = genSeqBits(self.k+1)
+    def exportToFile(self, fileName):
+        f = open(fileName, 'w')
+        for i in range(self.n): 
+            for j in range(len(self.neighs[i])):
+                print >>f, self.neighs[i][j], '\t',
+            print >>f
+        for i in range(self.n): 
+            for j in range(len(self.func[i])):
+                print >>f, self.func[i][j], '\t',
+            print >>f
+
+    def readFile(self, fName):
+        self.neighs = np.genfromtxt(fName, delimiter="\t", skip_footer=self.n, autostrip=True, usecols = range(self.k)).tolist()
+        self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.n, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
+        
     """ generate neighborhood """
     def genNeigh(self):
         self.neighs = []
@@ -45,11 +62,14 @@ class NKLandscape:
         sum = 0
         for i in range(self.n):
             """ compose interacting bits """
-            interBit = self.neighs[i][:]
+            if len(self.neighs) > 0:
+                interBit = self.neighs[i][:]
+            else:
+                interBit = []
             interBit.append(i)
             interBit.sort()
             """ extract corresponding bits """
-            bits = [ bitStr[j] for j in interBit ]
+            bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
             """ sum up the sub-function values """ 
             #print 'i', i, 'index in func', int(interStr,2), 'interStr', interStr
@@ -175,6 +195,9 @@ class NKLandscape:
         range1 = range(len(iStr))
         return [ i for i in range1 if iStr[i] == '1']
             
+    def dispNK(self):
+        print self.n, self.k
+
 def genSeqBits(n):
     bitStr = []
     for i in range(int(math.pow(2,n))):
