@@ -147,4 +147,5 @@ writeFooter(totalJobs, chunkSize)
 #                for f in ['fit', 'mean', 'std']:
 #                    count = writeScript(p,a,f,i,s,n,k,q,count,scriptNo,chunkSize, track)
 #
+
 print count, 'jobs submitted', 'separated into', numOfscript, 'scripts'
