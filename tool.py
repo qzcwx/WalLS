@@ -30,7 +30,7 @@ def compFit(model):
        fit[i] = model.compFit(bitStr[i])
     return bitStr, fit
 
-def plotDistNKQ(fitName='fit', minimize=True):
+def plotDistNKQ():
     """ 
         Plot the distribution of fitness of when K and Q vary, 1000 samples,
         generate one instance of NK-Q landscapes, for:
@@ -48,7 +48,7 @@ def plotDistNKQ(fitName='fit', minimize=True):
             for q in [2, 4, 8, 16]:
                 print 'N=',n,'K=',k,'Q=',q
                 model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
-                res = np.zeros(nSamples)
+                res = np.zeros((nSamples, 3))
                 for r in range(nSamples):
                     randBitStr = []
                     for j in range(n):
@@ -56,14 +56,56 @@ def plotDistNKQ(fitName='fit', minimize=True):
                             randBitStr.append('0')
                         else:
                             randBitStr.append('1')
-                    res[r] = evalSol(randBitStr,model,fitName,minimize)
+                    res[r][0] = evalSol(randBitStr,model,'fit',True)
+                    res[r][1] = evalSol(randBitStr,model,'mean',True)
+                    res[r][2] = evalSol(randBitStr,model,'std',True)
                     #res[r] = model.compFit(randBitStr)
 
                         
                 plt.figure()
-                plt.hist(res)
+                plt.hist(res, histtype='bar',
+                            label=['fit', 'mean', 'std'])
                 plt.title('N='+str(n)+',K='+str(k)+',Q='+str(q)+',I='+str(inst))
+                plt.legend()
                 plt.savefig('N='+str(n)+'K='+str(k)+'Q='+str(q)+'I='+str(inst))
+
+def plotDistNK():
+    """ 
+        Plot the distribution of fitness of when K and Q vary, 1000 samples,
+        generate one instance of NK landscapes, for:
+            * N = 20, 50, 100
+            * K = 0, 2, 4, 8, 16
+            * q = 2, 4, 8, 16
+    """
+    nSamples = 1000
+
+    inst = 0
+    prefixNK = './benchmark/NK/'
+
+    for n in [20, 50, 100]:
+        for k in [0, 2, 4, 8, 16]:
+            print 'N=',n,'K=',k
+            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+            res = np.zeros((nSamples, 3))
+            for r in range(nSamples):
+                randBitStr = []
+                for j in range(n):
+                    if random.random()<0.5:
+                        randBitStr.append('0')
+                    else:
+                        randBitStr.append('1')
+                res[r][0] = evalSol(randBitStr,model,'fit',True)
+                res[r][1] = evalSol(randBitStr,model,'mean',True)
+                res[r][2] = evalSol(randBitStr,model,'std',True)
+                #res[r] = model.compFit(randBitStr)
+
+                    
+            plt.figure()
+            plt.hist(res, histtype='bar',
+                        label=['fit', 'mean', 'std'])
+            plt.title('N='+str(n)+',K='+str(k)+',I='+str(inst))
+            plt.legend()
+            plt.savefig('N='+str(n)+'K='+str(k)+'I='+str(inst))
 
 
 def checkParam(argv):
@@ -106,6 +148,21 @@ def evalSol(s,model,fitName,minimize):
     if fitName == 'fit':
         return model.compFit(s)
     else :
+        fitN = np.zeros(len(s))
+        for j in range(len(s)):
+            # flip the jth bit in bit-string
+            neighStr = np.copy(s)
+            if neighStr[j] == '1':
+                neighStr[j] = '0'
+            else:
+                neighStr[j] = '1'
+            fitN[j] = model.compFit(neighStr)
+        if fitName == 'mean':
+            return np.mean(fitN)
+        elif minimize == True :
+            return np.mean(fitN) - np.std(fitN)
+        elif minimize == False :
+            return np.mean(fitN) + np.std(fitN)
 
 
 plotDistNKQ()
