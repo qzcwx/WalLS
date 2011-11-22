@@ -68,8 +68,27 @@ def writeFooter(numOfjobs, chunkSize):
         fileName = open(fName, 'a')
         print >>fileName, 'wait'
         fileName.close()
-#    for i in range(numOfScript):
-#        os.system('qsub sat.pbs -v n='+str(i+1))
+    submitJobs(numOfScript)
+
+def submitJobs(numOfScript):
+    """ submit jobs in a scheduled manner """
+    submit = False 
+
+    for i in range(numOfScript):
+        if submit == False:
+            numOfRun = int(os.popen('apstat | grep wchen | wc -l').read())
+            maxJobs = int(open('runJobs.conf').read())
+            jobToSubmit = maxJobs - numOfRun
+            print 'job to submit', jobToSubmit
+            submit = True 
+        if submit == True:
+            if jobToSubmit != 0 :
+                print 'Job', i, 'submitted'
+                os.system('qsub sat.pbs -v n='+str(i+1))
+                jobToSubmit = jobToSubmit - 1
+            else :
+                submit = False
+                time.sleep(60)
 
 count = 0
 chunkSize = 24
@@ -84,7 +103,7 @@ random.seed(rseed)
 """ the first pass count the number of jobs needed to be run """
 for k in [0, 2, 4, 8]:
     for n in [20, 50, 100] :
-        for i in range(10):
+        for i in [0]:
             for a in ['LS', 'GA', 'CHC']:
                 for f in ['fit', 'mean', 'std']:
                     for p in ['NKQ','NK']:
@@ -106,11 +125,13 @@ for k in [0, 2, 4, 8]:
                                     count = countJobs(p,a,f,i,s,n,k,q,count)
 totalJobs = count
 
+# clean up
+os.system('rm run-* SumSat-*')
 track = writeHeader(totalJobs, chunkSize)
 numOfscript = len(track)
 for k in [0, 2, 4, 8]:
     for n in [20, 50, 100] :
-        for i in range(10):
+        for i in [0]:
             for a in ['LS', 'GA', 'CHC']:
                 for f in ['fit', 'mean', 'std']:
                     for p in ['NKQ','NK']:

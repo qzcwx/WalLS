@@ -1,6 +1,6 @@
 import nkLandscape as nk
 import nkqLandscape as nkq
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import random
 import numpy as np
 import math
@@ -30,7 +30,7 @@ def compFit(model):
        fit[i] = model.compFit(bitStr[i])
     return bitStr, fit
 
-def plotDist():
+def plotDistNKQ(fitName='fit', minimize=True):
     """ 
         Plot the distribution of fitness of when K and Q vary, 1000 samples,
         generate one instance of NK-Q landscapes, for:
@@ -39,11 +39,15 @@ def plotDist():
             * q = 2, 4, 8, 16
     """
     nSamples = 1000
+
+    inst = 0
+    prefixNKQ = './benchmark/NKQ/'
+
     for n in [20, 50, 100]:
         for k in [0, 2, 4, 8, 16]:
             for q in [2, 4, 8, 16]:
                 print 'N=',n,'K=',k,'Q=',q
-                model = nkq.NKQLandcape(n, k, q)
+                model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
                 res = np.zeros(nSamples)
                 for r in range(nSamples):
                     randBitStr = []
@@ -52,11 +56,15 @@ def plotDist():
                             randBitStr.append('0')
                         else:
                             randBitStr.append('1')
-                    res[r] = model.compFit(randBitStr)
+                    res[r] = evalSol(randBitStr,model,fitName,minimize)
+                    #res[r] = model.compFit(randBitStr)
+
+                        
                 plt.figure()
                 plt.hist(res)
-                plt.title('N='+str(n)+', K='+str(k)+',Q='+str(q))
-                plt.savefig('N='+str(n)+', K='+str(k)+',Q='+str(q))
+                plt.title('N='+str(n)+',K='+str(k)+',Q='+str(q)+',I='+str(inst))
+                plt.savefig('N='+str(n)+'K='+str(k)+'Q='+str(q)+'I='+str(inst))
+
 
 def checkParam(argv):
     if len(argv) == 1:
@@ -72,11 +80,14 @@ def plotDistMaxK():
             * q = 2, 4, 8, 16
     """
     nSamples = 1000
+
     for n in [5, 10, 15]:
             k = n-1
             for q in [2, 4, 8, 16]:
                 print 'N=',n,'K=',k,'Q=',q
-                model = nkq.NKQLandcape(n, n-1, q)
+                #model = nkq.NKQLandcape(n, n-1, q)
+
+                model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
                 res = np.zeros(nSamples)
                 for r in range(nSamples):
                     randBitStr = []
@@ -90,5 +101,12 @@ def plotDistMaxK():
                 plt.hist(res)
                 plt.title('N='+str(n)+' K='+str(k)+' Q='+str(q))
                 plt.savefig('N='+str(n)+' K='+str(k)+' Q='+str(q))
-#plotDist()
+
+def evalSol(s,model,fitName,minimize):
+    if fitName == 'fit':
+        return model.compFit(s)
+    else :
+
+
+plotDistNKQ()
 #plotDistMaxK()
