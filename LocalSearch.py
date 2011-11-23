@@ -61,8 +61,8 @@ class LocalSearch:
                 if  self.selectionFit(minimize) == True:
                     improveN = True
             if improveN == False:
-                return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
-        return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit}
+                return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+        return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
 
     def runNeigh(self,fitName, minimize):
         self.indiv = self.initIndivNeigh(self.dim)
@@ -78,8 +78,8 @@ class LocalSearch:
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
             if improveN == False:
-                return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG }
-        return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG }
+                return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+        return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
 
     def neighbors(self):
         neighs = []

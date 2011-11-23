@@ -1,10 +1,14 @@
 import nkLandscape as nk
 import nkqLandscape as nkq
+
+import LocalSearch as ls
+
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import math
 import sys
+
 
 def globalOpt(model):
     """ find the global optimum on the fly """
@@ -20,7 +24,8 @@ def globalOpt(model):
             curFit = model.compFit(bit)
             if curFit < bestFit:
                 bestFit = curFit
-    return bestFit
+                bestBit = bit
+    return bestFit, bestBit
 
 def compFit(model):
     n = model.getN()
@@ -164,7 +169,45 @@ def evalSol(s,model,fitName,minimize):
         elif minimize == False :
             return np.mean(fitN) + np.std(fitN)
 
+def plotFitRank():
+    nSamples = 1000
+
+    inst = 0
+    prefixNKQ = './benchmark/NKQ/'
+
+#    for n in [20, 50, 100]:
+    for n in [100]:
+        for k in [16]:
+            for q in [2, 4, 8, 16]:
+                print 'N=',n,'K=',k,'Q=',q
+                maxFit = 1000 * n
+                model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
+                algo = ls.LocalSearch(model.compFit, maxFit, n)
+                res = algo.run('fit')
+                fSort = fitRank(res['bit'], model.compFit)
+
+                plt.figure()
+                plt.stem(range(1,n+1), fSort)
+                plt.title('N='+str(n)+' K='+str(k)+' Q='+str(q))
+                plt.savefig('N='+str(n)+' K='+str(k)+' Q='+str(q))
+
+def fitRank(s, fit):
+
+    fitN = np.zeros(len(s))
+    for j in range(len(s)):
+        # flip the jth bit in bit-string
+        neighStr = np.copy(s)
+        if neighStr[j] == '1':
+            neighStr[j] = '0'
+        else:
+            neighStr[j] = '1'
+        fitN[j] = fit(neighStr)
+    fitNSort = sorted(fitN)
+
+    return fitNSort
+
 
 #plotDistNKQ()
-plotDistNK()
+#plotDistNK()
 #plotDistMaxK()
+plotFitRank()
