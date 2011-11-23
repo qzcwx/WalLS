@@ -77,8 +77,10 @@ if probName == 'SAT':
     for i in range(runs):
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName, minimize = False))
-        elif algoName.find('LS') != -1:
-            res.append(algo.run(fitName, minimize = False))
+        elif algoName == 'LS':
+            res.append(algo.run(fitName, minimize = False, restart = False))
+        elif algoName == 'rLS':
+            res.append(algo.run(fitName, minimize = False, restart = True))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
 
@@ -111,8 +113,10 @@ else:
     for i in range(runs):
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName))
-        elif algoName.find('LS') != -1:
-            res.append(algo.run(fitName))
+        elif algoName == 'LS':
+            res.append(algo.run(fitName, minimize = True, restart = False))
+        elif algoName == 'rLS':
+            res.append(algo.run(fitName, minimize = True, restart = True))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
 

@@ -101,15 +101,15 @@ rseed = 1
 random.seed(rseed)
 
 """ the first pass count the number of jobs needed to be run """
-for k in [0, 2, 4, 8]:
+for k in [0, 2, 4, 8, 16]:
     for n in [20, 50, 100] :
         for i in [0]:
-            for a in ['LS', 'GA', 'CHC']:
+            for a in ['LS', 'GA', 'CHC', 'rLS']:
                 for f in ['fit', 'mean', 'std']:
                     for p in ['NKQ','NK']:
                         if p == 'NKQ':
                             for q in [2, 4, 8]:
-                                if a == 'LS':
+                                if a == 'LS' or a == 'rLS':
                                     s = 1
                                     count =  countJobs(p,a,f,i,s,n,k,q,count)
                                 else: # if the algorithm is population-based, for GA and CHC
@@ -117,7 +117,7 @@ for k in [0, 2, 4, 8]:
                                         count = countJobs(p,a,f,i,s,n,k,q,count)
                         elif p == 'NK': # for NK problem
                             q = 0
-                            if a == 'LS':
+                            if a == 'LS' or a == 'rLS':
                                 s = 1
                                 count = countJobs(p,a,f,i,s,n,k,q,count)
                             else: # if the algorithm is population-based, for GA and CHC
@@ -129,15 +129,15 @@ totalJobs = count
 os.system('rm run-* SumSat-*')
 track = writeHeader(totalJobs, chunkSize)
 numOfscript = len(track)
-for k in [0, 2, 4, 8]:
+for k in [0, 2, 4, 8, 16]:
     for n in [20, 50, 100] :
         for i in [0]:
-            for a in ['LS', 'GA', 'CHC']:
+            for a in ['LS', 'GA', 'CHC', 'rLS']:
                 for f in ['fit', 'mean', 'std']:
                     for p in ['NKQ','NK']:
                         if p == 'NKQ':
                             for q in [2, 4, 8]:
-                                if a == 'LS':
+                                if a == 'LS' or a == 'rLS':
                                     s = 1
                                     writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
                                 else: # if the algorithm is population-based, for GA and CHC
@@ -145,7 +145,7 @@ for k in [0, 2, 4, 8]:
                                         writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
                         elif p == 'NK': # for NK problem
                             q = 0
-                            if a == 'LS':
+                            if a == 'LS' or a == 'rLS':
                                 s = 1
                                 writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
                             else: # if the algorithm is population-based, for GA and CHC

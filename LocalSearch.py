@@ -42,13 +42,13 @@ class LocalSearch:
         indiv = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return indiv
 
-    def run(self, fitName, minimize=True):
+    def run(self, fitName, minimize, restart):
         if fitName =='fit': 
-            return self.runFit(minimize)
+            return self.runFit(minimize,restart)
         else :
-            return self.runNeigh(fitName, minimize)
+            return self.runNeigh(fitName, minimize,restart)
 
-    def runFit(self, minimize):
+    def runFit(self, minimize,restart):
         self.oldindiv = self.initIndiv(self.dim)
         self.fitEval = 0
         self.oldindiv = self.evalPop(self.oldindiv)
@@ -63,11 +63,14 @@ class LocalSearch:
                 if  self.selectionFit(minimize) == True:
                     improveN = True
             if improveN == False:
-                self.restart('fit', minimize)
+                if restart == True:
+                    self.restart('fit', minimize)
+                else:
+                    return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
 
-    def runNeigh(self,fitName, minimize):
+    def runNeigh(self, fitName, minimize,restart):
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.fitEval = 0
         self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
@@ -82,7 +85,10 @@ class LocalSearch:
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
             if improveN == False:
-                self.restart(fitName, minimize)
+                if restart == True:
+                    self.restart(fitName, minimize)
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
         return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
     
     def restart(self, fitName, minimize):
