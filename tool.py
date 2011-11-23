@@ -3,12 +3,11 @@ import nkqLandscape as nkq
 
 import LocalSearch as ls
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
 import numpy as np
 import math
 import sys
-
 
 def globalOpt(model):
     """ find the global optimum on the fly """
@@ -210,4 +209,4 @@ def fitRank(s, fit):
 #plotDistNKQ()
 #plotDistNK()
 #plotDistMaxK()
-plotFitRank()
+#plotFitRank()

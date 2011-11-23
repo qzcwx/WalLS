@@ -113,7 +113,7 @@ for k in [0, 2, 4, 8]:
                                     s = 1
                                     count =  countJobs(p,a,f,i,s,n,k,q,count)
                                 else: # if the algorithm is population-based, for GA and CHC
-                                    for s in [30, 100]:
+                                    for s in [30]:
                                         count = countJobs(p,a,f,i,s,n,k,q,count)
                         elif p == 'NK': # for NK problem
                             q = 0
@@ -121,7 +121,7 @@ for k in [0, 2, 4, 8]:
                                 s = 1
                                 count = countJobs(p,a,f,i,s,n,k,q,count)
                             else: # if the algorithm is population-based, for GA and CHC
-                                for s in [30, 100]:
+                                for s in [30]:
                                     count = countJobs(p,a,f,i,s,n,k,q,count)
 totalJobs = count
 
@@ -141,7 +141,7 @@ for k in [0, 2, 4, 8]:
                                     s = 1
                                     writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
                                 else: # if the algorithm is population-based, for GA and CHC
-                                    for s in [30, 100]:
+                                    for s in [30]:
                                         writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
                         elif p == 'NK': # for NK problem
                             q = 0
@@ -149,7 +149,7 @@ for k in [0, 2, 4, 8]:
                                 s = 1
                                 writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
                             else: # if the algorithm is population-based, for GA and CHC
-                                for s in [30, 100]:
+                                for s in [30]:
                                     writeScript(p,a,f,i,s,n,k,q,chunkSize, track)
 writeFooter(totalJobs, chunkSize)
 

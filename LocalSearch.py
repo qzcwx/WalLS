@@ -5,6 +5,7 @@
 import numpy as np
 import random
 import math
+import copy
 import pdb
 
 class Struct:
@@ -48,38 +49,65 @@ class LocalSearch:
             return self.runNeigh(fitName, minimize)
 
     def runFit(self, minimize):
-        self.indiv = self.initIndiv(self.dim)
+        self.oldindiv = self.initIndiv(self.dim)
         self.fitEval = 0
-        self.evalPop()
-        self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
             for i in neighs:
                 self.indiv.bit = np.copy(i)
-                self.evalPop()
+                self.indiv = self.evalPop(self.indiv)
                 if  self.selectionFit(minimize) == True:
                     improveN = True
             if improveN == False:
-                return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
-        return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+                self.restart('fit', minimize)
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+
 
     def runNeigh(self,fitName, minimize):
-        self.indiv = self.initIndivNeigh(self.dim)
+        self.oldindiv = self.initIndivNeigh(self.dim)
         self.fitEval = 0
-        self.evalPopNeigh(fitName, minimize)
-        self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
+        self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
             for i in neighs:
                 self.indiv.bit = np.copy(i)
-                self.evalPopNeigh(fitName, minimize)
+                self.indiv = self.evalPopNeigh(self.indiv, fitName, minimize)
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
             if improveN == False:
-                return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
-        return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+                self.restart(fitName, minimize)
+        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
+    
+    def restart(self, fitName, minimize):
+
+        if fitName == 'fit' and minimize == True :
+            if self.bsf.fit > self.oldindiv.fit:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif fitName == 'fit' and minimize == False :
+            if self.bsf.fit < self.oldindiv.fit:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif minimize == True :
+            if self.bsf.fitG > self.oldindiv.fitG:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif minimize == False :
+            if self.bsf.fitG < self.oldindiv.fitG:
+                self.bsf = copy.deepcopy(self.oldindiv)
+
+        if fitName == 'fit':
+            self.oldindiv = self.initIndiv(self.dim)
+            self.oldindiv = self.evalPop(self.oldindiv)
+        else :
+            self.oldindiv = self.initIndivNeigh(self.dim)
+            self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+
+
 
     def neighbors(self):
         neighs = []
@@ -93,41 +121,44 @@ class LocalSearch:
             neighs.append( neighStr )
         return np.array(neighs)
 
-    def evalPop(self):
-        self.indiv.fit = self.func(self.indiv.bit)
+    def evalPop(self, indiv):
+        indiv.fit = self.func(indiv.bit)
         self.fitEval = self.fitEval + 1
+        return copy.deepcopy(indiv)
 
-    def evalPopNeigh(self, fitName, minimize):
+    def evalPopNeigh(self, indiv, fitName, minimize):
         """ evaluate the individual itself """
-        self.indiv.fit = self.func(self.indiv.bit)
+        indiv.fit = self.func(indiv.bit)
         self.fitEval = self.fitEval + 1
         """ evaluate all neighborhood """
         fitN = np.zeros(self.dim)
         for j in range(self.dim):
             # flip the jth bit in bit-string
-            neighStr = np.copy(self.indiv.bit)
+            neighStr = np.copy(indiv.bit)
             if neighStr[j] == '1':
                 neighStr[j] = '0'
             else:
                 neighStr[j] = '1'
             fitN[j] = self.func(neighStr)
         if fitName == 'mean':
-            self.indiv.fitG = np.mean(fitN)
+            indiv.fitG = np.mean(fitN)
         elif minimize == True :
-            self.indiv.fitG = np.mean(fitN) - np.std(fitN)
+            indiv.fitG = np.mean(fitN) - np.std(fitN)
         elif minimize == False :
-            self.indiv.fitG = np.mean(fitN) + np.std(fitN)
+            indiv.fitG = np.mean(fitN) + np.std(fitN)
+        
+        return copy.deepcopy(indiv)
 
     def selectionFit(self, minimize):
         if minimize == True:
             if self.oldindiv.fit > self.indiv.fit:
-                self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
+                self.oldindiv = copy.deepcopy(self.indiv)
                 return True
             else:
                 return False
         else: # for maximization
             if self.oldindiv.fit < self.indiv.fit:
-                self.oldindiv = Struct( fit = self.indiv.fit, bit = self.indiv.bit)
+                self.oldindiv = copy.deepcopy(self.indiv)
                 return True
             else:
                 return False
@@ -135,13 +166,14 @@ class LocalSearch:
     def selectionFitNeigh(self, minimize):
         if minimize == True :
             if self.oldindiv.fitG > self.indiv.fitG:
-                self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
+                self.oldindiv = copy.deepcopy(self.indiv)
                 return True
             else:
                 return False
         else: # maximization
             if self.oldindiv.fitG < self.indiv.fitG:
-                self.oldindiv = Struct( fit = self.indiv.fit, fitG = self.indiv.fitG, bit = self.indiv.bit )
+                self.oldindiv = copy.deepcopy(self.indiv)
                 return True
             else:
                 return False
+
