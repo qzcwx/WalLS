@@ -165,5 +165,6 @@ def evalSol(s,model,fitName,minimize):
             return np.mean(fitN) + np.std(fitN)
 
 
-plotDistNKQ()
+#plotDistNKQ()
+plotDistNK()
 #plotDistMaxK()
