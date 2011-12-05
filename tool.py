@@ -9,6 +9,15 @@ import numpy as np
 import math
 import sys
 
+argvCount = 1
+
+def getArgv():
+    global argvCount
+    arg = sys.argv[argvCount]
+    argvCount = argvCount + 1
+    print 'argCount', argvCount
+    return arg
+
 def globalOpt(model):
     """ find the global optimum on the fly """
     n = model.getN()
@@ -114,7 +123,17 @@ def plotDistNK():
 
 def checkParam(argv):
     if len(argv) == 1:
-        print 'Usage: python demo.py [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [PopSize] [N] [K] [Q]'
+        print 'Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [PopSize] [N] [K] [Q]'
+        print """
+Constrains: 
+1) for SAT, I = [1,100]
+2) for SAT, N = 100, K/Q = None
+3) for NK/NKQ, I = [0,9]
+4) for NK, Q = None
+5) for NKQ, Q = {2, 4, 8, 16}
+6) for LS,  PopSize = 1
+7) [ComputeMethod] = {bf,wal}. If 'wal', 'mean' 
+        """
         sys.exit()
  
 def plotDistMaxK():

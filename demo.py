@@ -21,24 +21,25 @@ import sys
 tl.checkParam(sys.argv)
 
 rseed = 0
-nameOfDir = 'result'
+nameOfDir = './result/'
+runtimeDir = './runtime/'
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
 random.seed(rseed)
 
-""" create files for storing results """
-if os.path.isdir(nameOfDir) == False:
-    os.mkdir(nameOfDir)
-
-probName = sys.argv[1]
-algoName = sys.argv[2]
-fitName = sys.argv[3] # fit/mean/std
-inst = int(sys.argv[4])
-s = sys.argv[5]
-n = int(sys.argv[6])
+compMeth = tl.getArgv()
+probName = tl.getArgv()
+algoName = tl.getArgv()
+fitName = tl.getArgv() # fit/mean/std
+if compMeth == 'wal' and fitName != 'mean':
+    print 'ERROR: Walsh analysis can only be applied to compute mean'
+    sys.exit()
+inst = int(tl.getArgv())
+s = tl.getArgv()
+n = int(tl.getArgv())
 if probName != 'SAT':
-    k = int(sys.argv[7])
+    k = int(tl.getArgv())
 
 
 maxFit = 1000 * n
@@ -59,8 +60,13 @@ M = 1
 print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  'instanceNo', inst, 'n', n, 'maxFit', maxFit
 
 if probName == 'SAT':
-    """ need to perform multiple runs for each instance """
     """ with SAT, we are forced to set n to 100 """
+
+    """ 
+    TODO: 
+        need to perform multiple runs for each instance 
+    """
+
     model = mx.MAXSAT()
     res = []
 
@@ -85,7 +91,7 @@ if probName == 'SAT':
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
 
     if probName == 'SAT':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
+        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
     f = open(nameOfF, 'w')
     for i in range(len(res)):
         if fitName != 'fit':
@@ -100,7 +106,7 @@ else:
     if probName == 'NK':
         model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
     elif probName == 'NKQ':
-        q = int(sys.argv[8])
+        q = int(tl.getArgv())
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
 
     if algoName.find('LS') != -1:
@@ -122,9 +128,9 @@ else:
 
     """ store to files """
     if probName == 'NKQ':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
     elif probName == 'NK':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
     f = open(nameOfF, 'w')
     for i in range(len(res)):
