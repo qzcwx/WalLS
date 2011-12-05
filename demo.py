@@ -80,7 +80,10 @@ if probName == 'SAT':
     elif algoName.find('CHC') != -1:
         algo = chc.CHC()
 
+    tAll = np.zeros(runs)
+
     for i in range(runs):
+        start = time.time()
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName, minimize = False))
         elif algoName == 'LS':
@@ -89,6 +92,7 @@ if probName == 'SAT':
             res.append(algo.run(fitName, minimize = False, restart = True))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
+        tAll[i] = time.time() - start
 
     if probName == 'SAT':
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
@@ -98,6 +102,15 @@ if probName == 'SAT':
             print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
         else:
             print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+    f.close()
+
+    """ store runtime to files """
+    if probName == 'SAT':
+        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
+
+    f = open(nameOfF, 'w')
+    for i in range(len(tAll)):
+        print >>f,"%g" % (tAll[i])
     f.close()
 
 else:
@@ -116,7 +129,9 @@ else:
     elif algoName.find('CHC') != -1:
         algo = chc.CHC()
 
+    tAll = np.zeros(runs)
     for i in range(runs):
+        start = time.time()
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName))
         elif algoName == 'LS':
@@ -125,8 +140,11 @@ else:
             res.append(algo.run(fitName, minimize = True, restart = True))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
+        tAll[i] = time.time() - start
 
-    """ store to files """
+    print tAll
+
+    """ store results to files """
     if probName == 'NKQ':
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
     elif probName == 'NK':
@@ -140,3 +158,13 @@ else:
             print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
     f.close()
 
+    """ store runtime to files """
+    if probName == 'NKQ':
+        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+    elif probName == 'NK':
+        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+
+    f = open(nameOfF, 'w')
+    for i in range(len(tAll)):
+        print >>f,"%g" % (tAll[i])
+    f.close()
