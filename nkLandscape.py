@@ -1,7 +1,9 @@
 # generate NK-landscapes instances
 ## the encoding is in right to left fashion
 ## 00-0, 01-1, 10-2, 11-3 import WalshAnalysis as wal import random import numpy as np import math
+
 import random
+import WalshAnalysis as wal
 import numpy as np
 import math
 import pdb
@@ -43,6 +45,7 @@ class NKLandscape:
             self.neighs.append(oneNeigh)
     def getNeigh(self):
         return self.neighs
+
     """ generate function value """
     def genFunc(self):
         self.func = []
@@ -57,6 +60,7 @@ class NKLandscape:
         return self.n
     def genK(self):
         return self.k
+
     """ compute the fitness value"""
     def compFit(self, bitStr): 
         sum = 0
@@ -72,7 +76,6 @@ class NKLandscape:
             bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
             """ sum up the sub-function values """ 
-            #print 'i', i, 'index in func', int(interStr,2), 'interStr', interStr
             sum = sum + self.func[i][int(interStr,2)]
         return sum/float(self.n)
     def WalCof(self):
@@ -108,31 +111,32 @@ class NKLandscape:
             """ Compute coefficients for each sub-functions """
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
-#        print 'subW', subW
         print 'len', math.pow(2,self.n)
         w = np.zeros(math.pow(2,self.n))
         for i in range(self.n): # i: index of subfunction
             interBits = self.neighs[i][:]
             interBits.append(i)
             interBits.sort()
-#            print 'interBits',interBits
             for j in range(int(math.pow(2, self.k+1))): # j: index of substrings
                 indexW = self.composeFullStr(i, j, interBits, self.n)
                 w[indexW] = w[indexW] + subW[i][j]
-#                print 'i',i,'j', j, 'w', w
-        return w
+
+        return w/float(self.n)
 
     def WalshCofLinearLinklist(self):
         """ compute the Walsh Coefficients in a liner time with linear space """
-        subW = [] # subW is a N*2^K matrix
+        subW = [] # subW is a N * 2^K matrix
         for i in range(self.n):
             """ Compute coefficients for each sub-functions """
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
         """ use dict to represent all non-zero Walsh Coefficients"""
         w = dict()
-        for i in range(self.n): # i: index of subfunction
-            interBits = self.neighs[i][:]
+        for i in range(self.n): # i: index of sub-function
+            if len(self.neighs)!=0:
+                interBits = self.neighs[i][:]
+            else:
+                interBits = []
             interBits.append(i)
             interBits.sort()
             for j in range(int(math.pow(2, self.k+1))): # j: index of substrings
@@ -141,6 +145,9 @@ class NKLandscape:
                     w[indexW] = w[indexW] + subW[i][j]
                 else:
                     w[indexW] = subW[i][j]
+        for k in w.keys():
+            w[k] = w[k]/float(self.n)
+        self.w = w
         return w
 
     def composeFullStr(self, i, j, interBits, n):
@@ -149,9 +156,7 @@ class NKLandscape:
         subStr = subStr[2:]
         if len(subStr) < self.k+1:
             subStr = '0'*(self.k+1-len(subStr)) + subStr
-#        print 'subStr', subStr
         indexSubOneBit = self.indexOneBit(subStr)
-#        print 'indexSubOneBit', indexSubOneBit 
 
     def composeFullStr(self, i, j, interBits, n):
         """ return the integer representation of Full String """
@@ -159,14 +164,11 @@ class NKLandscape:
         subStr = subStr[2:]
         if len(subStr) < self.k+1:
             subStr = '0'*(self.k+1-len(subStr)) + subStr
-#        print 'subStr', subStr
         indexSubOneBit = self.indexOneBit(subStr)
-#        print 'indexSubOneBit', indexSubOneBit 
         iStr = ['0']*n
         for k in range(len(indexSubOneBit)):
-            iStr[interBits[indexSubOneBit[k]]] = subStr[indexSubOneBit[k]]
+            iStr[int(interBits[indexSubOneBit[k]])] = subStr[indexSubOneBit[k]]
         iStr = ''.join(iStr)
-#        print 'iStr', iStr
         return int(iStr, 2)
 
     def composeFullBitStr(self, i, j, interBits, n):
@@ -175,14 +177,11 @@ class NKLandscape:
         subStr = subStr[2:]
         if len(subStr) < self.k+1:
             subStr = '0'*(self.k+1-len(subStr)) + subStr
-#        print 'subStr', subStr
         indexSubOneBit = self.indexOneBit(subStr)
-#        print 'indexSubOneBit', indexSubOneBit 
         iStr = ['0']*n
         for k in range(len(indexSubOneBit)):
-            iStr[interBits[indexSubOneBit[k]]] = subStr[indexSubOneBit[k]]
+            iStr[int(interBits[indexSubOneBit[k]])] = subStr[indexSubOneBit[k]]
         iStr = ''.join(iStr)
-#        print 'iStr', iStr
         return iStr
 
     def checkInclude(self, occurOneBit, mask):

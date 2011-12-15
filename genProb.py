@@ -11,15 +11,15 @@ numOfInstances = 10
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
-for n in [20, 50, 100]:
-    for k in [0, 2, 4, 8, 16]:
+for n in [4]:
+    for k in [0, 2]:
 #        for i in range(numOfInstances):
 #            # NK landscapes:
 #            model = nk.NKLandscape(n,k)
 #            print prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(i)
 #            model.exportToFile(prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(i))
 #            print '*********************************************'
-        for q in [2, 4, 8, 16]:
+        for q in [2]:
             for i in range(numOfInstances):
                 model = nkq.NKQLandcape(n, k, q)
                 print 'fit', model.compFit(n*'0')

@@ -28,10 +28,11 @@ prefixNKQ = './benchmark/NKQ/'
 
 random.seed(rseed)
 
-compMeth = tl.getArgv()
+compMeth = tl.getArgv() # bf(brute force) / wal (walsh analysis)
 probName = tl.getArgv()
 algoName = tl.getArgv()
 fitName = tl.getArgv() # fit/mean/std
+
 if compMeth == 'wal' and fitName != 'mean':
     print 'ERROR: Walsh analysis can only be applied to compute mean'
     sys.exit()
@@ -43,7 +44,7 @@ if probName != 'SAT':
 
 
 maxFit = 1000 * n
-runs = 30
+runs = 1
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -63,7 +64,7 @@ if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """
 
     """ 
-    TODO: 
+    TODO : 
         need to perform multiple runs for each instance 
     """
 
@@ -121,9 +122,20 @@ else:
     elif probName == 'NKQ':
         q = int(tl.getArgv())
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
+        if compMeth == 'wal':
+#           w = model.WalCofLinear() 
+            w = model.WalshCofLinearLinklist()
+
+#    bit,fit = tl.compFit(model)
+#    for i in zip(bit,fit):
+#        print i
+#    print 'bit',bit
+#    print 'fit',fit
+#    print 'mean',np.mean(fit)
+#    print 'w', w
 
     if algoName.find('LS') != -1:
-        algo = ls.LocalSearch(model.compFit, maxFit, n)
+        algo = ls.LocalSearch(model, maxFit, n)
     elif algoName.find('GA') != -1:
         algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
     elif algoName.find('CHC') != -1:
@@ -135,14 +147,12 @@ else:
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName))
         elif algoName == 'LS':
-            res.append(algo.run(fitName, minimize = True, restart = False))
+            res.append(algo.run(fitName, minimize = True, restart = False,compM = compMeth ))
         elif algoName == 'rLS':
-            res.append(algo.run(fitName, minimize = True, restart = True))
+            res.append(algo.run(fitName, minimize = True, restart = True,compM = compMeth))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
         tAll[i] = time.time() - start
-
-    print tAll
 
     """ store results to files """
     if probName == 'NKQ':

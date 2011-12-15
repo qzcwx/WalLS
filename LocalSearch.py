@@ -3,6 +3,7 @@
     and return a solution found by hill climber """
 
 import numpy as np
+import WalshAnalysis as wal
 import random
 import math
 import copy
@@ -13,8 +14,9 @@ class Struct:
         self.__dict__.update(kwds)
 
 class LocalSearch:
-    def __init__(self, func, MaxFit, dim):
-        self.func = func
+    def __init__(self, model, MaxFit, dim):
+        self.func = model.compFit
+        self.model = model
         self.MaxFit = MaxFit
         self.dim = dim
 
@@ -42,11 +44,46 @@ class LocalSearch:
         indiv = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return indiv
 
-    def run(self, fitName, minimize, restart):
+    def run(self, fitName, minimize, restart, compM = 'wal'):
         if fitName =='fit': 
             return self.runFit(minimize,restart)
         else :
-            return self.runNeigh(fitName, minimize,restart)
+            if compM != 'wal':
+                return self.runNeigh(fitName, minimize,restart)
+            else :
+                return self.runWal(fitName, minimize,restart)
+
+    def runWal(self,fitName,  minimize, restart):
+        """ 
+        steepest descent local search with respect to mean of neighs by Walsh Analysis
+        """
+        self.oldindiv = self.initIndivNeigh(self.dim)
+        self.fitEval = 0
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * self.compPSum(self.oldindiv.bit)
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+
+        self.compSumArr()
+        while self.fitEval < self.MaxFit:
+            # generate neighborhood and compute their fitness
+            neighPop = self.neighWal()
+            # compute the fitG (mean) of each neighborhood individuals
+            improveN = False
+            for n in neighPop:
+                n.fitG = n.fit - 2/float(self.dim) * self.compPSum(n.bit) 
+                self.fitEval = self.fitEval + 1
+                self.indiv = copy.deepcopy(n)
+                if self.selectionFitNeigh(minimize) == True:
+                    improveN = True
+        
+            if improveN == False:
+                if restart == True:
+                    self.restart(fitName, minimize)
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
+
 
     def runFit(self, minimize,restart):
         self.oldindiv = self.initIndiv(self.dim)
@@ -112,7 +149,6 @@ class LocalSearch:
         else :
             self.oldindiv = self.initIndivNeigh(self.dim)
             self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
-
 
 
     def neighbors(self):
@@ -183,3 +219,47 @@ class LocalSearch:
             else:
                 return False
 
+    """ 
+    for Walsh Local Search
+    """
+    def compPSum(self,bitStr):
+        p = np.zeros(self.model.k+1)
+        for k in self.model.w.keys():
+            oneC = k.count('1')
+            if  oneC !=0 :
+                p[oneC-1] = p[oneC-1] + self.model.w[k] * math.pow(-1,wal.bc(k,bitStr))
+    #            else :
+    #                p[0] = p[0] + self.model.w[k]
+
+        
+        s = 0
+        for i in range(self.model.k+1):
+            s = s + (i+1)*p[i]
+        return s
+
+    def compSumArr(self):
+        """ 
+        compute the sum array for the first time, according to the initial 
+        solution
+        """
+        self.sumArr = np.zeros(self.dim)
+       # sumLen = math.pow(2,self.model.k+1)
+        for i in range(self.dim):
+            self.sumArr[i] = 0
+            for k in self.model.w.keys():
+                if k[i] == '1':
+    #                    print 'k', k
+    #                    print 'phi', math.pow(-1,wal.bc(k, self.indiv.bit))
+                    self.sumArr[i] = self.sumArr[i] + self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit)) 
+
+       # print self.sumArr
+
+    def neighWal(self):
+        """ 
+        generate neighborhoods and compute their fitnesses by Walsh Analysis
+        """
+        neighs = self.neighbors()
+        neighIndiv = np.tile(Struct(fit = 0, fitG=0, bit = '0' ), (self.dim))
+        for i in range(self.dim):
+            neighIndiv[i] = Struct(fit = self.indiv.fit-2*self.sumArr[i], bit = neighs[i]) 
+        return neighIndiv
