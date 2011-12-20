@@ -67,6 +67,7 @@ class LocalSearch:
         self.indiv = copy.deepcopy(self.oldindiv)
 
         self.compSumArr()
+        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         while self.fitEval < self.MaxFit:
             # generate neighborhood and compute their fitness
             neighPop = self.neighWal()
@@ -83,17 +84,18 @@ class LocalSearch:
                     changeBit = nCount
 
 #            print 'improveN', improveN
+            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
             if improveN == False:
                 if restart == True:
                     self.restart(fitName, minimize)
                 else:
-                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
             else : # improveN is TRUE 
                 self.updateSumArr(changeBit)
 
             nCount = nCount + 1
 
-        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
+        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'trace':self.trace}
 
 
     def runFit(self, minimize,restart):
@@ -102,6 +104,7 @@ class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
+        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit)]
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
@@ -110,12 +113,14 @@ class LocalSearch:
                 self.indiv = self.evalPop(self.indiv)
                 if  self.selectionFit(minimize) == True:
                     improveN = True
+
+            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit))
             if improveN == False:
                 if restart == True:
                     self.restart('fit', minimize)
                 else:
-                    return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+                    return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit,'trace':self.trace}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'trace':self.trace}
 
 
     def runNeigh(self, fitName, minimize,restart):

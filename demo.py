@@ -3,7 +3,7 @@ import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import CHC as chc
 import MAXSAT as mx
 import LocalSearch as ls
@@ -125,7 +125,9 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         if compMeth == 'wal':
 #           w = model.WalCofLinear() 
+            start = time.time()
             w = model.WalshCofLinearLinklist()
+            print 'walsh time', time.time() - start
 
 #    bit,fit = tl.compFit(model)
 #    for i in zip(bit,fit):
@@ -154,6 +156,15 @@ else:
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
         tAll[i] = time.time() - start
+
+    trace = res[0]['trace']
+    for i in trace:
+#        print 'Eval', i.fitEval, 'fit', i.fit
+        print 'Eval', i.fitEval, 'fit', i.fit, 'fitG', i.fitG
+
+    plt.plot([i.fitEval for i in trace],[i.fit for i in trace],'.-')
+    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
+    plt.show()
 
     """ store results to files """
     if probName == 'NKQ':
