@@ -15,7 +15,6 @@ def getArgv():
     global argvCount
     arg = sys.argv[argvCount]
     argvCount = argvCount + 1
-    print 'argCount', argvCount
     return arg
 
 def globalOpt(model):

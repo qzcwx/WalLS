@@ -7,6 +7,7 @@ import WalshAnalysis as wal
 import random
 import math
 import copy
+import sys
 import pdb
 
 class Struct:
@@ -61,6 +62,7 @@ class LocalSearch:
         self.fitEval = 0
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * self.compPSum(self.oldindiv.bit)
+#        print 'initial', self.oldindiv.bit, 'fitG', self.oldindiv.fitG, 'fit', self.oldindiv.fit
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
@@ -70,18 +72,27 @@ class LocalSearch:
             neighPop = self.neighWal()
             # compute the fitG (mean) of each neighborhood individuals
             improveN = False
+            nCount = 0
+#            print 'current', self.oldindiv.bit, 'fitG', self.oldindiv.fitG, 'fit', self.oldindiv.fit
             for n in neighPop:
+                n = self.evalPop(n)
                 n.fitG = n.fit - 2/float(self.dim) * self.compPSum(n.bit) 
-                self.fitEval = self.fitEval + 1
                 self.indiv = copy.deepcopy(n)
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
-        
+                    changeBit = nCount
+
+#            print 'improveN', improveN
             if improveN == False:
                 if restart == True:
                     self.restart(fitName, minimize)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.updateSumArr(changeBit)
+
+            nCount = nCount + 1
+
         return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
 
 
@@ -127,7 +138,7 @@ class LocalSearch:
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
         return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
-    
+
     def restart(self, fitName, minimize):
 
         if fitName == 'fit' and minimize == True :
@@ -149,7 +160,6 @@ class LocalSearch:
         else :
             self.oldindiv = self.initIndivNeigh(self.dim)
             self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
-
 
     def neighbors(self):
         neighs = []
@@ -188,7 +198,7 @@ class LocalSearch:
             indiv.fitG = np.mean(fitN) - np.std(fitN)
         elif minimize == False :
             indiv.fitG = np.mean(fitN) + np.std(fitN)
-        
+
         return copy.deepcopy(indiv)
 
     def selectionFit(self, minimize):
@@ -223,6 +233,10 @@ class LocalSearch:
     for Walsh Local Search
     """
     def compPSum(self,bitStr):
+        """
+        use Elementary Landscape Analysis to obtain the average of neighs of given
+        individual
+        """
         p = np.zeros(self.model.k+1)
         for k in self.model.w.keys():
             oneC = k.count('1')
@@ -231,11 +245,25 @@ class LocalSearch:
     #            else :
     #                p[0] = p[0] + self.model.w[k]
 
-        
         s = 0
         for i in range(self.model.k+1):
             s = s + (i+1)*p[i]
         return s
+
+    def updateSumArr(self, changeBit):
+        """
+        partially update the Sum Array and self.W, given the bit which is changed
+        """
+        for k in self.model.w.keys():
+            if k[changeBit] == '1':
+                self.sumArr[changeBit] = self.sumArr[changeBit] - 2*(self.W[k])
+                for i in [i for i in range(self.dim) if i != changeBit]:
+                    if k[i] == '1':
+                        self.sumArr[i] = self.sumArr[i] - 2*(self.W[k])
+
+        for k in self.W.keys():
+            if k[changeBit] == '1':
+                self.W[k] = - self.W[k]
 
     def compSumArr(self):
         """ 
@@ -243,16 +271,19 @@ class LocalSearch:
         solution
         """
         self.sumArr = np.zeros(self.dim)
-       # sumLen = math.pow(2,self.model.k+1)
-        for i in range(self.dim):
-            self.sumArr[i] = 0
-            for k in self.model.w.keys():
-                if k[i] == '1':
-    #                    print 'k', k
-    #                    print 'phi', math.pow(-1,wal.bc(k, self.indiv.bit))
-                    self.sumArr[i] = self.sumArr[i] + self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit)) 
 
-       # print self.sumArr
+        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
+#        print "bit str", self.indiv.bit
+        for k in self.model.w.keys():
+            self.W[k] = self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit))
+            for i in range(self.dim):
+                if k[i] == '1':
+                    self.sumArr[i] = self.sumArr[i] + self.W[k]
+
+#        for i in zip(self.model.w.keys(), self.model.w.values(), self.W.values()):
+#            print i
+
+#        print 'sum array', self.sumArr
 
     def neighWal(self):
         """ 
