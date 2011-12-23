@@ -1,6 +1,8 @@
-""" Local Search module:
+""" 
+Local Search module:
     This local search module gets the problem (in terms of objective function),
-    and return a solution found by hill climber """
+    and return a solution found by hill climber
+"""
 
 import numpy as np
 import WalshAnalysis as wal
@@ -74,14 +76,25 @@ class LocalSearch:
             # compute the fitG (mean) of each neighborhood individuals
             improveN = False
             nCount = 0
-#            print 'current', self.oldindiv.bit, 'fitG', self.oldindiv.fitG, 'fit', self.oldindiv.fit
+#            print 
+#            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+            oldFit = self.oldindiv.fit
             for n in neighPop:
-                n = self.evalPop(n)
-                n.fitG = n.fit - 2/float(self.dim) * self.compPSum(n.bit) 
                 self.indiv = copy.deepcopy(n)
+
+#                self.indiv = self.evalPop(self.indiv)
+#
+                self.indiv.fit = oldFit - 2*self.sumArr[nCount]
+                self.fitEval = self.fitEval + 1
+
+                self.indiv.fitG = self.indiv.fit - 2/float(self.dim) * self.compPSum(n.bit) 
+#                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
+#                    print 'better neigh!'
                     improveN = True
                     changeBit = nCount
+
+                nCount = nCount + 1
 
 #            print 'improveN', improveN
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
@@ -94,7 +107,7 @@ class LocalSearch:
             else : # improveN is TRUE 
                 self.updateSumArr(changeBit)
 
-            nCount = nCount + 1
+#            pdb.set_trace()
 
 #        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'trace':self.trace}
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
@@ -301,5 +314,5 @@ class LocalSearch:
         neighs = self.neighbors()
         neighIndiv = np.tile(Struct(fit = 0, fitG=0, bit = '0' ), (self.dim))
         for i in range(self.dim):
-            neighIndiv[i] = Struct(fit = self.indiv.fit-2*self.sumArr[i], bit = neighs[i]) 
+            neighIndiv[i] = Struct(fit = 0, bit = neighs[i]) 
         return neighIndiv
