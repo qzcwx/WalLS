@@ -18,8 +18,8 @@ class NKLandscape:
             self.genFunc()
         else:
             self.readFile(fileName)
-
         self.Kbits = genSeqBits(self.k+1)
+
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
         for i in range(self.n): 

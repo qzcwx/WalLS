@@ -14,7 +14,6 @@ import random
 import math
 import time
 import pdb
-import os
 import sys
 
 """ consider as a minimization problem """
@@ -23,6 +22,7 @@ tl.checkParam(sys.argv)
 rseed = 1
 nameOfDir = './result/'
 runtimeDir = './runtime/'
+waltimeDir = './walshtime/'
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
@@ -37,7 +37,7 @@ if compMeth == 'wal' and fitName != 'mean':
     print 'ERROR: Walsh analysis can only be applied to compute mean'
     sys.exit()
 inst = int(tl.getArgv())
-s = tl.getArgv()
+s = tl.getArgv() # get the setting for population size
 n = int(tl.getArgv())
 if probName != 'SAT':
     k = int(tl.getArgv())
@@ -123,11 +123,21 @@ else:
     elif probName == 'NKQ':
         q = int(tl.getArgv())
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
-        if compMeth == 'wal':
-#           w = model.WalCofLinear() 
-            start = time.time()
-            w = model.WalshCofLinearLinklist()
-            print 'walsh time', time.time() - start
+
+    if compMeth == 'wal':
+        start = time.time()
+        w = model.WalshCofLinearLinklist()
+        walTime = time.time() - start
+
+        """ store runtime to files """
+        if probName == 'NKQ':
+            nameOfF = waltimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+        elif probName == 'NK':
+            nameOfF = waltimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+
+        f = open(nameOfF, 'w')
+        print >>f,"%g" % (walTime)
+        f.close()
 
 #    bit,fit = tl.compFit(model)
 #    for i in zip(bit,fit):
@@ -157,14 +167,14 @@ else:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
         tAll[i] = time.time() - start
 
-    trace = res[0]['trace']
-    for i in trace:
-#        print 'Eval', i.fitEval, 'fit', i.fit
-        print 'Eval', i.fitEval, 'fit', i.fit, 'fitG', i.fitG
-
-    plt.plot([i.fitEval for i in trace],[i.fit for i in trace],'.-')
-    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
-    plt.show()
+#    trace = res[0]['trace']
+#    for i in trace:
+##        print 'Eval', i.fitEval, 'fit', i.fit
+#        print 'Eval', i.fitEval, 'fit', i.fit, 'fitG', i.fitG
+#
+#    plt.plot([i.fitEval for i in trace],[i.fit for i in trace],'.-')
+#    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
+#    plt.show()
 
     """ store results to files """
     if probName == 'NKQ':
