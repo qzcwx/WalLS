@@ -68,6 +68,7 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
+        self.transWal()
         self.compSumArr()
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         while self.fitEval < self.MaxFit:
@@ -254,6 +255,43 @@ class LocalSearch:
     """ 
     for Walsh Local Search
     """
+    def transWal(self):
+        """
+        translate bitstring represented Walsh terms into arrays of bits that they touches
+        """
+#        self.printW()
+        self.WA = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys())) # array representing Walsh terms
+        c = 0
+        for k in self.model.w.keys(): 
+            a = []
+            for i in range(self.dim):
+                if k[i] == '1':
+                    a.append(i)
+            self.WA[c] = Struct(arr = a, w = self.model.w[k]) 
+            c = c + 1
+#            self.printWA()
+
+
+    def compSumArr(self):
+        """ 
+        compute the sum array for the first time, according to the initial 
+        solution
+        """
+        self.sumArr = np.zeros(self.dim)
+
+        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
+#        print "bit str", self.indiv.bit
+        for k in self.model.w.keys(): # N * 2^K
+            self.W[k] = self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit))
+            for i in range(self.dim):
+                if k[i] == '1':
+                    self.sumArr[i] = self.sumArr[i] + self.W[k]
+
+#        for i in zip(self.model.w.keys(), self.model.w.values(), self.W.values()):
+#            print i
+
+#        print 'sum array', self.sumArr
+
     def compPSum(self,bitStr):
         """
         use Elementary Landscape Analysis to obtain the average of neighs of given
@@ -274,6 +312,8 @@ class LocalSearch:
 
     def updateSumArr(self, changeBit):
         """
+        By keeping track of coincidence matrix, 
+        Cij stands for S_i(y_j) = S_i(x) - C_ij
         partially update the Sum Array and self.W, given the bit which is changed
         """
         for k in self.model.w.keys():
@@ -287,26 +327,6 @@ class LocalSearch:
             if k[changeBit] == '1':
                 self.W[k] = - self.W[k]
 
-    def compSumArr(self):
-        """ 
-        compute the sum array for the first time, according to the initial 
-        solution
-        """
-        self.sumArr = np.zeros(self.dim)
-
-        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
-#        print "bit str", self.indiv.bit
-        for k in self.model.w.keys():
-            self.W[k] = self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit))
-            for i in range(self.dim):
-                if k[i] == '1':
-                    self.sumArr[i] = self.sumArr[i] + self.W[k]
-
-#        for i in zip(self.model.w.keys(), self.model.w.values(), self.W.values()):
-#            print i
-
-#        print 'sum array', self.sumArr
-
     def neighWal(self):
         """ 
         generate neighborhoods and compute their fitnesses by Walsh Analysis
@@ -316,3 +336,17 @@ class LocalSearch:
         for i in range(self.dim):
             neighIndiv[i] = Struct(fit = 0, bit = neighs[i]) 
         return neighIndiv
+
+    def printW(self):
+        """
+        print all the original walsh terms
+        """
+        for k in self.model.w.keys():
+            print k, self.model.w[k]
+
+    def printWA(self):
+        """
+        print all walsh terms with array representation
+        """
+        for i in range(len(self.WA)):
+           print self.WA[i].arr, self.WA[i].w
