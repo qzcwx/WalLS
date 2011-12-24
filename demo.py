@@ -19,7 +19,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 1
+rseed = 0
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
