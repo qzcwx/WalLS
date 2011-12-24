@@ -271,6 +271,17 @@ class LocalSearch:
             c = c + 1
 #            self.printWA()
 
+    def binCount(self, arr, bit):
+        """
+        count the one bit of union self.WA[i].arr and bit
+        """
+        s = 0
+        for i in arr:
+            if bit[i] == '1':
+                s = s + 1
+
+        return s
+
 
     def compSumArr(self):
         """ 
@@ -279,17 +290,26 @@ class LocalSearch:
         """
         self.sumArr = np.zeros(self.dim)
 
-        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
-#        print "bit str", self.indiv.bit
-        for k in self.model.w.keys(): # N * 2^K
-            self.W[k] = self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit))
-            for i in range(self.dim):
-                if k[i] == '1':
-                    self.sumArr[i] = self.sumArr[i] + self.W[k]
+#        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
+        #        print "bit str", self.indiv.bit
+        for i in range(len(self.WA)):
+            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
+            for j in self.WA[i].arr:
+                self.sumArr[j] = self.sumArr[j] + W
+                
+
+#        print 'sum array', self.sumArr
+        
+#        self.sumArr = np.zeros(self.dim)
+#        for k in self.model.w.keys(): # N * 2^K
+#            self.W[k] = self.model.w[k] * math.pow(-1,wal.bc(k,self.indiv.bit))
+#            for i in range(self.dim):
+#                if k[i] == '1':
+#                    self.sumArr[i] = self.sumArr[i] + self.W[k]
 
 #        for i in zip(self.model.w.keys(), self.model.w.values(), self.W.values()):
 #            print i
-
+#
 #        print 'sum array', self.sumArr
 
     def compPSum(self,bitStr):
