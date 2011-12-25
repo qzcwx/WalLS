@@ -10,6 +10,7 @@ import random
 import math
 import copy
 import sys
+import time
 import pdb
 
 class Struct:
@@ -68,11 +69,20 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
+        
+        start = time.time()
         self.transWal()
+        print 'transWal', time.time() - start
+
+        start = time.time()
         self.initWal()
+        print 'initWal', time.time() - start
+
 #        self.initC()
         self.WA = []
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
+        compPSumT = 0
+        updateT = 0
         while self.fitEval < self.MaxFit:
             # generate neighborhood and compute their fitness
             neighPop = self.neighWal()
@@ -90,7 +100,9 @@ class LocalSearch:
                 self.indiv.fit = oldFit - 2*self.sumArr[nCount]
                 self.fitEval = self.fitEval + 1
 
+                start = time.time()
                 self.indiv.fitG = self.indiv.fit - 2/float(self.dim) * self.compPSum(n.bit) 
+                compPSumT = compPSumT + time.time() - start
 #                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
 #                    print 'better neigh!'
@@ -108,11 +120,15 @@ class LocalSearch:
 #                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
+                start = time.time()
                 self.update(changeBit)
+                updateT = updateT + time.time() - start
 
 #            pdb.set_trace()
 
 #        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'trace':self.trace}
+        print 'compPSum', compPSumT
+        print 'update', updateT
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
 
     def runFit(self, minimize,restart):
