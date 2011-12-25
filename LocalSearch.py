@@ -69,7 +69,9 @@ class LocalSearch:
         self.indiv = copy.deepcopy(self.oldindiv)
 
         self.transWal()
-        self.compSumArr()
+        self.initWal()
+#        self.initC()
+        self.WA = []
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         while self.fitEval < self.MaxFit:
             # generate neighborhood and compute their fitness
@@ -106,13 +108,12 @@ class LocalSearch:
 #                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
-                self.updateSumArr(changeBit)
+                self.update(changeBit)
 
 #            pdb.set_trace()
 
 #        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'trace':self.trace}
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
-
 
     def runFit(self, minimize,restart):
         self.oldindiv = self.initIndiv(self.dim)
@@ -279,24 +280,32 @@ class LocalSearch:
         for i in arr:
             if bit[i] == '1':
                 s = s + 1
-
         return s
 
-
-    def compSumArr(self):
+    def initWal(self):
         """ 
-        compute the sum array for the first time, according to the initial 
-        solution
+        1. 
+        compute the sum array for the first time, according to the initial solution
+        2. 
+        initialize a full matrix, Coincidence, C_ij, which is a symmetric one, and diagonal is empty (as we don't want to recompute SumArr), empty whenever i >= j
         """
         self.sumArr = np.zeros(self.dim)
-
+        self.C = np.zeros((self.dim,self.dim))
 #        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
         #        print "bit str", self.indiv.bit
+#        print 'bit', self.indiv.bit
         for i in range(len(self.WA)):
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
+#            print self.WA[i].arr, W
+            comb = self.genComb(self.WA[i].arr) 
+
             for j in self.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
-                
+
+            for j in comb: # for each list in comb
+                self.C[j[0],j[1]] = self.C[j[0],j[1]] + W
+
+#        print 'C', self.C
 
 #        print 'sum array', self.sumArr
         
@@ -330,22 +339,42 @@ class LocalSearch:
             s = s + (i+1)*p[i]
         return s
 
-    def updateSumArr(self, changeBit):
+    def genComb(self,a):
+        """ Generate C_k^2 sequence, real values are stored instead of index """
+        comb =  []
+        c = 0
+
+        for i in range(len(a)):
+            for j in [ k for k in range(len(a)) if k > i]:
+               arr = np.zeros(2)
+               arr[0] = a[i]
+               arr[1] = a[j]
+               comb.append(arr)
+               c = c + 1    
+
+        return comb
+
+    def update(self, p):
         """
         By keeping track of coincidence matrix, 
         Cij stands for S_i(y_j) = S_i(x) - C_ij
         partially update the Sum Array and self.W, given the bit which is changed
         """
-        for k in self.model.w.keys():
-            if k[changeBit] == '1':
-                self.sumArr[changeBit] = self.sumArr[changeBit] - 2*(self.W[k])
-                for i in [i for i in range(self.dim) if i != changeBit]:
-                    if k[i] == '1':
-                        self.sumArr[i] = self.sumArr[i] - 2*(self.W[k])
+        self.sumArr[p] = - self.sumArr[p]
+        
+        for i in range(p): # i < p
+            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
 
-        for k in self.W.keys():
-            if k[changeBit] == '1':
-                self.W[k] = - self.W[k]
+        for i in range(p+1, self.dim): # i > p
+            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+
+        for i in range(p): # update C matrix, i < p
+            self.C[i,p] = - self.C[i,p]
+
+        for i in range(p+1, self.dim): # i >p
+            self.C[p,i] = - self.C[p,i]
+
+#        print 'C', self.C
 
     def neighWal(self):
         """ 

@@ -26,6 +26,7 @@ class GeneticAlgorithm:
             self.numOfGen = math.floor(MaxFit/popSize) - 1
         else:
             self.numOfGen = math.floor(MaxFit/popSize) 
+
     def popInit(self, popSize, dim):
         """ initial population with random bit string """
         pop = np.tile(Struct(fit = 0, bit = '0'), (self.popSize))
@@ -38,6 +39,7 @@ class GeneticAlgorithm:
                     randBitStr.append('1')
             pop[i] = Struct( fit = 0, bit = randBitStr)
         return pop
+
     def popInitNeigh(self, popSize, dim):
         """ initial population with random bit string """
         pop = np.tile(Struct(fit = 0, fitG = 0, bit = '0'), (self.popSize))
@@ -50,6 +52,7 @@ class GeneticAlgorithm:
                     randBitStr.append('1')
             pop[i] = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return pop
+
     def run(self, crossoverR, mutationR,  fitName, tourSize = 2, minimize=True):
         if fitName == 'fit':
             return self.runFit(crossoverR, mutationR, tourSize, minimize)
