@@ -91,36 +91,45 @@ class LocalSearch:
             # compute the fitG (mean) of each neighborhood individuals
             improveN = False
             nCount = 0
-            print 
-            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+#            print 
+#            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
             oldFit = self.oldindiv.fit
             oldFitG = self.oldindiv.fitG
             for n in neighPop:
                 self.indiv = copy.deepcopy(n)
 
 #                self.indiv = self.evalPop(self.indiv)
-#
+
                 self.indiv.fit = oldFit - 2*self.sumArr[nCount]
                 self.fitEval = self.fitEval + 1
 
                 start = time.time()
                 self.indiv.fitG = oldFitG - 2*self.sumArr[nCount] + 4/float(self.dim) * self.compCsum(nCount)
                 compPSumT = compPSumT + time.time() - start
-                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
-                pdb.set_trace()
+                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
-                    print 'better neigh!'
+                    #print 'better neigh!'
                     improveN = True
                     changeBit = nCount
 
                 nCount = nCount + 1
 
-            print 'improveN', improveN
+#            print 'improveN', improveN
+            #print self.fitEval
+            #pdb.set_trace()
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
             if improveN == False:
                 if restart == True:
                     #print 'restart'
+                    oldbit = self.oldindiv.bit
                     self.restart(fitName, minimize)
+                    newbit = self.oldindiv.bit
+                    #print oldbit, newbit
+                    diff = self.diffBits(oldbit, newbit)
+                    start = time.time()
+                    for i in diff:
+                        self.update(i)
+                    updateT = updateT + time.time() - start
                 else:
 #                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
                     print 'compPSum', compPSumT
@@ -173,22 +182,32 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
-            print 
-            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+            #print 
+            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
             for i in neighs:
                 self.indiv.bit = np.copy(i)
                 self.indiv = self.evalPopNeigh(self.indiv, fitName, minimize)
-                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
+                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
-                    print 'better neigh!'
-            print 'improveN', improveN
+#                    print 'better neigh!'
+#            print 'improveN', improveN
+#            print self.fitEval
+            #pdb.set_trace()
             if improveN == False:
                 if restart == True:
+                    #print 'restart'
                     self.restart(fitName, minimize)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
         return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
+
+    def diffBits(self, a, b):
+        diff = []
+        for i in range(self.dim):
+            if a[i] != b[i]:
+                diff.append(i)
+        return diff
 
     def restart(self, fitName, minimize):
 
@@ -295,7 +314,7 @@ class LocalSearch:
         """
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
-        self.printW()
+#        self.printW()
         self.WA = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys())) # array representing Walsh terms
         c = 0
         for k in self.model.w.keys(): 
@@ -325,14 +344,16 @@ class LocalSearch:
         initialize a full matrix, Coincidence, C_ij, which is a symmetric one, and diagonal is empty (as we don't want to recompute SumArr), empty whenever i >= j
         """
         self.sumArr = np.zeros(self.dim)
-        self.C = np.zeros((self.dim,self.dim))
+        self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
+        self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
         self.lookup = dict()
+        self.infectBit = dict()
 #        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
         #        print "bit str", self.indiv.bit
 #        print 'bit', self.indiv.bit
         for i in range(len(self.WA)):
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
-            print self.WA[i].arr, W
+            self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
             comb = self.genComb(len(self.WA[i].arr))
 
             for j in self.WA[i].arr:
@@ -343,7 +364,15 @@ class LocalSearch:
                 j1 = self.WA[i].arr[int(j[1])]
                 self.C[j0,j1] = self.C[j0,j1] + W
 
-        print 'C', self.C
+            # add list of order >= 3 Walsh terms for the purpose of updating C matrix
+            if len(self.WA[i].arr) >= 3:
+                for j in self.WA[i].arr:
+                    if j not in self.infectBit: 
+                        self.infectBit[j] = [Struct(arr=self.WA[i].arr, WI=i)]
+                    else :
+                        self.infectBit[j].append(Struct(arr=self.WA[i].arr, WI=i))
+
+#        print 'C', self.C
 
 #        print 'sum array', self.sumArr
         
@@ -380,7 +409,7 @@ class LocalSearch:
 
     def genComb(self,N):
         """ 
-        Generate C_k^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
+        Generate C_k^0 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
         """
         if N in self.lookup.keys(): # the key exists before
             return self.lookup[N]
@@ -416,7 +445,7 @@ class LocalSearch:
         """
         By keeping track of coincidence matrix, 
         Cij stands for S_i(y_j) = S_i(x) - C_ij
-        partially update the Sum Array and self.W, given the bit which is changed
+        partially update the Sum Array and self.WAS, given the bit which is changed
         """
         self.sumArr[p] = - self.sumArr[p]
         
@@ -432,7 +461,22 @@ class LocalSearch:
         for i in range(p+1, self.dim): # i >p
             self.C[p,i] = - self.C[p,i]
 
-#        print 'C', self.C
+        # update the rest of elements in C matrix
+        # pdb.set_trace()
+        if p in self.infectBit.keys():
+            for i in self.infectBit[p]:
+                arr = copy.deepcopy(i.arr)
+                arr.remove(p)
+                comb = self.genComb(len(arr))
+                for k in range(len(comb)):
+                    k0 = arr[int(comb[k][0])]
+                    k1 = arr[int(comb[k][1])]
+                    self.C[k0,k1] = self.C[k0,k1] - 2 * self.WAS[i.WI].w
+
+        for i in range(len(self.WAS)): # update WAS
+            if p in self.WAS[i].arr :
+                self.WAS[i].w = - self.WAS[i].w
+
 
     def neighWal(self):
         """ 

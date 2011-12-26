@@ -9,7 +9,7 @@ for k in [0, 2, 4, 8, 16]:
         for i in [0]:
             for a in ['rLS']:
                 for f in ['mean']:
-                    for c in ['bf','wal']:
+                    for c in ['wal']:
                         for p in ['NK']:
 #                            if p == 'NKQ':
 #                                for q in [2]:
