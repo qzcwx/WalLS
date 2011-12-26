@@ -61,22 +61,24 @@ class LocalSearch:
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
+
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.fitEval = 0
-        self.oldindiv = self.evalPop(self.oldindiv)
-        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * self.compPSum(self.oldindiv.bit)
-#        print 'initial', self.oldindiv.bit, 'fitG', self.oldindiv.fitG, 'fit', self.oldindiv.fit
-        self.bsf = copy.deepcopy(self.oldindiv)
-        self.indiv = copy.deepcopy(self.oldindiv)
-
         
         start = time.time()
         self.transWal()
         print 'transWal', time.time() - start
 
+        self.indiv = copy.deepcopy(self.oldindiv)
+
         start = time.time()
         self.initWal()
         print 'initWal', time.time() - start
+
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.sumArr))
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
 
 #        self.initC()
         self.WA = []
@@ -89,9 +91,10 @@ class LocalSearch:
             # compute the fitG (mean) of each neighborhood individuals
             improveN = False
             nCount = 0
-#            print 
-#            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+            print 
+            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
             oldFit = self.oldindiv.fit
+            oldFitG = self.oldindiv.fitG
             for n in neighPop:
                 self.indiv = copy.deepcopy(n)
 
@@ -101,30 +104,33 @@ class LocalSearch:
                 self.fitEval = self.fitEval + 1
 
                 start = time.time()
-                self.indiv.fitG = self.indiv.fit - 2/float(self.dim) * self.compPSum(n.bit) 
+                self.indiv.fitG = oldFitG - 2*self.sumArr[nCount] + 4/float(self.dim) * self.compCsum(nCount)
                 compPSumT = compPSumT + time.time() - start
-#                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
+                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
+                pdb.set_trace()
                 if self.selectionFitNeigh(minimize) == True:
-#                    print 'better neigh!'
+                    print 'better neigh!'
                     improveN = True
                     changeBit = nCount
 
                 nCount = nCount + 1
 
-#            print 'improveN', improveN
+            print 'improveN', improveN
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
             if improveN == False:
                 if restart == True:
+                    #print 'restart'
                     self.restart(fitName, minimize)
                 else:
 #                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
+                    print 'compPSum', compPSumT
+                    print 'update', updateT
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 start = time.time()
                 self.update(changeBit)
                 updateT = updateT + time.time() - start
 
-#            pdb.set_trace()
 
 #        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'trace':self.trace}
         print 'compPSum', compPSumT
@@ -167,11 +173,16 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
+            print 
+            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
             for i in neighs:
                 self.indiv.bit = np.copy(i)
                 self.indiv = self.evalPopNeigh(self.indiv, fitName, minimize)
+                print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
+                    print 'better neigh!'
+            print 'improveN', improveN
             if improveN == False:
                 if restart == True:
                     self.restart(fitName, minimize)
@@ -194,12 +205,20 @@ class LocalSearch:
             if self.bsf.fitG < self.oldindiv.fitG:
                 self.bsf = copy.deepcopy(self.oldindiv)
 
+        #print 'before restart'
+#        print self.oldindiv.bit, self.oldindiv.fit, self.oldindiv.fitG
+#        print self.bsf.bit, self.bsf.fit, self.bsf.fitG
+
         if fitName == 'fit':
             self.oldindiv = self.initIndiv(self.dim)
             self.oldindiv = self.evalPop(self.oldindiv)
         else :
             self.oldindiv = self.initIndivNeigh(self.dim)
             self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+
+#        print 'after restart'
+#        print self.oldindiv.bit, self.oldindiv.fit, self.oldindiv.fitG
+#        print self.bsf.bit, self.bsf.fit, self.bsf.fitG
 
     def neighbors(self):
         neighs = []
@@ -276,7 +295,7 @@ class LocalSearch:
         """
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
-#        self.printW()
+        self.printW()
         self.WA = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys())) # array representing Walsh terms
         c = 0
         for k in self.model.w.keys(): 
@@ -312,7 +331,7 @@ class LocalSearch:
 #        print 'bit', self.indiv.bit
         for i in range(len(self.WA)):
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
-#            print self.WA[i].arr, W
+            print self.WA[i].arr, W
             comb = self.genComb(self.WA[i].arr) 
 
             for j in self.WA[i].arr:
@@ -321,7 +340,7 @@ class LocalSearch:
             for j in comb: # for each list in comb
                 self.C[j[0],j[1]] = self.C[j[0],j[1]] + W
 
-#        print 'C', self.C
+        print 'C', self.C
 
 #        print 'sum array', self.sumArr
         
@@ -336,6 +355,7 @@ class LocalSearch:
 #            print i
 #
 #        print 'sum array', self.sumArr
+
 
     def compPSum(self,bitStr):
         """
@@ -369,6 +389,21 @@ class LocalSearch:
                c = c + 1    
 
         return comb
+
+    def compCsum(self,p):
+        """
+        \sigma_{i=1}^{N} C_{ip}: be careful with C_{ii}, i \in N
+        """
+        s = 0
+        for i in range(p):
+            s = s + self.C[i,p]
+
+        for i in range(p+1, self.dim):
+            s = s + self.C[p,i]
+
+        s = s + self.sumArr[p]
+
+        return s
 
     def update(self, p):
         """

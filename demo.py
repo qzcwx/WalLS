@@ -44,7 +44,7 @@ if probName != 'SAT':
 
 
 maxFit = 1000 * n
-#maxFit = 10
+#maxFit = 8
 runs = 1
 popSize = 50 # always keep popSize to even number
 
@@ -139,9 +139,9 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-#    bit,fit = tl.compFit(model)
-#    for i in zip(bit,fit):
-#        print i
+    bit,fit = tl.compFit(model)
+    for i in zip(bit,fit):
+        print i
 #    print 'bit',bit
 #    print 'fit',fit
 #    print 'mean',np.mean(fit)
