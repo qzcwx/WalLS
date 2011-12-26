@@ -326,19 +326,22 @@ class LocalSearch:
         """
         self.sumArr = np.zeros(self.dim)
         self.C = np.zeros((self.dim,self.dim))
+        self.lookup = dict()
 #        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
         #        print "bit str", self.indiv.bit
 #        print 'bit', self.indiv.bit
         for i in range(len(self.WA)):
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
             print self.WA[i].arr, W
-            comb = self.genComb(self.WA[i].arr) 
+            comb = self.genComb(len(self.WA[i].arr))
 
             for j in self.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
 
             for j in comb: # for each list in comb
-                self.C[j[0],j[1]] = self.C[j[0],j[1]] + W
+                j0 = self.WA[i].arr[int(j[0])]
+                j1 = self.WA[i].arr[int(j[1])]
+                self.C[j0,j1] = self.C[j0,j1] + W
 
         print 'C', self.C
 
@@ -375,20 +378,24 @@ class LocalSearch:
             s = s + (i+1)*p[i]
         return s
 
-    def genComb(self,a):
-        """ Generate C_k^2 sequence, real values are stored instead of index """
-        comb =  []
-        c = 0
-
-        for i in range(len(a)):
-            for j in [ k for k in range(len(a)) if k > i]:
-               arr = np.zeros(2)
-               arr[0] = a[i]
-               arr[1] = a[j]
-               comb.append(arr)
-               c = c + 1    
-
-        return comb
+    def genComb(self,N):
+        """ 
+        Generate C_k^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
+        """
+        if N in self.lookup.keys(): # the key exists before
+            return self.lookup[N]
+        else : 
+            comb =  []
+            c = 0
+            for i in range(N):
+                for j in [ k for k in range(N) if k > i]:
+                   arr = np.zeros(2)
+                   arr[0] = i
+                   arr[1] = j
+                   comb.append(arr)
+                   c = c + 1    
+            self.lookup[N] = comb
+            return comb
 
     def compCsum(self,p):
         """
