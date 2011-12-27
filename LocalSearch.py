@@ -82,6 +82,7 @@ class LocalSearch:
 
 #        self.initC()
         self.WA = []
+#        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         compPSumT = 0
         updateT = 0
@@ -91,14 +92,12 @@ class LocalSearch:
             # compute the fitG (mean) of each neighborhood individuals
             improveN = False
             nCount = 0
-#            print 
-#            print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+            #print 
+            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
             oldFit = self.oldindiv.fit
             oldFitG = self.oldindiv.fitG
             for n in neighPop:
                 self.indiv = copy.deepcopy(n)
-
-#                self.indiv = self.evalPop(self.indiv)
 
                 self.indiv.fit = oldFit - 2*self.sumArr[nCount]
                 self.fitEval = self.fitEval + 1
@@ -132,12 +131,14 @@ class LocalSearch:
                     updateT = updateT + time.time() - start
                 else:
 #                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
-                    print 'compPSum', compPSumT
-                    print 'update', updateT
+                    #print 'compPSum', compPSumT
+                    #print 'update', updateT
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 start = time.time()
                 self.update(changeBit)
+                #print 'update'
+                #print 'C', self.C
                 updateT = updateT + time.time() - start
 
 
@@ -190,7 +191,7 @@ class LocalSearch:
                 #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
                     improveN = True
-#                    print 'better neigh!'
+                    #print 'better neigh!'
 #            print 'improveN', improveN
 #            print self.fitEval
             #pdb.set_trace()
@@ -341,16 +342,18 @@ class LocalSearch:
         1. 
         compute the sum array for the first time, according to the initial solution
         2. 
-        initialize a full matrix, Coincidence, C_ij, which is a symmetric one, and diagonal is empty (as we don't want to recompute SumArr), empty whenever i >= j
+        initialize a full matrix, Coincidence, C_ij, which is a symmetric one, and diagonal is empty (as we don't want to recompute SumArr), empty whenever i >= j.
+        construct it on the fly using dict()
         """
         self.sumArr = np.zeros(self.dim)
-        self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
         self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
         self.lookup = dict()
         self.infectBit = dict()
+        #self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
+        self.C = dict() # coincidence matrix
 #        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
         #        print "bit str", self.indiv.bit
-#        print 'bit', self.indiv.bit
+        #        print 'bit', self.indiv.bit
         for i in range(len(self.WA)):
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
             self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
@@ -362,7 +365,10 @@ class LocalSearch:
             for j in comb: # for each list in comb
                 j0 = self.WA[i].arr[int(j[0])]
                 j1 = self.WA[i].arr[int(j[1])]
-                self.C[j0,j1] = self.C[j0,j1] + W
+                if (j0, j1) in self.C.keys():
+                    self.C[j0,j1] = self.C[j0,j1] + W
+                elif W != 0:
+                    self.C[j0,j1] = W
 
             # add list of order >= 3 Walsh terms for the purpose of updating C matrix
             if len(self.WA[i].arr) >= 3:
@@ -431,11 +437,9 @@ class LocalSearch:
         \sigma_{i=1}^{N} C_{ip}: be careful with C_{ii}, i \in N
         """
         s = 0
-        for i in range(p):
-            s = s + self.C[i,p]
-
-        for i in range(p+1, self.dim):
-            s = s + self.C[p,i]
+        for i in self.C.keys():
+            if p in i: 
+                s = s + self.C[i]
 
         s = s + self.sumArr[p]
 
@@ -450,16 +454,20 @@ class LocalSearch:
         self.sumArr[p] = - self.sumArr[p]
         
         for i in range(p): # i < p
-            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+            if (i,p) in self.C.keys() and self.C[i,p]!=0:
+                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
 
         for i in range(p+1, self.dim): # i > p
-            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+            if (p,i) in self.C.keys() and self.C[p,i]!=0:
+                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
 
         for i in range(p): # update C matrix, i < p
-            self.C[i,p] = - self.C[i,p]
+            if (i,p) in self.C.keys() and self.C[i,p]!=0:
+                self.C[i,p] = - self.C[i,p]
 
         for i in range(p+1, self.dim): # i >p
-            self.C[p,i] = - self.C[p,i]
+            if (p,i) in self.C.keys() and self.C[p,i]!=0:
+                self.C[p,i] = - self.C[p,i]
 
         # update the rest of elements in C matrix
         # pdb.set_trace()
