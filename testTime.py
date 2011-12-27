@@ -4,12 +4,12 @@ the time for computing walsh coefficients is stored as well.
 """
 import os
 
-for k in [0, 2, 4, 8, 16]:
+for k in [0, 2, 4, 8]:
     for n in [20, 50, 100] :
         for i in [0]:
             for a in ['rLS']:
-                for f in ['fit']:
-                    for c in ['bf']:
+                for f in ['mean']:
+                    for c in ['wal']:
                         for p in ['NK']:
 #                            if p == 'NKQ':
 #                                for q in [2]:

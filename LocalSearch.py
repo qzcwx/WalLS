@@ -139,6 +139,7 @@ class LocalSearch:
                 self.update(changeBit)
                 #print 'update'
                 #print 'C', self.C
+                self.printC()
                 updateT = updateT + time.time() - start
 
 
@@ -349,8 +350,8 @@ class LocalSearch:
         self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
         self.lookup = dict()
         self.infectBit = dict()
-        #self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
-        self.C = dict() # coincidence matrix
+        self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
+        #self.C = dict() # coincidence matrix
 #        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
         #        print "bit str", self.indiv.bit
         #        print 'bit', self.indiv.bit
@@ -365,10 +366,11 @@ class LocalSearch:
             for j in comb: # for each list in comb
                 j0 = self.WA[i].arr[int(j[0])]
                 j1 = self.WA[i].arr[int(j[1])]
-                if (j0, j1) in self.C.keys():
-                    self.C[j0,j1] = self.C[j0,j1] + W
-                elif W != 0:
-                    self.C[j0,j1] = W
+#                if (j0, j1) in self.C.keys():
+#                    self.C[j0,j1] = self.C[j0,j1] + W
+#                elif W != 0:
+#                    self.C[j0,j1] = W
+                self.C[j0,j1] = self.C[j0,j1] + W
 
             # add list of order >= 3 Walsh terms for the purpose of updating C matrix
             if len(self.WA[i].arr) >= 3:
@@ -393,7 +395,6 @@ class LocalSearch:
 #            print i
 #
 #        print 'sum array', self.sumArr
-
 
     def compPSum(self,bitStr):
         """
@@ -437,9 +438,16 @@ class LocalSearch:
         \sigma_{i=1}^{N} C_{ip}: be careful with C_{ii}, i \in N
         """
         s = 0
-        for i in self.C.keys():
-            if p in i: 
-                s = s + self.C[i]
+
+#        for i in self.C.keys():
+#            if p in i: 
+#                s = s + self.C[i]
+
+        for i in range(p):
+            s = s + self.C[i,p]
+
+        for i in range(p+1, self.dim):
+            s = s + self.C[p,i]
 
         s = s + self.sumArr[p]
 
@@ -454,20 +462,24 @@ class LocalSearch:
         self.sumArr[p] = - self.sumArr[p]
         
         for i in range(p): # i < p
-            if (i,p) in self.C.keys() and self.C[i,p]!=0:
-                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+#            if (i,p) in self.C.keys() and self.C[i,p]!=0:
+#                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
 
         for i in range(p+1, self.dim): # i > p
-            if (p,i) in self.C.keys() and self.C[p,i]!=0:
-                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+#            if (p,i) in self.C.keys() and self.C[p,i]!=0:
+#                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
 
         for i in range(p): # update C matrix, i < p
-            if (i,p) in self.C.keys() and self.C[i,p]!=0:
-                self.C[i,p] = - self.C[i,p]
+#            if (i,p) in self.C.keys() and self.C[i,p]!=0:
+#                self.C[i,p] = - self.C[i,p]
+            self.C[i,p] = - self.C[i,p]
 
         for i in range(p+1, self.dim): # i >p
-            if (p,i) in self.C.keys() and self.C[p,i]!=0:
-                self.C[p,i] = - self.C[p,i]
+#            if (p,i) in self.C.keys() and self.C[p,i]!=0:
+#                self.C[p,i] = - self.C[p,i]
+            self.C[p,i] = - self.C[p,i]
 
         # update the rest of elements in C matrix
         # pdb.set_trace()
@@ -509,3 +521,17 @@ class LocalSearch:
         """
         for i in range(len(self.WA)):
            print self.WA[i].arr, self.WA[i].w
+
+    def printC(self):
+        a = 0
+        c = 0
+        for i in range(self.dim):
+            for j in range(i+1,self.dim):
+                a = a + 1
+                if self.C[i,j] != 0:
+                    print '1',
+                    c = c + 1
+                else:
+                    print '0',
+            print 
+        print c,a, c/float(a)
