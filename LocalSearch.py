@@ -56,18 +56,73 @@ class LocalSearch:
                     return self.runNeigh(fitName, minimize,restart)
             else :
                 if fitName == 'fit':
-                    return self.runFitWal(minimize, restart)
+                    return self.runFitWal(fitName, minimize, restart)
                 elif fitName == 'mean':
-                    return self.runMeanWal(minimize, restart)
+                    return self.runMeanWal(fitName, minimize, restart)
 
-    def runFitWal(self, minimize, restart):
+    def runFitWal(self,fitName, minimize, restart):
         """ 
         Walsh Analysis for speeding up steepest descent local search
         """
-        print 'runFitWal'
+        self.oldindiv = self.initIndiv(self.dim)
+        self.fitEval = 0
+        
+        self.transWal()
+
+        self.indiv = copy.deepcopy(self.oldindiv)
+
+        self.initFitWal()
+
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+
+#        self.initC()
+        self.WA = []
+#        print 'C', self.C
+#        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
+        compPSumT = 0
+        updateT = 0
+        while self.fitEval < self.MaxFit:
+            # generate neighborhood and compute their fitness
+            neighPop = self.neighWal()
+            # compute the fitG (mean) of each neighborhood individuals
+            improveN = False
+            nCount = 0
+            #print 
+            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+            oldFit = self.oldindiv.fit
+            for n in neighPop:
+                self.indiv = copy.deepcopy(n)
+                self.indiv.fit = oldFit - 2*self.sumArr[nCount]
+                self.fitEval = self.fitEval + 1
+                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
+                if self.selectionFit(minimize) == True:
+                    #print 'better neigh!'
+                    improveN = True
+                    changeBit = nCount
+
+                nCount = nCount + 1
+
+#            print 'improveN', improveN
+            #print self.fitEval
+            #pdb.set_trace()
+#            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
+            if improveN == False:
+                if restart == True:
+                    self.restart(fitName, minimize)
+                else:
+#                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
+                    #print 'compPSum', compPSumT
+                    #print 'update', updateT
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.updateFit(changeBit)
+
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
 
-    def runMeanWal(self, minimize, restart):
+    def runMeanWal(self,fitName, minimize, restart):
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
@@ -347,6 +402,19 @@ class LocalSearch:
                 s = s + 1
         return s
 
+    def initFitWal(self):
+        """ 
+        compute the sum array for the first time, according to the initial solution
+        """
+        self.sumArr = np.zeros(self.dim)
+        self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
+        for i in range(len(self.WA)):
+            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
+            self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
+            for j in self.WA[i].arr:
+                self.sumArr[j] = self.sumArr[j] + W
+
+
     def initWal(self):
         """ 
         1. 
@@ -464,6 +532,12 @@ class LocalSearch:
 
         return s
 
+    def updateFit(self,p):
+        """
+        super fast and simple update
+        """
+        self.sumArr[p] = - self.sumArr[p]
+
     def update(self, p):
         """
         By keeping track of coincidence matrix, 
@@ -511,10 +585,20 @@ class LocalSearch:
 
     def neighWal(self):
         """ 
-        generate neighborhoods and compute their fitnesses by Walsh Analysis
+        generate neighborhoods and compute their fitnesses (mean of neighs) by Walsh Analysis
         """
         neighs = self.neighbors()
         neighIndiv = np.tile(Struct(fit = 0, fitG=0, bit = '0' ), (self.dim))
+        for i in range(self.dim):
+            neighIndiv[i] = Struct(fit = 0, bit = neighs[i]) 
+        return neighIndiv
+
+    def neighFitWal(self):
+        """ 
+        generate neighborhoods and compute their fitnesses (real one) by Walsh Analysis
+        """
+        neighs = self.neighbors()
+        neighIndiv = np.tile(Struct(fit = 0,  bit = '0' ), (self.dim))
         for i in range(self.dim):
             neighIndiv[i] = Struct(fit = 0, bit = neighs[i]) 
         return neighIndiv
