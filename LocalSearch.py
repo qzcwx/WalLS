@@ -49,19 +49,28 @@ class LocalSearch:
         return indiv
 
     def run(self, fitName, minimize, restart, compM = 'wal'):
-        if fitName =='fit': 
-            return self.runFit(minimize,restart)
-        else :
             if compM != 'wal':
-                return self.runNeigh(fitName, minimize,restart)
+                if fitName =='fit': 
+                    return self.runFit(minimize,restart)
+                else:
+                    return self.runNeigh(fitName, minimize,restart)
             else :
-                return self.runWal(fitName, minimize,restart)
+                if fitName == 'fit':
+                    return self.runFitWal(minimize, restart)
+                elif fitName == 'mean':
+                    return self.runMeanWal(minimize, restart)
 
-    def runWal(self,fitName,  minimize, restart):
+    def runFitWal(self, minimize, restart):
+        """ 
+        Walsh Analysis for speeding up steepest descent local search
+        """
+        print 'runFitWal'
+
+
+    def runMeanWal(self, minimize, restart):
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
-
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.fitEval = 0
         
@@ -344,7 +353,9 @@ class LocalSearch:
         compute the sum array for the first time, according to the initial solution
         2. 
         initialize a full matrix, Coincidence, C_ij, which is a symmetric one, and diagonal is empty (as we don't want to recompute SumArr), empty whenever i >= j.
-        construct it on the fly using dict()
+        Two options for implementing C matrix
+            a*. precompute C matrix 
+            b. construct it on the fly using dict()
         """
         self.sumArr = np.zeros(self.dim)
         self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array

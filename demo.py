@@ -33,9 +33,9 @@ probName = tl.getArgv()
 algoName = tl.getArgv()
 fitName = tl.getArgv() # fit/mean/std
 
-if compMeth == 'wal' and fitName != 'mean':
-    print 'ERROR: Walsh analysis can only be applied to compute mean'
-    sys.exit()
+#if compMeth == 'wal' and fitName != 'mean':
+#    print 'ERROR: Walsh analysis can only be applied to compute mean'
+#    sys.exit()
 inst = int(tl.getArgv())
 s = tl.getArgv() # get the setting for population size
 n = int(tl.getArgv())
