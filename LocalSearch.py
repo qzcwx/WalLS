@@ -12,6 +12,7 @@ import copy
 import sys
 import time
 import pdb
+from sets import Set
 
 class Struct:
     def __init__(self, **kwds):
@@ -70,6 +71,7 @@ class LocalSearch:
         self.transWal()
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
+#        self.initInter()
 
         self.oldindiv = self.evalPop(self.oldindiv)
         self.bsf = copy.deepcopy(self.oldindiv)
@@ -78,7 +80,7 @@ class LocalSearch:
         self.WA = []
 #        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
-#        init = False
+        init = False
         while self.fitEval < self.MaxFit:
             # generate neighborhood and compute their fitness
             neighPop = self.neighWal()
@@ -88,34 +90,23 @@ class LocalSearch:
             #print 
             #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
             oldFit = self.oldindiv.fit
-            #for n in neighPop:
-            for n in neighPop:
-                #if (nCount and init == True) or init == False:
-                self.indiv = copy.deepcopy(n)
+#            if init == False: 
+#                # for initialization, all neighs should be evaluated
+#                self.fitArr = np.zeros(self.dim)
+            for i in range(self.dim):
+                self.indiv = copy.deepcopy(neighPop[i])
                 self.indiv.fit = oldFit - 2*self.sumArr[nCount]
+#                self.fitArrp[i] = self.indiv.fit
                 self.fitEval = self.fitEval + 1
-                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
+                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFit(minimize) == True:
                     #print 'better neigh!'
                     improveN = True
                     changeBit = nCount
 
                 nCount = nCount + 1
-#            if init == False:
-#                for i in range(neighPop):
-#                    #if (nCount and init == True) or init == False:
-#                    self.indiv = copy.deepcopy(neighPop[i])
-#                    self.indiv.fit = oldFit - 2*self.sumArr[nCount]
-#                    self.fitEval = self.fitEval + 1
-#                    #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
-#                    if self.selectionFit(minimize) == True:
-#                        #print 'better neigh!'
-#                        improveN = True
-#                        changeBit = nCount
-#
-#                    nCount = nCount + 1
 #            else:
-#                for i in range(changeBit): 
+#                for i in range(lastChangeBit): 
 
 #            print 'improveN', improveN
             #print self.fitEval
@@ -137,9 +128,10 @@ class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 self.update(changeBit)
+                lastChangeBit = changeBit
 
-#            if init == False:
-#                init = True
+            if init == False:
+                init = True
 
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
@@ -405,16 +397,15 @@ class LocalSearch:
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
 #        self.printW()
-        self.WA = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys())) # array representing Walsh terms
-        c = 0
+        self.WA = [] # array representing Walsh terms
         for k in self.model.w.keys(): 
-            a = []
-            for i in range(self.dim):
-                if k[i] == '1':
-                    a.append(i)
-            self.WA[c] = Struct(arr = a, w = self.model.w[k]) 
-            c = c + 1
-#            self.printWA()
+            if self.model.w[k] != 0:
+                a = []
+                for i in range(self.dim):
+                    if k[i] == '1':
+                        a.append(i)
+                self.WA.append( Struct(arr = a, w = self.model.w[k]) )
+#        self.printWA()
 
     def binCount(self, arr, bit):
         """
@@ -450,6 +441,25 @@ class LocalSearch:
 #                    self.Inter[j1,j0] = True
 #                self.C[j0,j1] = self.C[j0,j1] + W
 
+#    def initInter(self):
+#        """
+#        self.Inter = np.tile(False,(self.dim,self.dim)) # interaction matrix, upper triangular matrix 
+#        """
+#        for i in range(len(self.WA)):
+#            comb = self.genComb(len(self.WA[i].arr))
+#            for j in comb:
+#                j0 = self.WA[i].arr[int(j[0])]
+#                j1 = self.WA[i].arr[int(j[1])]
+#                if j0 <= j1:
+#                    self.Inter[j0,j1] = True
+#                else:
+#                    self.Inter[j1,j0] = True
+
+#    def initFitArr(self):
+#        """
+#        initialize the fitness array
+#        """
+
     def initWal(self):
         """ 
         1. 
@@ -459,12 +469,17 @@ class LocalSearch:
         Two options for implementing C matrix
             a*. precompute C matrix 
             b. construct it on the fly using dict()
+        3. 
+        initialize interaction list for each variable
         """
         self.sumArr = np.zeros(self.dim)
         self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
         self.lookup = dict()
         self.infectBit = dict()
         self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
+        self.Inter = []
+        for i in range(self.dim):
+            self.Inter.append(Set()) # coincidence matrix
         #self.C = dict() # coincidence matrix
 #        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
         #        print "bit str", self.indiv.bit
@@ -473,9 +488,15 @@ class LocalSearch:
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
             self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
             comb = self.genComb(len(self.WA[i].arr))
+            #print i, self.WA[i].arr, comb
 
             for j in self.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
+                
+                a = copy.deepcopy(self.WA[i].arr)
+                a.remove(j)
+                for k in a:
+                    self.Inter[j].add(k)
 
             for j in comb: # for each list in comb
                 j0 = self.WA[i].arr[int(j[0])]
@@ -494,6 +515,7 @@ class LocalSearch:
                     else :
                         self.infectBit[j].append(Struct(arr=self.WA[i].arr, WI=i))
 
+#        print self.Inter
 #        print 'C', self.C
 
 #        print 'sum array', self.sumArr
@@ -582,28 +604,35 @@ class LocalSearch:
         """
         self.sumArr[p] = - self.sumArr[p]
         
-        for i in range(p): # i < p
-#            if (i,p) in self.C.keys() and self.C[i,p]!=0:
-#                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
-            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+        for i in self.Inter[p]:
+            if i < p:
+                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+                self.C[i,p] = - self.C[i,p]
+            else:
+                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+                self.C[p,i] = - self.C[p,i]
 
-        for i in range(p+1, self.dim): # i > p
-#            if (p,i) in self.C.keys() and self.C[p,i]!=0:
-#                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
-            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
-
-        for i in range(p): # update C matrix, i < p
-#            if (i,p) in self.C.keys() and self.C[i,p]!=0:
-#                self.C[i,p] = - self.C[i,p]
-            self.C[i,p] = - self.C[i,p]
-
-        for i in range(p+1, self.dim): # i >p
-#            if (p,i) in self.C.keys() and self.C[p,i]!=0:
-#                self.C[p,i] = - self.C[p,i]
-            self.C[p,i] = - self.C[p,i]
+#        for i in range(p): # i < p
+##            if (i,p) in self.C.keys() and self.C[i,p]!=0:
+##                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+#            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+#
+#        for i in range(p+1, self.dim): # i > p
+##            if (p,i) in self.C.keys() and self.C[p,i]!=0:
+##                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+#            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+#
+#        for i in range(p): # update C matrix, i < p
+##            if (i,p) in self.C.keys() and self.C[i,p]!=0:
+##                self.C[i,p] = - self.C[i,p]
+#            self.C[i,p] = - self.C[i,p]
+#
+#        for i in range(p+1, self.dim): # i >p
+##            if (p,i) in self.C.keys() and self.C[p,i]!=0:
+##                self.C[p,i] = - self.C[p,i]
+#            self.C[p,i] = - self.C[p,i]
 
         # update the rest of elements in C matrix
-        # pdb.set_trace()
         if p in self.infectBit.keys():
             for i in self.infectBit[p]:
                 arr = copy.deepcopy(i.arr)
