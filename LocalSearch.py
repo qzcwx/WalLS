@@ -57,9 +57,54 @@ class LocalSearch:
                     return self.runNeigh(fitName, minimize,restart)
             else :
                 if fitName == 'fit':
-                    return self.runFitWal(fitName, minimize, restart)
+                    return self.runS(fitName, minimize, restart)
                 elif fitName == 'mean':
                     return self.runMeanWal(fitName, minimize, restart)
+
+    def runS(self,fitName, minimize, restart):
+        """ 
+        steepest descent local search running on S
+        """
+        self.fitEval = 0
+        
+        self.transWal()
+        self.oldindiv = self.initIndiv(self.dim)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+        self.initWal()
+#        self.initInter()
+
+        self.bsf = copy.deepcopy(self.oldindiv)
+
+        self.WA = []
+        init = False
+
+        while self.fitEval < self.MaxFit:
+            self.fitEval = self.fitEval + self.dim
+            improveN, bestI = self.genBest(minimize)
+
+            if improveN == False:
+                if restart == True:
+                    oldbit = self.oldindiv.bit
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    self.fitEval = self.fitEval - 1
+                    self.restart(fitName, minimize)
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    
+                    for i in diff:
+                        self.update(i)
+                else:
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.update(bestI)
+                if self.oldindiv.bit[bestI] == '1':
+                    self.oldindiv.bit[bestI] = '0'
+                else:
+                    self.oldindiv.bit[bestI] = '1'
+
+        self.bsf = self.evalPop(self.bsf)
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
     def runFitWal(self,fitName, minimize, restart):
         """ 
@@ -460,6 +505,35 @@ class LocalSearch:
 #        initialize the fitness array
 #        """
 
+    def genBest(self,minize):
+        """
+        generate the binary array which marks the best
+        """
+#        print self.sumArr
+        # check improving move
+        improve = False
+        for i in range(self.dim):
+            if (minize == True and self.sumArr[i] > 0) or (minize == False and self.sumArr[i]<0):
+                improve = True
+                break
+
+        if improve == False:
+            return improve, None
+
+        for i in range(self.dim):
+            if i == 0:
+                best = self.sumArr[i]
+            elif (best<self.sumArr[i] and minize == True) or (best>self.sumArr[i] and minize == False): # seek for max S
+                best = self.sumArr[i]
+                    
+#        print best
+        for i in range(self.dim):
+            if best == self.sumArr[i]:
+                return improve, i
+
+#        print self.bestI
+#        pdb.set_trace()
+    
     def initWal(self):
         """ 
         1. 
@@ -612,26 +686,6 @@ class LocalSearch:
                 self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
                 self.C[p,i] = - self.C[p,i]
 
-#        for i in range(p): # i < p
-##            if (i,p) in self.C.keys() and self.C[i,p]!=0:
-##                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
-#            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
-#
-#        for i in range(p+1, self.dim): # i > p
-##            if (p,i) in self.C.keys() and self.C[p,i]!=0:
-##                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
-#            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
-#
-#        for i in range(p): # update C matrix, i < p
-##            if (i,p) in self.C.keys() and self.C[i,p]!=0:
-##                self.C[i,p] = - self.C[i,p]
-#            self.C[i,p] = - self.C[i,p]
-#
-#        for i in range(p+1, self.dim): # i >p
-##            if (p,i) in self.C.keys() and self.C[p,i]!=0:
-##                self.C[p,i] = - self.C[p,i]
-#            self.C[p,i] = - self.C[p,i]
-
         # update the rest of elements in C matrix
         if p in self.infectBit.keys():
             for i in self.infectBit[p]:
@@ -643,9 +697,7 @@ class LocalSearch:
                     k1 = arr[int(comb[k][1])]
                     self.C[k0,k1] = self.C[k0,k1] - 2 * self.WAS[i.WI].w
 
-        for i in range(len(self.WAS)): # update WAS
-            if p in self.WAS[i].arr :
-                self.WAS[i].w = - self.WAS[i].w
+                self.WAS[i.WI].w = - self.WAS[i.WI].w
 
 
     def neighWal(self):
