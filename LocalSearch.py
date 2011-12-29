@@ -68,21 +68,17 @@ class LocalSearch:
         self.fitEval = 0
         
         self.transWal()
-
         self.indiv = copy.deepcopy(self.oldindiv)
-
-        self.initFitWal()
+        self.initWal()
 
         self.oldindiv = self.evalPop(self.oldindiv)
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
-#        self.initC()
         self.WA = []
 #        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
-        compPSumT = 0
-        updateT = 0
+#        init = False
         while self.fitEval < self.MaxFit:
             # generate neighborhood and compute their fitness
             neighPop = self.neighWal()
@@ -90,19 +86,36 @@ class LocalSearch:
             improveN = False
             nCount = 0
             #print 
-            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
+            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
             oldFit = self.oldindiv.fit
+            #for n in neighPop:
             for n in neighPop:
+                #if (nCount and init == True) or init == False:
                 self.indiv = copy.deepcopy(n)
                 self.indiv.fit = oldFit - 2*self.sumArr[nCount]
                 self.fitEval = self.fitEval + 1
-                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
+                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
                 if self.selectionFit(minimize) == True:
                     #print 'better neigh!'
                     improveN = True
                     changeBit = nCount
 
                 nCount = nCount + 1
+#            if init == False:
+#                for i in range(neighPop):
+#                    #if (nCount and init == True) or init == False:
+#                    self.indiv = copy.deepcopy(neighPop[i])
+#                    self.indiv.fit = oldFit - 2*self.sumArr[nCount]
+#                    self.fitEval = self.fitEval + 1
+#                    #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
+#                    if self.selectionFit(minimize) == True:
+#                        #print 'better neigh!'
+#                        improveN = True
+#                        changeBit = nCount
+#
+#                    nCount = nCount + 1
+#            else:
+#                for i in range(changeBit): 
 
 #            print 'improveN', improveN
             #print self.fitEval
@@ -110,14 +123,23 @@ class LocalSearch:
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
             if improveN == False:
                 if restart == True:
+                    oldbit = self.oldindiv.bit
                     self.restart(fitName, minimize)
+                    newbit = self.oldindiv.bit
+                    #print oldbit, newbit
+                    diff = self.diffBits(oldbit, newbit)
+                    for i in diff:
+                        self.update(i)
                 else:
 #                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
                     #print 'compPSum', compPSumT
                     #print 'update', updateT
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
-                self.updateFit(changeBit)
+                self.update(changeBit)
+
+#            if init == False:
+#                init = True
 
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
@@ -144,7 +166,6 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
-#        self.initC()
         self.WA = []
 #        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
@@ -203,7 +224,7 @@ class LocalSearch:
                 self.update(changeBit)
                 #print 'update'
                 #print 'C', self.C
-                self.printC()
+#                self.printC()
                 updateT = updateT + time.time() - start
 
 
@@ -222,9 +243,12 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
+            #print 
+            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
             for i in neighs:
                 self.indiv.bit = np.copy(i)
                 self.indiv = self.evalPop(self.indiv)
+                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
                 if  self.selectionFit(minimize) == True:
                     improveN = True
 
@@ -402,18 +426,29 @@ class LocalSearch:
                 s = s + 1
         return s
 
-    def initFitWal(self):
-        """ 
-        compute the sum array for the first time, according to the initial solution
-        """
-        self.sumArr = np.zeros(self.dim)
-        self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
-        for i in range(len(self.WA)):
-            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
-            self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
-            for j in self.WA[i].arr:
-                self.sumArr[j] = self.sumArr[j] + W
-
+#    def initFitWal(self):
+#        """ 
+#        1. compute the sum array for the first time, according to the initial solution
+#        2. construct the interaction matrix
+#        """
+#        self.sumArr = np.zeros(self.dim)
+#        self.lookup = dict()
+#        self.Inter = np.tile(False,(self.dim,self.dim)) # coincidence matrix
+#        self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
+#        for i in range(len(self.WA)):
+#            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
+#            for j in self.WA[i].arr:
+#                self.sumArr[j] = self.sumArr[j] + W
+#
+#            comb = self.genComb(len(self.WA[i].arr))
+#            for j in comb:
+#                j0 = self.WA[i].arr[int(j[0])]
+#                j1 = self.WA[i].arr[int(j[1])]
+#                if j0 < j1:
+#                    self.Inter[j0,j1] = True
+#                else:
+#                    self.Inter[j1,j0] = True
+#                self.C[j0,j1] = self.C[j0,j1] + W
 
     def initWal(self):
         """ 
@@ -518,10 +553,6 @@ class LocalSearch:
         """
         s = 0
 
-#        for i in self.C.keys():
-#            if p in i: 
-#                s = s + self.C[i]
-
         for i in range(p):
             s = s + self.C[i,p]
 
@@ -532,11 +563,16 @@ class LocalSearch:
 
         return s
 
-    def updateFit(self,p):
-        """
-        super fast and simple update
-        """
-        self.sumArr[p] = - self.sumArr[p]
+#    def updateFit(self,p):
+#        """
+#        super fast and simple update
+#        """
+#        self.sumArr[p] = - self.sumArr[p]
+#        for i in range(p): # i < p
+#            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+#
+#        for i in range(p+1, self.dim): # i > p
+#            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
 
     def update(self, p):
         """
