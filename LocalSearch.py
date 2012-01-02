@@ -57,11 +57,12 @@ class LocalSearch:
                     return self.runNeigh(fitName, minimize,restart)
             else :
                 if fitName == 'fit':
-                    return self.runS(fitName, minimize, restart)
+                    return self.runFitS(fitName, minimize, restart)
                 elif fitName == 'mean':
-                    return self.runMeanWal(fitName, minimize, restart)
+                    return self.runMeanSC(fitName, minimize, restart)
+                    #return self.runMeanWal(fitName, minimize, restart)
 
-    def runS(self,fitName, minimize, restart):
+    def runFitS(self,fitName, minimize, restart):
         """ 
         steepest descent local search running on S
         """
@@ -72,16 +73,14 @@ class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
-#        self.initInter()
 
         self.bsf = copy.deepcopy(self.oldindiv)
 
         self.WA = []
-        init = False
 
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
-            improveN, bestI = self.genBest(minimize)
+            improveN, bestI = self.genFitBest(minimize)
 
             if improveN == False:
                 if restart == True:
@@ -181,6 +180,61 @@ class LocalSearch:
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
 
+    def runMeanSC(self,fitName, minimize, restart):
+        """ 
+        steepest descent local search with respect to mean of neighs by Walsh Analysis
+        """
+        self.fitEval = 0
+        
+        self.transWal()
+        self.oldindiv = self.initIndivNeigh(self.dim)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+        self.initWal()
+        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.sumArr))
+        self.indiv.fitG = self.oldindiv.fitG
+
+        self.bsf = copy.deepcopy(self.oldindiv)
+
+        self.WA = []
+#        print 'C', self.C
+#        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
+        while self.fitEval < self.MaxFit:
+            self.fitEval = self.fitEval + self.dim
+            improveN, bestI = self.genMeanBest(minimize)
+
+            if improveN == False:
+                if restart == True:
+                    oldbit = self.oldindiv.bit
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+                    self.fitEval = self.fitEval - 1
+                    self.restart(fitName, minimize)
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    
+                    for i in diff:
+                        self.update(i)
+                else:
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+                    self.fitEval = self.fitEval - 1
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.update(bestI)
+                if self.oldindiv.bit[bestI] == '1':
+                    self.oldindiv.bit[bestI] = '0'
+                else:
+                    self.oldindiv.bit[bestI] = '1'
+
+        
+        self.bsf = self.evalPop(self.bsf)
+        self.fitEval = self.fitEval - 1
+        diff = self.diffBits(self.bsf.bit, self.oldindiv.bit)
+        for i in diff:
+            self.update(i)
+        self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
+
     def runMeanWal(self,fitName, minimize, restart):
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
@@ -204,8 +258,6 @@ class LocalSearch:
         self.indiv = copy.deepcopy(self.oldindiv)
 
         self.WA = []
-#        print 'C', self.C
-#        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         compPSumT = 0
         updateT = 0
         while self.fitEval < self.MaxFit:
@@ -214,8 +266,6 @@ class LocalSearch:
             # compute the fitG (mean) of each neighborhood individuals
             improveN = False
             nCount = 0
-            #print 
-            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit, 'fitG', self.oldindiv.fitG
             oldFit = self.oldindiv.fit
             oldFitG = self.oldindiv.fitG
             for n in neighPop:
@@ -235,37 +285,23 @@ class LocalSearch:
 
                 nCount = nCount + 1
 
-#            print 'improveN', improveN
-            #print self.fitEval
-            #pdb.set_trace()
-#            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG))
             if improveN == False:
                 if restart == True:
-                    #print 'restart'
                     oldbit = self.oldindiv.bit
                     self.restart(fitName, minimize)
                     newbit = self.oldindiv.bit
-                    #print oldbit, newbit
                     diff = self.diffBits(oldbit, newbit)
                     start = time.time()
                     for i in diff:
                         self.update(i)
                     updateT = updateT + time.time() - start
                 else:
-#                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit,'trace':self.trace}
-                    #print 'compPSum', compPSumT
-                    #print 'update', updateT
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 start = time.time()
                 self.update(changeBit)
-                #print 'update'
-                #print 'C', self.C
-#                self.printC()
                 updateT = updateT + time.time() - start
 
-
-#        return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'trace':self.trace}
         print 'compPSum', compPSumT
         print 'update', updateT
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
@@ -462,58 +498,15 @@ class LocalSearch:
                 s = s + 1
         return s
 
-#    def initFitWal(self):
-#        """ 
-#        1. compute the sum array for the first time, according to the initial solution
-#        2. construct the interaction matrix
-#        """
-#        self.sumArr = np.zeros(self.dim)
-#        self.lookup = dict()
-#        self.Inter = np.tile(False,(self.dim,self.dim)) # coincidence matrix
-#        self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
-#        for i in range(len(self.WA)):
-#            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
-#            for j in self.WA[i].arr:
-#                self.sumArr[j] = self.sumArr[j] + W
-#
-#            comb = self.genComb(len(self.WA[i].arr))
-#            for j in comb:
-#                j0 = self.WA[i].arr[int(j[0])]
-#                j1 = self.WA[i].arr[int(j[1])]
-#                if j0 < j1:
-#                    self.Inter[j0,j1] = True
-#                else:
-#                    self.Inter[j1,j0] = True
-#                self.C[j0,j1] = self.C[j0,j1] + W
-
-#    def initInter(self):
-#        """
-#        self.Inter = np.tile(False,(self.dim,self.dim)) # interaction matrix, upper triangular matrix 
-#        """
-#        for i in range(len(self.WA)):
-#            comb = self.genComb(len(self.WA[i].arr))
-#            for j in comb:
-#                j0 = self.WA[i].arr[int(j[0])]
-#                j1 = self.WA[i].arr[int(j[1])]
-#                if j0 <= j1:
-#                    self.Inter[j0,j1] = True
-#                else:
-#                    self.Inter[j1,j0] = True
-
-#    def initFitArr(self):
-#        """
-#        initialize the fitness array
-#        """
-
-    def genBest(self,minize):
+    def genFitBest(self,minimize):
         """
-        generate the binary array which marks the best
+        generate the index of best neigh according to sumArr only (surrogate of fitness)
         """
 #        print self.sumArr
         # check improving move
         improve = False
         for i in range(self.dim):
-            if (minize == True and self.sumArr[i] > 0) or (minize == False and self.sumArr[i]<0):
+            if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
                 improve = True
                 break
 
@@ -523,7 +516,7 @@ class LocalSearch:
         for i in range(self.dim):
             if i == 0:
                 best = self.sumArr[i]
-            elif (best<self.sumArr[i] and minize == True) or (best>self.sumArr[i] and minize == False): # seek for max S
+            elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
                 best = self.sumArr[i]
                     
 #        print best
@@ -533,7 +526,37 @@ class LocalSearch:
 
 #        print self.bestI
 #        pdb.set_trace()
-    
+
+    def genMeanBest(self,minimize):
+        """
+        generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
+        """
+        # compute the SC array
+        self.SC = np.zeros(self.dim)
+        for i in range(self.dim):
+            self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.compCsum(i)
+
+        # check improving move 
+        improve = False
+        for i in range(self.dim):
+            if (minimize == True and self.SC[i] > 0) or (minimize == False and self.SC[i]<0):
+                improve = True
+                break
+        if improve == False:
+            return improve, None
+
+        # find the best value
+        for i in range(self.dim):
+            if i == 0:
+                best = self.SC[i]
+            elif (best<self.SC[i] and minimize == True) or (best>self.SC[i] and minimize == False): # seek for max S
+                best = self.SC[i]
+
+        # return the best index
+        for i in range(self.dim):
+            if best == self.SC[i]:
+                return improve, i
+
     def initWal(self):
         """ 
         1. 
