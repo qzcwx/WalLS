@@ -568,19 +568,20 @@ class LocalSearch:
             b. construct it on the fly using dict()
         3. 
         initialize interaction list for each variable
+        4.
+        initialize a dict of interaction structure, where interactive bits and the index of WAS (walsh including sign)
         """
         self.sumArr = np.zeros(self.dim)
         self.WAS = np.tile(Struct(arr = [], w = 0), len(self.model.w.keys()))# Walsh coefficients with sign, represented in Array
         self.lookup = dict()
         self.infectBit = dict()
         self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
-        self.Inter = []
-        for i in range(self.dim):
-            self.Inter.append(Set()) # coincidence matrix
+        self.Inter = dict()
+
+#        for i in range(self.dim):
+#            self.Inter.append(Set()) # coincidence matrix
+
         #self.C = dict() # coincidence matrix
-#        self.W = dict() # Walsh coefficient where sign is included, self.W should be updated as well 
-        #        print "bit str", self.indiv.bit
-        #        print 'bit', self.indiv.bit
         for i in range(len(self.WA)):
             W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
             self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
@@ -590,10 +591,20 @@ class LocalSearch:
             for j in self.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
                 
-                a = copy.deepcopy(self.WA[i].arr)
-                a.remove(j)
-                for k in a:
-                    self.Inter[j].add(k)
+                if j not in self.Inter: # the entry of i doesn't exist yet
+                    self.Inter[j] = Struct(arr=Set(), WI=Set())
+
+                for k in self.WA[i].arr:
+                    if k != j:
+                        self.Inter[j].arr.add(k)
+                self.Inter[j].WI.add(i)
+
+                # add list of order >= 3 Walsh terms for the purpose of updating C matrix
+                if len(self.WA[i].arr) >= 3:
+                    if j not in self.infectBit: 
+                        self.infectBit[j] = [Struct(arr=self.WA[i].arr, WI=i)]
+                    else :
+                        self.infectBit[j].append(Struct(arr=self.WA[i].arr, WI=i))
 
             for j in comb: # for each list in comb
                 j0 = self.WA[i].arr[int(j[0])]
@@ -604,13 +615,6 @@ class LocalSearch:
 #                    self.C[j0,j1] = W
                 self.C[j0,j1] = self.C[j0,j1] + W
 
-            # add list of order >= 3 Walsh terms for the purpose of updating C matrix
-            if len(self.WA[i].arr) >= 3:
-                for j in self.WA[i].arr:
-                    if j not in self.infectBit: 
-                        self.infectBit[j] = [Struct(arr=self.WA[i].arr, WI=i)]
-                    else :
-                        self.infectBit[j].append(Struct(arr=self.WA[i].arr, WI=i))
 
 #        print self.Inter
 #        print 'C', self.C
@@ -701,7 +705,7 @@ class LocalSearch:
         """
         self.sumArr[p] = - self.sumArr[p]
         
-        for i in self.Inter[p]:
+        for i in self.Inter[p].arr:
             if i < p:
                 self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
                 self.C[i,p] = - self.C[i,p]
