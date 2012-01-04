@@ -76,13 +76,18 @@ class LocalSearch:
         self.initWal()
         
         self.bsf = copy.deepcopy(self.oldindiv)
-        bestBitsCount = np.zeros(self.dim)
+        #bestBitsCount = np.zeros(self.dim)
         
         self.WA = []
         
+        init = False
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
-            improveN, bestI = self.genFitBest(minimize)
+            if init == False:
+                improveN, bestI = self.genFitBest(minimize)
+                init = True
+            else:
+                improveN, bestI = self.updateFitBest(bestI,minimize)
         
             if improveN == False:
                 if restart == True:
@@ -90,6 +95,7 @@ class LocalSearch:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize)
+                    init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     
                     for i in diff:
@@ -99,7 +105,7 @@ class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 self.update(bestI)
-                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
+#                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
@@ -110,7 +116,7 @@ class LocalSearch:
 #        plt.plot(bestBitsCount,'o')
 #        plt.plot(self.InterCount,'o')
 #        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
-        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
+#        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
         self.bsf = self.evalPop(self.bsf)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
@@ -522,27 +528,52 @@ class LocalSearch:
 #        print self.sumArr
         # check improving move
         improve = False
+        self.improveA = []
         for i in range(self.dim):
             if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
+                self.improveA.append(i) 
                 improve = True
-                break
 
         if improve == False:
-            return improve, None
+            return False, None
 
-        for i in range(self.dim):
-            if i == 0:
+        for i in self.improveA:
+            if i == self.improveA[0]:
                 best = self.sumArr[i]
+                bestI = i
             elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
                 best = self.sumArr[i]
+                bestI = i
                     
-#        print best
-        for i in range(self.dim):
-            if best == self.sumArr[i]:
-                return improve, i
+        return True, bestI
 
-#        print self.bestI
-#        pdb.set_trace()
+    def updateFitBest(self, p, minimize):
+        improve = False
+
+#        print p
+#        print self.improveA
+#        print
+        self.improveA.remove(p)
+        if p in self.Inter:
+            for i in self.Inter[p].arr: 
+                if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+
+        if not self.improveA:
+            return False, None
+
+        for i in self.improveA:
+            if i == self.improveA[0]:
+                best = self.sumArr[i]
+                bestI = i
+            elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
+                best = self.sumArr[i]
+                bestI = i
+                    
+        return True, bestI
 
     def genMeanBest(self,minimize):
         """
