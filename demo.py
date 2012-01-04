@@ -19,7 +19,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 1
+rseed = 0
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
@@ -44,7 +44,7 @@ if probName != 'SAT':
 
 
 maxFit = 1000 * n
-#maxFit = 20
+#maxFit = 10
 runs = 1
 popSize = 50 # always keep popSize to even number
 
@@ -59,7 +59,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  'instanceNo', inst, 'n', n, 'maxFit', maxFit
+print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  inst, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """

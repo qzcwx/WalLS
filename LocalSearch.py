@@ -5,6 +5,7 @@ Local Search module:
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 import WalshAnalysis as wal
 import random
 import math
@@ -50,17 +51,17 @@ class LocalSearch:
         return indiv
 
     def run(self, fitName, minimize, restart, compM = 'wal'):
-            if compM != 'wal':
-                if fitName =='fit': 
-                    return self.runFit(minimize,restart)
-                else:
-                    return self.runNeigh(fitName, minimize,restart)
-            else :
-                if fitName == 'fit':
-                    return self.runFitS(fitName, minimize, restart)
-                elif fitName == 'mean':
-                    return self.runMeanSC(fitName, minimize, restart)
-                    #return self.runMeanWal(fitName, minimize, restart)
+        if compM != 'wal':
+            if fitName =='fit': 
+                return self.runFit(minimize,restart)
+            else:
+                return self.runNeigh(fitName, minimize,restart)
+        else :
+            if fitName == 'fit':
+                return self.runFitS(fitName, minimize, restart)
+            elif fitName == 'mean':
+                return self.runMeanSC(fitName, minimize, restart)
+                #return self.runMeanWal(fitName, minimize, restart)
 
     def runFitS(self,fitName, minimize, restart):
         """ 
@@ -73,15 +74,16 @@ class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
-
+        
         self.bsf = copy.deepcopy(self.oldindiv)
-
+        bestBitsCount = np.zeros(self.dim)
+        
         self.WA = []
-
+        
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             improveN, bestI = self.genFitBest(minimize)
-
+        
             if improveN == False:
                 if restart == True:
                     oldbit = self.oldindiv.bit
@@ -97,11 +99,18 @@ class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 self.update(bestI)
+                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
                     self.oldindiv.bit[bestI] = '1'
 
+#        print bestBitsCount 
+#        print self.InterCount
+#        plt.plot(bestBitsCount,'o')
+#        plt.plot(self.InterCount,'o')
+#        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
+        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
         self.bsf = self.evalPop(self.bsf)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
@@ -191,6 +200,7 @@ class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
+        self.initSC()
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.sumArr))
         self.indiv.fitG = self.oldindiv.fitG
 
@@ -201,7 +211,11 @@ class LocalSearch:
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
+            #print 'SC', self.SC
             improveN, bestI = self.genMeanBest(minimize)
+#            print self.oldindiv.bit
+            #print improveN, bestI
+#            print 
 
             if improveN == False:
                 if restart == True:
@@ -210,10 +224,12 @@ class LocalSearch:
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
                     self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize)
+                    #print 'restart'
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     
                     for i in diff:
                         self.update(i)
+                        self.updateSC(i)
                 else:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
@@ -221,6 +237,7 @@ class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 self.update(bestI)
+                self.updateSC(bestI)
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
@@ -275,7 +292,7 @@ class LocalSearch:
                 self.fitEval = self.fitEval + 1
 
                 start = time.time()
-                self.indiv.fitG = oldFitG - 2*self.sumArr[nCount] + 4/float(self.dim) * self.compCsum(nCount)
+                self.indiv.fitG = oldFitG - 2*self.sumArr[nCount] + 4/float(self.dim) * self.compPhisum(nCount)
                 compPSumT = compPSumT + time.time() - start
                 #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit, 'fitG', self.indiv.fitG
                 if self.selectionFitNeigh(minimize) == True:
@@ -531,10 +548,6 @@ class LocalSearch:
         """
         generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
         """
-        # compute the SC array
-        self.SC = np.zeros(self.dim)
-        for i in range(self.dim):
-            self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.compCsum(i)
 
         # check improving move 
         improve = False
@@ -577,6 +590,7 @@ class LocalSearch:
         self.infectBit = dict()
         self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
         self.Inter = dict()
+        self.InterCount = np.zeros(self.dim)
 
 #        for i in range(self.dim):
 #            self.Inter.append(Set()) # coincidence matrix
@@ -590,14 +604,14 @@ class LocalSearch:
 
             for j in self.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
-                
-                if j not in self.Inter: # the entry of i doesn't exist yet
-                    self.Inter[j] = Struct(arr=Set(), WI=Set())
+                if len(self.WA[i].arr)>1: # for at least order Walsh terms
+                    if j not in self.Inter: # the entry of i doesn't exist yet
+                        self.Inter[j] = Struct(arr=Set(), WI=Set())
 
-                for k in self.WA[i].arr:
-                    if k != j:
-                        self.Inter[j].arr.add(k)
-                self.Inter[j].WI.add(i)
+                    for k in self.WA[i].arr:
+                        if k != j:
+                            self.Inter[j].arr.add(k)
+                    self.Inter[j].WI.add(i)
 
                 # add list of order >= 3 Walsh terms for the purpose of updating C matrix
                 if len(self.WA[i].arr) >= 3:
@@ -614,7 +628,12 @@ class LocalSearch:
 #                elif W != 0:
 #                    self.C[j0,j1] = W
                 self.C[j0,j1] = self.C[j0,j1] + W
-
+        
+        for i in range(self.dim):
+            if i in self.Inter:
+                self.InterCount[i] = len(self.Inter[i].arr)
+            else :
+                self.InterCount[i] = 0
 
 #        print self.Inter
 #        print 'C', self.C
@@ -632,6 +651,14 @@ class LocalSearch:
 #            print i
 #
 #        print 'sum array', self.sumArr
+    def initSC(self):
+        # compute the SC array
+        self.SC = np.zeros(self.dim)
+        for i in range(self.dim):
+            #print 'C',self.compCsum(i)
+            self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.compPhisum(i)
+            #self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.compCsum(i)
+            #print
 
     def compPSum(self,bitStr):
         """
@@ -670,6 +697,30 @@ class LocalSearch:
             self.lookup[N] = comb
             return comb
 
+    def compPhisum(self,p):
+        """
+        \varphi_{p,i}^{\prime}(x) = \Sigma_{order j terms, that touches bit p}
+        """
+        phi = np.zeros(self.model.k+1)
+        if p in self.Inter:
+            for i in self.Inter[p].WI:
+                order = len(self.WAS[i].arr)
+                phi[order-1] = phi[order-1] + self.WAS[i].w
+
+        #print 'WAS'
+#        for i in range(len(self.WAS)):
+#            print self.WAS[i].arr,self.WAS[i].w
+#        print
+#        print 'p',p, 'phi', phi, 's', self.sumArr[p]
+
+        s = self.sumArr[p]
+        for i in range(1, self.model.k+1):
+            if phi[i] != 0:
+                s = s + i * phi[i]
+
+        #print 'Phi', s
+        return s
+
     def compCsum(self,p):
         """
         \sigma_{i=1}^{N} C_{ip}: be careful with C_{ii}, i \in N
@@ -705,13 +756,14 @@ class LocalSearch:
         """
         self.sumArr[p] = - self.sumArr[p]
         
-        for i in self.Inter[p].arr:
-            if i < p:
-                self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
-                self.C[i,p] = - self.C[i,p]
-            else:
-                self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
-                self.C[p,i] = - self.C[p,i]
+        if p in self.Inter:
+            for i in self.Inter[p].arr:
+                if i < p:
+                    self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
+                    self.C[i,p] = - self.C[i,p]
+                else:
+                    self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
+                    self.C[p,i] = - self.C[p,i]
 
         # update the rest of elements in C matrix
         if p in self.infectBit.keys():
@@ -724,7 +776,15 @@ class LocalSearch:
                     k1 = arr[int(comb[k][1])]
                     self.C[k0,k1] = self.C[k0,k1] - 2 * self.WAS[i.WI].w
 
-                self.WAS[i.WI].w = - self.WAS[i.WI].w
+        if p in self.Inter:
+            for i in self.Inter[p].WI:
+                self.WAS[i].w = - self.WAS[i].w
+
+    def updateSC(self, p):
+        self.SC[p] = - self.SC[p]
+        if p in self.Inter:
+            for i in self.Inter[p].arr:
+                self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.compPhisum(i)
 
 
     def neighWal(self):
