@@ -59,7 +59,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'algoName', algoName, 'fitName', fitName,  inst, 'n', n, 'k', k 
+print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """

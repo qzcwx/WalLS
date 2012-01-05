@@ -69,11 +69,13 @@ class LocalSearch:
         """
         self.fitEval = 0
         
+        start = time.time()
         self.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
+        print 'initial', time.time() - start
         
         self.bsf = copy.deepcopy(self.oldindiv)
         #bestBitsCount = np.zeros(self.dim)
@@ -82,31 +84,47 @@ class LocalSearch:
         
         init = False
         lenImproveA = []
+        genT = 0
+        updateT = 0
+        updateCT = 0
+        endT = 0
+        resT = 0
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             if init == False:
+                start = time.time()
                 improveN, bestI = self.genFitBest(minimize)
+                genT = genT + time.time() - start
                 init = True
             else:
+                start = time.time()
                 improveN, bestI = self.updateFitBest(bestI,minimize)
+                updateT = updateT + time.time() - start
             lenImproveA.append( len(self.improveA) )
         
             if improveN == False:
                 if restart == True:
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
+
+                    start = time.time()
                     self.fitEval = self.fitEval - 1
-                    self.restart(fitName, minimize)
+                    self.restart(fitName, minimize, False)
                     init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    resT = resT + time.time() - start
                     
+                    start = time.time()
                     for i in diff:
                         self.update(i)
+                    updateCT = updateCT + time.time() - start
                 else:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
+                start = time.time()
                 self.update(bestI)
+                updateCT = updateCT + time.time() - start
 #                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
@@ -119,8 +137,16 @@ class LocalSearch:
 #        plt.plot(self.InterCount,'o')
 #        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
 #        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
+        
+        start = time.time()
         self.bsf = self.evalPop(self.bsf)
-        print np.mean(lenImproveA), np.std(lenImproveA)
+        endT = endT + time.time() - start
+        #print np.mean(lenImproveA), np.std(lenImproveA)
+        print 'genBest', genT
+        print 'updateBest', updateT
+        print 'restart', resT
+        print 'updateCT',updateCT
+        print 'endT', endT
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
     def runFitWal(self,fitName, minimize, restart):
@@ -202,16 +228,22 @@ class LocalSearch:
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
+        startA = time.time()
         self.fitEval = 0
         
+        start = time.time()
         self.transWal()
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
+        print 'initial', time.time() - start
+        
+        start = time.time()
         self.initSC()
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.sumArr))
         self.indiv.fitG = self.oldindiv.fitG
+        print '+ initial', time.time()-start
 
         self.bsf = copy.deepcopy(self.oldindiv)
 
@@ -220,53 +252,90 @@ class LocalSearch:
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         init = False
         lenImproveA = []
+        genT = 0
+        updateT = 0
+        updateCT = 0
+        fitGT = 0
+        updateSCT = 0
+        endT = 0
+        resT = 0
+        startWhile = time.time()
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             #print 'SC', self.SC
             if init == False:
+                start = time.time()
                 improveN, bestI = self.genMeanBest(minimize)
+                genT = genT + time.time() - start
+                init = True
             else :
-                improveN, bestI = self.updateMeanBest(minimize)
+                start = time.time()
+                improveN, bestI = self.updateMeanBest(bestI,minimize)
+                updateT = updateT + time.time() - start
             lenImproveA.append( len(self.improveA) )
 #            print self.oldindiv.bit
-            #print improveN, bestI
 #            print 
 
             if improveN == False:
                 if restart == True:
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
+                    start = time.time()
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+                    fitGT = fitGT + time.time() - start  
+                    
+                    start = time.time()
                     self.fitEval = self.fitEval - 1
-                    self.restart(fitName, minimize)
-                    #print 'restart'
+                    self.restart(fitName, minimize,False)
                     init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    resT = resT + time.time() - start
                     
                     for i in diff:
+                        start = time.time()
                         self.update(i)
+                        updateCT = updateCT + time.time() - start
+
+                        start = time.time()
                         self.updateSC(i)
+                        updateSCT = updateSCT + time.time() - start 
                 else:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
                     self.fitEval = self.fitEval - 1
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
+                start = time.time()
                 self.update(bestI)
+                updateCT = updateCT + time.time() - start
+
+                start = time.time()
                 self.updateSC(bestI)
+                updateSCT = updateSCT + time.time() - start
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
                     self.oldindiv.bit[bestI] = '1'
+        print 'while loop', time.time() - startWhile
 
         
+        start = time.time()
         self.bsf = self.evalPop(self.bsf)
         self.fitEval = self.fitEval - 1
         diff = self.diffBits(self.bsf.bit, self.oldindiv.bit)
         for i in diff:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
-        print np.mean(lenImproveA), np.std(lenImproveA)
+        endT = endT + time.time() - start
+        #print np.mean(lenImproveA), np.std(lenImproveA)
+        print 'genBest', genT
+        print 'updateBest', updateT
+        print 'fitGT', fitGT
+        print 'restartT', resT
+        print 'updateCT',updateCT
+        print 'updateSCT', updateSCT
+        print 'endT', endT
+        print 'allT', time.time() - startA
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
 
     def runMeanWal(self,fitName, minimize, restart):
@@ -362,7 +431,7 @@ class LocalSearch:
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit))
             if improveN == False:
                 if restart == True:
-                    self.restart('fit', minimize)
+                    self.restart('fit', minimize, True)
                 else:
                     #return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit,'trace':self.trace}
                     return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
@@ -394,7 +463,7 @@ class LocalSearch:
             if improveN == False:
                 if restart == True:
                     #print 'restart'
-                    self.restart(fitName, minimize)
+                    self.restart(fitName, minimize, True)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
         return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
@@ -406,7 +475,7 @@ class LocalSearch:
                 diff.append(i)
         return diff
 
-    def restart(self, fitName, minimize):
+    def restart(self, fitName, minimize, evaluate):
 
         if fitName == 'fit' and minimize == True :
             if self.bsf.fit > self.oldindiv.fit:
@@ -427,10 +496,12 @@ class LocalSearch:
 
         if fitName == 'fit':
             self.oldindiv = self.initIndiv(self.dim)
-            self.oldindiv = self.evalPop(self.oldindiv)
+            if evaluate == True:
+                self.oldindiv = self.evalPop(self.oldindiv)
         else :
             self.oldindiv = self.initIndivNeigh(self.dim)
-            self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+            if evaluate == True:
+                self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
 
 #        print 'after restart'
 #        print self.oldindiv.bit, self.oldindiv.fit, self.oldindiv.fitG
@@ -766,6 +837,7 @@ class LocalSearch:
         if p in self.Inter:
             for i in self.Inter[p].WI:
                 order = len(self.WAS[i].arr)
+                #order = self.order[i]
                 phi[order-1] = phi[order-1] + self.WAS[i].w
 
         #print 'WAS'
