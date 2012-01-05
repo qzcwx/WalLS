@@ -8,7 +8,7 @@ for k in [0, 2, 4, 8]:
     for n in [20, 50, 100] :
         for i in [0]:
             for a in ['rLS']:
-                for f in ['mean']:
+                for f in ['fit','mean']:
                     for c in ['wal']:
                         for p in ['NK']:
 #                            if p == 'NKQ':
