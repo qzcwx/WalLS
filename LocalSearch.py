@@ -81,6 +81,7 @@ class LocalSearch:
         self.WA = []
         
         init = False
+        lenImproveA = []
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             if init == False:
@@ -88,6 +89,7 @@ class LocalSearch:
                 init = True
             else:
                 improveN, bestI = self.updateFitBest(bestI,minimize)
+            lenImproveA.append( len(self.improveA) )
         
             if improveN == False:
                 if restart == True:
@@ -118,6 +120,7 @@ class LocalSearch:
 #        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
 #        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
         self.bsf = self.evalPop(self.bsf)
+        print np.mean(lenImproveA), np.std(lenImproveA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
     def runFitWal(self,fitName, minimize, restart):
@@ -215,10 +218,16 @@ class LocalSearch:
         self.WA = []
 #        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
+        init = False
+        lenImproveA = []
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             #print 'SC', self.SC
-            improveN, bestI = self.genMeanBest(minimize)
+            if init == False:
+                improveN, bestI = self.genMeanBest(minimize)
+            else :
+                improveN, bestI = self.updateMeanBest(minimize)
+            lenImproveA.append( len(self.improveA) )
 #            print self.oldindiv.bit
             #print improveN, bestI
 #            print 
@@ -231,6 +240,7 @@ class LocalSearch:
                     self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize)
                     #print 'restart'
+                    init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     
                     for i in diff:
@@ -256,6 +266,7 @@ class LocalSearch:
         for i in diff:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+        print np.mean(lenImproveA), np.std(lenImproveA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
 
     def runMeanWal(self,fitName, minimize, restart):
@@ -548,11 +559,6 @@ class LocalSearch:
         return True, bestI
 
     def updateFitBest(self, p, minimize):
-        improve = False
-
-#        print p
-#        print self.improveA
-#        print
         self.improveA.remove(p)
         if p in self.Inter:
             for i in self.Inter[p].arr: 
@@ -582,24 +588,48 @@ class LocalSearch:
 
         # check improving move 
         improve = False
+        self.improveA = []
         for i in range(self.dim):
             if (minimize == True and self.SC[i] > 0) or (minimize == False and self.SC[i]<0):
+                self.improveA.append(i)
                 improve = True
-                break
+
         if improve == False:
-            return improve, None
+            return False, None
 
         # find the best value
-        for i in range(self.dim):
-            if i == 0:
+        for i in self.improveA:
+            if i == self.improveA[0]:
                 best = self.SC[i]
+                bestI = i
             elif (best<self.SC[i] and minimize == True) or (best>self.SC[i] and minimize == False): # seek for max S
                 best = self.SC[i]
+                bestI = i
 
-        # return the best index
-        for i in range(self.dim):
-            if best == self.SC[i]:
-                return improve, i
+        return True, bestI
+
+    def updateMeanBest(self, p, minimize):
+        self.improveA.remove(p)
+        if p in self.Inter:
+            for i in self.Inter[p].arr:
+                if (minimize == True and self.SC[i] > 0) or (minimize == False and self.SC[i]<0):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+
+        if not self.improveA:
+            return False, None
+
+        for i in self.improveA:
+            if i == self.improveA[0]:
+                best = self.SC[i]
+                bestI = i
+            elif (best<self.SC[i] and minimize == True) or (best>self.SC[i] and minimize == False): # seek for max S
+                best = self.SC[i]
+                bestI = i
+                    
+        return True, bestI
 
     def initWal(self):
         """ 
