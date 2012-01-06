@@ -265,6 +265,7 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             #print 'SC', self.SC
+
             if init == False:
 #                start = time.time()
                 improveN, bestI = self.genMeanBest(minimize)
@@ -274,6 +275,11 @@ class LocalSearch:
 #                start = time.time()
                 improveN, bestI = self.updateMeanBest(bestI,minimize)
 #                updateT = updateT + time.time() - start
+
+            #print 
+            #print 'Z', self.Z
+            #print self.fitEval, self.SC
+            #print improveN, bestI
             lenImproveA.append( len(self.improveA) )
 #            print self.oldindiv.bit
 #            print 
@@ -287,11 +293,12 @@ class LocalSearch:
 #                    fitGT = fitGT + time.time() - start  
                     
 #                    start = time.time()
-                    self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize,False)
                     init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    #print oldbit, self.oldindiv.bit
 #                    resT = resT + time.time() - start
+                    #print 'restart'
                     
                     for i in diff:
 #                        start = time.time()
@@ -302,6 +309,8 @@ class LocalSearch:
                         self.updateSC(i)
 #                        updateSCT = updateSCT + time.time() - start 
                         self.updateWAS(i)
+                        #print 'S', self.sumArr
+                        #print 'Z', self.Z
                 else:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
@@ -661,7 +670,6 @@ class LocalSearch:
         """
         generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
         """
-
         # check improving move 
         improve = False
         self.improveA = []
@@ -678,10 +686,9 @@ class LocalSearch:
             if i == self.improveA[0]:
                 best = self.SC[i]
                 bestI = i
-            elif (best<self.SC[i] and minimize == True) or (best>self.SC[i] and minimize == False): # seek for max S
+            elif ( best<self.SC[i] and minimize == True ) or ( best>self.SC[i] and minimize == False ): # seek for max S
                 best = self.SC[i]
                 bestI = i
-
         return True, bestI
 
     def updateMeanBest(self, p, minimize):
@@ -788,12 +795,15 @@ class LocalSearch:
 #            print i
 #
 #        print 'sum array', self.sumArr
+
     def initSC(self):
         # compute the SC array
         self.SC = np.zeros(self.dim)
         self.Z = np.zeros(self.dim)
         self.orderC = np.zeros((self.dim,self.dim))
+
         for p in range(self.dim):
+
             phi = np.zeros(self.model.k+1)
             if p in self.Inter:
                 for i in self.Inter[p].WI:
@@ -807,13 +817,14 @@ class LocalSearch:
 
             self.SC[p] = self.sumArr[p] - 2/float(self.dim) * self.Z[p]
             #self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.compCsum(i)
-            #print
+
         for i in range(len(self.WAS)):
-            comb = self.genComb(len(self.WA[i].arr))
+            lenArr = len(self.WAS[i].arr)
+            comb = self.genComb(lenArr)
             for j in comb:
-                j0 = self.WA[i].arr[int(j[0])]
-                j1 = self.WA[i].arr[int(j[1])]
-                self.orderC[j0,j1] = self.orderC[j0,j1] + len(self.WA[i].arr) * self.WAS[i].w
+                j0 = self.WAS[i].arr[int(j[0])]
+                j1 = self.WAS[i].arr[int(j[1])]
+                self.orderC[j0,j1] = self.orderC[j0,j1] + lenArr * self.WAS[i].w
 
     def compPSum(self,bitStr):
         """
@@ -939,8 +950,9 @@ class LocalSearch:
 
     def updateSC(self, p):
         self.SC[p] = - self.SC[p]
+        self.Z[p] = - self.Z[p]
+
         #update Z array
-        
         if p in self.Inter:
             for i in self.Inter[p].arr:
                 if i < p :
@@ -970,7 +982,7 @@ class LocalSearch:
                 for k in range(len(comb)):
                     k0 = arr[int(comb[k][0])]
                     k1 = arr[int(comb[k][1])]
-                    self.orderC[k0,k1] = self.orderC[k0,k1] - 2 * lenArr* self.WAS[i.WI].w
+                    self.orderC[k0,k1] = self.orderC[k0,k1] - 2 * (lenArr + 1)* self.WAS[i.WI].w
 
     def neighWal(self):
         """ 

@@ -19,7 +19,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 2
+rseed = 1
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
@@ -44,7 +44,7 @@ if probName != 'SAT':
 
 
 maxFit = 1000 * n
-#maxFit = 10
+#maxFit = 50
 runs = 1
 popSize = 50 # always keep popSize to even number
 
