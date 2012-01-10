@@ -78,7 +78,7 @@ class LocalSearch:
         #print 'initial', time.time() - start
         
         self.bsf = copy.deepcopy(self.oldindiv)
-        #bestBitsCount = np.zeros(self.dim)
+        bestBitsCount = np.zeros(self.dim)
         
         self.WA = []
         
@@ -127,7 +127,7 @@ class LocalSearch:
                 self.update(bestI)
                 self.updateWAS(bestI)
 #                updateCT = updateCT + time.time() - start
-#                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
+                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
@@ -138,7 +138,7 @@ class LocalSearch:
 #        plt.plot(bestBitsCount,'o')
 #        plt.plot(self.InterCount,'o')
 #        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
-#        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
+        
         
 #        start = time.time()
         self.bsf = self.evalPop(self.bsf)
@@ -149,7 +149,7 @@ class LocalSearch:
 #        print 'restart', resT
 #        print 'updateCT',updateCT
 #        print 'endT', endT
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'c': np.corrcoef([bestBitsCount,self.InterCount])[1,0]}
 
     def runFitWal(self,fitName, minimize, restart):
         """ 
@@ -429,18 +429,27 @@ class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
+        bestBitsCount = np.zeros(self.dim)
+        self.transWal()
+        self.initWal()
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit)]
         while self.fitEval < self.MaxFit:
             neighs = self.neighbors()
             improveN = False
             #print 
             #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
+            count = 0
             for i in neighs:
                 self.indiv.bit = np.copy(i)
                 self.indiv = self.evalPop(self.indiv)
                 #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
                 if  self.selectionFit(minimize) == True:
                     improveN = True
+                    bestI = count
+
+                count = count + 1
+
+
 
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit))
             if improveN == False:
@@ -449,8 +458,11 @@ class LocalSearch:
                 else:
                     #return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit,'trace':self.trace}
                     return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else :
+                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
         #return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'trace':self.trace}
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+        #print bestBitsCount, self.InterCount
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'c': np.corrcoef([bestBitsCount,self.InterCount])[1,0]}
 
 
     def runNeigh(self, fitName, minimize,restart):

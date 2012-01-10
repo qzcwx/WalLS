@@ -19,7 +19,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 1
+rseed = 0
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
@@ -119,12 +119,13 @@ else:
     res = []
 
     if probName == 'NK':
-        model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+        #model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+        model = nk.NKLandscape(n,k)
     elif probName == 'NKQ':
         q = int(tl.getArgv())
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
 
-    if compMeth == 'wal':
+    if compMeth == 'wal' or True:
         start = time.time()
         w = model.WalshCofLinearLinklist()
         walTime = time.time() - start
@@ -140,9 +141,11 @@ else:
         f.close()
 
 #    bit,fit = tl.compFit(model)
+#    print min(fit)
+#    sys.exit()
 #    for i in zip(bit,fit):
 #        print i
-#    print 'bit',bit
+##    print 'bit',bit
 #    print 'fit',fit
 #    print 'mean',np.mean(fit)
 #    print 'w', w
@@ -166,6 +169,7 @@ else:
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
         tAll[i] = time.time() - start
+        print 'run',i
 
 #    trace = res[0]['trace']
 #    for i in trace:
@@ -200,3 +204,10 @@ else:
     for i in range(len(tAll)):
         print >>f,"%g" % (tAll[i])
     f.close()
+
+#    """ for outputting correlation coefficients """
+#    cArr = np.zeros(len(res))
+#    for i in range(len(res)):
+#        cArr[i] = res[i]['c']
+#
+#    print "%.2f(%.2f)" %(np.mean(cArr), np.std(cArr))
