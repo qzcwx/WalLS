@@ -4,6 +4,7 @@ import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
 import matplotlib.pyplot as plt
+import LocalOptima as lo
 import CHC as chc
 import MAXSAT as mx
 import LocalSearch as ls
@@ -45,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 1
+runs = 0
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -139,13 +140,16 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-#    bit,fit = tl.compFit(model)
+    bit,fit = tl.compFit(model)
 #    for i in zip(bit,fit):
 #        print i
 #    print 'bit',bit
 #    print 'fit',fit
 #    print 'mean',np.mean(fit)
 #    print 'w', w
+
+    numOpt = lo.localOpt(bit, fit)
+    print numOpt
 
     if algoName.find('LS') != -1:
         algo = ls.LocalSearch(model, maxFit, n)

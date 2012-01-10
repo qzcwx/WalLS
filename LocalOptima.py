@@ -35,7 +35,7 @@ def localOpt(bitStr, f):
             if f[solIndex]>f[neighIndex]:
                 loMark[solIndex] = False
                 break
-            else:
+            elif f[solIndex]<f[neighIndex]:
                 loMark[neighIndex] = False
         if loMark[solIndex]==True:
             num = num + 1
