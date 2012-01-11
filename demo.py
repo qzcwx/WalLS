@@ -3,7 +3,7 @@ import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import LocalOptima as lo
 import CHC as chc
 import MAXSAT as mx
@@ -121,6 +121,7 @@ else:
 
     if probName == 'NK':
         model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+        # model = nk.NKLandscape(n,k)
     elif probName == 'NKQ':
         q = int(tl.getArgv())
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
@@ -140,67 +141,78 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-    bit,fit = tl.compFit(model)
-#    for i in zip(bit,fit):
-#        print i
+    #####################################################
+    if fitName == 'fit':
+        bit,fit = tl.compFit(model)
+    elif fitName == 'mean':
+        bit, fit = tl.compMean(model)
+
 #    print 'bit',bit
 #    print 'fit',fit
 #    print 'mean',np.mean(fit)
 #    print 'w', w
 
     numOpt = lo.localOpt(bit, fit)
-    print numOpt
 
-    if algoName.find('LS') != -1:
-        algo = ls.LocalSearch(model, maxFit, n)
-    elif algoName.find('GA') != -1:
-        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
-    elif algoName.find('CHC') != -1:
-        algo = chc.CHC()
-
-    tAll = np.zeros(runs)
-    for i in range(runs):
-        start = time.time()
-        if algoName.find('GA') != -1:
-            res.append(algo.run(crossoverR, mutationR, fitName))
-        elif algoName == 'LS':
-            res.append(algo.run(fitName, minimize = True, restart = False,compM = compMeth ))
-        elif algoName == 'rLS':
-            res.append(algo.run(fitName, minimize = True, restart = True,compM = compMeth))
-        elif algoName.find('CHC') != -1:
-            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
-        tAll[i] = time.time() - start
-
-#    trace = res[0]['trace']
-#    for i in trace:
-##        print 'Eval', i.fitEval, 'fit', i.fit
-#        print 'Eval', i.fitEval, 'fit', i.fit, 'fitG', i.fitG
-#
-#    plt.plot([i.fitEval for i in trace],[i.fit for i in trace],'.-')
-#    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
-#    plt.show()
-
-    """ store results to files """
     if probName == 'NKQ':
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
     elif probName == 'NK':
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
-
     f = open(nameOfF, 'w')
-    for i in range(len(res)):
-        if fitName != 'fit':
-            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-        else:
-            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+    print >>f, numOpt
     f.close()
+    #####################################################
 
-    """ store runtime to files """
-    if probName == 'NKQ':
-        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-    elif probName == 'NK':
-        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
-
-    f = open(nameOfF, 'w')
-    for i in range(len(tAll)):
-        print >>f,"%g" % (tAll[i])
-    f.close()
+#    if algoName.find('LS') != -1:
+#        algo = ls.LocalSearch(model, maxFit, n)
+#    elif algoName.find('GA') != -1:
+#        algo = ga.GeneticAlgorithm( model.compFit, maxFit, popSize, n )
+#    elif algoName.find('CHC') != -1:
+#        algo = chc.CHC()
+#
+#    tAll = np.zeros(runs)
+#    for i in range(runs):
+#        start = time.time()
+#        if algoName.find('GA') != -1:
+#            res.append(algo.run(crossoverR, mutationR, fitName))
+#        elif algoName == 'LS':
+#            res.append(algo.run(fitName, minimize = True, restart = False,compM = compMeth ))
+#        elif algoName == 'rLS':
+#            res.append(algo.run(fitName, minimize = True, restart = True,compM = compMeth))
+#        elif algoName.find('CHC') != -1:
+#            res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
+#        tAll[i] = time.time() - start
+#
+##    trace = res[0]['trace']
+##    for i in trace:
+###        print 'Eval', i.fitEval, 'fit', i.fit
+##        print 'Eval', i.fitEval, 'fit', i.fit, 'fitG', i.fitG
+##
+##    plt.plot([i.fitEval for i in trace],[i.fit for i in trace],'.-')
+##    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
+##    plt.show()
+#
+#    """ store results to files """
+#    if probName == 'NKQ':
+#        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+#    elif probName == 'NK':
+#        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+#
+#    f = open(nameOfF, 'w')
+#    for i in range(len(res)):
+#        if fitName != 'fit':
+#            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+#        else:
+#            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+#    f.close()
+#
+#    """ store runtime to files """
+#    if probName == 'NKQ':
+#        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+#    elif probName == 'NK':
+#        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+#
+#    f = open(nameOfF, 'w')
+#    for i in range(len(tAll)):
+#        print >>f,"%g" % (tAll[i])
+#    f.close()

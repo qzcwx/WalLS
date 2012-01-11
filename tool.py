@@ -8,6 +8,7 @@ import random
 import numpy as np
 import math
 import sys
+import copy
 
 argvCount = 1
 
@@ -41,6 +42,24 @@ def compFit(model):
     for i in range(int(math.pow(2,n))):
        fit[i] = model.compFit(bitStr[i])
     return bitStr, fit
+
+def compMean(model):
+    n = model.getN()
+    fit = np.zeros(math.pow(2,n))
+    bitStr = nk.genSeqBits(n)
+    for i in range(int(math.pow(2,n))):
+        bit = bitStr[i]
+        fitN = np.zeros(n)
+        for j in range(n):
+            # flip the jth bit in bit-string
+            if bit[j] == '1':
+                neighStr = bit[0:j] + '0' + bit[j+1:]
+            else:
+                neighStr = bit[0:j] + '1' + bit[j+1:]
+            fitN[j] = model.compFit(neighStr)
+        fit[i] = np.mean(fitN)
+    return bitStr, fit
+
 
 def plotDistNKQ():
     """ 

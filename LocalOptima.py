@@ -1,35 +1,29 @@
 # this function counts the number of local optimum over the entire search space
 import random
 import numpy as np
+import math
 
 def localOpt(bitStr, f):
     n = len(bitStr[0])
     num = 0
     compCount = 0
-    loMark = []
-    """ initialize all markers to true """
-    for i in range(len(bitStr)):
-        loMark.append(True)
+    loMark = len(bitStr)*[True]
+    loMark = np.array(loMark)
+
     """ generate the random solution under consideration for local optimum """
-    while loMark.count(True)>0:
-        sol = ''
-        for i in range(n):
-            sol = sol + str(random.randint(0,1))
-        while loMark[int(sol,2)] == False:
-            sol = ''
-            for i in range(n):
-                sol = sol + str(random.randint(0,1))
-#        print 'sol', sol
+    while True:
+        indice = np.where(loMark==True)[0]
+        if len(indice) == 0:
+            break
+
         """ consider all the neighborhoods """
-        solIndex = int(sol, 2)
+        solIndex = random.choice(indice)
+        sol =  bin(solIndex)[2:]
+        if len(sol) < n:
+            sol = (n - len(sol))*'0' + sol 
+
         for i in range(n):
-            neigh = ''
-            for j in range(n):
-                if i == j:
-                    neigh = neigh + flipBit(sol[j])
-                else:
-                    neigh = neigh + sol[j]
-           # print 'neigh', neigh, 'i', i
+            neigh = sol[0:i] + flipBit(sol[i]) + sol[i+1:]
             neighIndex = int(neigh, 2)
             compCount = compCount + 1
             if f[solIndex]>f[neighIndex]:
