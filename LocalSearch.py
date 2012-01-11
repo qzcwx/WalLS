@@ -81,9 +81,10 @@ class LocalSearch:
         #bestBitsCount = np.zeros(self.dim)
         
         self.WA = []
+        takenBits = self.dim*[False]
         
         init = False
-        lenImproveA = []
+        #lenImproveA = []
         genT = 0
         updateT = 0
         updateCT = 0
@@ -101,7 +102,12 @@ class LocalSearch:
 #                start = time.time()
                 improveN, bestI = self.updateFitBest(bestI,minimize)
 #                updateT = updateT + time.time() - start
-            lenImproveA.append( len(self.improveA) )
+            #lenImproveA.append( len(self.improveA) )
+            s = 0
+            for i in self.improveA:
+                if takenBits[i] == False:
+                    s = s + 1
+            print s, len(self.improveA)
         
             if improveN == False:
                 if restart == True:
@@ -115,6 +121,8 @@ class LocalSearch:
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
 #                    resT = resT + time.time() - start
                     
+                    takenBits = self.dim*[False]
+                    print 'restart'
 #                    start = time.time()
                     for i in diff:
                         self.update(i)
@@ -127,6 +135,7 @@ class LocalSearch:
 #                start = time.time()
                 self.update(bestI)
                 self.updateWAS(bestI)
+                takenBits[bestI] = True
 #                updateCT = updateCT + time.time() - start
 #                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
                 if self.oldindiv.bit[bestI] == '1':
@@ -250,12 +259,13 @@ class LocalSearch:
 #        print '+ initial', time.time()-start
 
         self.bsf = copy.deepcopy(self.oldindiv)
+        takenBits = self.dim*[False]
 
         self.WA = []
 #        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         init = False
-        lenImproveA = []
+        #lenImproveA = []
         genT = 0
         updateT = 0
         updateCT = 0
@@ -277,12 +287,19 @@ class LocalSearch:
 #                start = time.time()
                 improveN, bestI = self.updateMeanBest(bestI,minimize)
 #                updateT = updateT + time.time() - start
+            
+            s = 0
+            for i in self.improveA:
+                if takenBits[i] == False:
+                    s = s + 1
+            print s, len(self.improveA)
+            
 
             #print 
             #print 'Z', self.Z
             #print self.fitEval, self.SC
             #print improveN, bestI
-            lenImproveA.append( len(self.improveA) )
+            #lenImproveA.append( len(self.improveA) )
 #            print self.oldindiv.bit
 #            print 
 
@@ -300,7 +317,8 @@ class LocalSearch:
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     #print oldbit, self.oldindiv.bit
 #                    resT = resT + time.time() - start
-                    #print 'restart'
+                    print 'restart'
+                    takenBits = self.dim*[False]
                     
                     for i in diff:
 #                        start = time.time()
@@ -322,6 +340,7 @@ class LocalSearch:
 #                start = time.time()
                 self.update(bestI)
 #                updateCT = updateCT + time.time() - start
+                takenBits[bestI] = True
 
 #                start = time.time()
                 self.updateSC(bestI)
