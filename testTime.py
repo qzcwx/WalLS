@@ -5,11 +5,11 @@ the time for computing walsh coefficients is stored as well.
 import os
 
 for k in [2, 4, 8]:
-    for n in [20] :
+    for n in [20,50,100] :
         for i in [0]:
             for a in ['rLS']:
                 for f in ['fit','mean']:
-                    for c in ['wal','bf']:
+                    for c in ['wal']:
                         for p in ['NK']:
 #                            if p == 'NKQ':
 #                                for q in [2]:

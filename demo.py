@@ -46,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 0
+runs = 1
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -112,7 +112,7 @@ if probName == 'SAT':
         nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
 
     f = open(nameOfF, 'w')
-    for i in range(len(tAll)):
+    for i in range(runs):
         print >>f,"%g" % (tAll[i])
     f.close()
 
@@ -140,7 +140,7 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-    bit,fit = tl.compFit(model)
+#    bit,fit = tl.compFit(model)
 #    for i in zip(bit,fit):
 #        print i
 #    print 'bit',bit
@@ -148,8 +148,8 @@ else:
 #    print 'mean',np.mean(fit)
 #    print 'w', w
 
-    numOpt = lo.localOpt(bit, fit)
-    print numOpt
+#    numOpt = lo.localOpt(bit, fit)
+#    print numOpt
 
     if algoName.find('LS') != -1:
         algo = ls.LocalSearch(model, maxFit, n)
@@ -202,5 +202,5 @@ else:
 
     f = open(nameOfF, 'w')
     for i in range(len(tAll)):
-        print >>f,"%g" % (tAll[i])
+        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()

@@ -69,13 +69,13 @@ class LocalSearch:
         """
         self.fitEval = 0
         
-        #start = time.time()
+        start = time.time()
         self.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
-        #print 'initial', time.time() - start
+        initT = time.time() - start
         
         self.bsf = copy.deepcopy(self.oldindiv)
         #bestBitsCount = np.zeros(self.dim)
@@ -89,6 +89,7 @@ class LocalSearch:
         updateCT = 0
         endT = 0
         resT = 0
+        start = time.time()
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             if init == False:
@@ -149,7 +150,8 @@ class LocalSearch:
 #        print 'restart', resT
 #        print 'updateCT',updateCT
 #        print 'endT', endT
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+        updateT = time.time() - start
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitWal(self,fitName, minimize, restart):
         """ 
@@ -233,13 +235,13 @@ class LocalSearch:
 #        startA = time.time()
         self.fitEval = 0
         
-#        start = time.time()
+        start = time.time()
         self.transWal()
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
-#        print 'initial', time.time() - start
+        initT = time.time() - start
         
 #        start = time.time()
         self.initSC()
@@ -261,7 +263,7 @@ class LocalSearch:
         updateSCT = 0
         endT = 0
         resT = 0
-#        startWhile = time.time()
+        start = time.time()
         while self.fitEval < self.MaxFit:
             self.fitEval = self.fitEval + self.dim
             #print 'SC', self.SC
@@ -340,7 +342,7 @@ class LocalSearch:
         for i in diff:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
-        #endT = endT + time.time() - start
+        updateT = time.time() - start
         #print np.mean(lenImproveA), np.std(lenImproveA)
 #        print 'genBest', genT
 #        print 'updateBest', updateT
@@ -350,7 +352,7 @@ class LocalSearch:
 #        print 'updateSCT', updateSCT
 #        print 'endT', endT
 #        print 'allT', time.time() - startA
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runMeanWal(self,fitName, minimize, restart):
         """ 
