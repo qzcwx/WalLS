@@ -44,7 +44,7 @@ if probName != 'SAT':
     k = int(tl.getArgv())
 
 
-maxFit = 100 * n
+maxFit = 1000 * n
 #maxFit = 50
 runs = 1
 popSize = 50 # always keep popSize to even number
@@ -60,7 +60,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+#print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """
