@@ -6,12 +6,13 @@ import pdb
 
 class NKQLandcape(nk.NKLandscape):
     def __init__(self, inN, inK, inQ, fileName = None):
-        nk.NKLandscape.__init__(self, inN, inK)
+        nk.NKLandscape.__init__(self, inN, inK, fileName)
         self.q = inQ
-        if fileName == None:
-            self.genFuncQ()
-        else:
-            self.readFile(fileName)
+        #if fileName == None:
+        self.genFuncQ()
+        self.exportToFile(fileName)
+#        else:
+#            self.readFile(fileName)
 
     def genFuncQ(self):
         self.func = []

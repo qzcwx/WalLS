@@ -46,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 1
+runs = 0
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -121,9 +121,11 @@ else:
 
     if probName == 'NK':
         model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+        #model = nk.NKLandscape(n,k)
     elif probName == 'NKQ':
         q = int(tl.getArgv())
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
+        #model = nkq.NKQLandcape(n, k, q)
 
     if compMeth == 'wal':
         start = time.time()
@@ -187,7 +189,7 @@ else:
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
     f = open(nameOfF, 'w')
-    for i in range(len(res)):
+    for i in range(runs):
         if fitName != 'fit':
             print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
         else:
@@ -201,6 +203,6 @@ else:
         nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
     f = open(nameOfF, 'w')
-    for i in range(len(tAll)):
+    for i in range(runs):
         print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
