@@ -3,6 +3,7 @@ Test the runtime for rLS with mean of neighborhoods as fitness,
 the time for computing walsh coefficients is stored as well.
 """
 import os
+import batcth
 
 for k in [2, 4, 8]:
     for n in [200, 500]:

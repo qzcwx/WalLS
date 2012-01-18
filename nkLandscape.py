@@ -13,12 +13,12 @@ class NKLandscape:
     def __init__(self,inN,inK, fileName = None):
         self.n = inN
         self.k = inK
-#        if fileName == None:
-        self.genNeigh()
-        self.genFunc()
-        self.exportToFile(fileName)
-#        else:
-#            self.readFile(fileName)
+        if fileName == None:
+            self.genNeigh()
+            self.genFunc()
+        #self.exportToFile(fileName)
+        else:
+            self.readFile(fileName)
         self.Kbits = genSeqBits(self.k+1)
 
     def exportToFile(self, fileName):

@@ -5,7 +5,7 @@ Local Search module:
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import WalshAnalysis as wal
 import random
 import math

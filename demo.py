@@ -3,7 +3,7 @@ import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import LocalOptima as lo
 import CHC as chc
 import MAXSAT as mx
@@ -20,7 +20,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 1
+rseed = 0
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
@@ -46,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 0
+runs = 30 
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
