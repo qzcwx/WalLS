@@ -60,7 +60,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-#print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """
@@ -162,6 +162,7 @@ else:
 
     tAll = np.zeros(runs)
     for i in range(runs):
+        print 'run', i, ':probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
         start = time.time()
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName))
@@ -206,3 +207,5 @@ else:
     for i in range(runs):
         print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
+
+    print 'Job complete: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
