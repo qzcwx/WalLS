@@ -209,4 +209,5 @@ else:
         print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
 
-    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k
+    print

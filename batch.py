@@ -97,16 +97,24 @@ if __name__== "__main__":
     #numOfInstance = 1
     rseed = 0
 
+    kRange = [2,4,8]
+    nRange = [20,50,100,200,500]
+    iRange = [0]
+    aRange = ['rLS']
+    fRange = ['fit']
+    cRange = ['supm']
+    pRange = ['NK']
+
     random.seed(rseed)
 
     """ the first pass count the number of jobs needed to be run """
-    for k in [2, 4, 8]:
-        for n in [20,50,100,200,500] :
-            for i in [0]:
-                for a in ['rLS']:
-                    for f in ['fit']:
-                        for c in ['supm']:
-                            for p in ['NKQ','NK']:
+    for k in kRange:
+        for n in nRange :
+            for i in iRange :
+                for a in aRange :
+                    for f in fRange :
+                        for c in cRange :
+                            for p in pRange :
                                 if p == 'NKQ':
                                     for q in [2]:
                                         if a == 'LS' or a == 'rLS':
@@ -129,13 +137,13 @@ if __name__== "__main__":
     os.system('rm run-* SumSat-*')
     track = writeHeader(totalJobs, chunkSize)
     numOfscript = len(track)
-    for k in [2, 4, 8]:
-        for n in [20,50,100,200,500] :
-            for i in [0]:
-                for a in ['rLS']:
-                    for f in ['fit']:
-                        for c in ['supm']:
-                            for p in ['NKQ','NK']:
+    for k in kRange:
+        for n in nRange :
+            for i in iRange :
+                for a in aRange :
+                    for f in fRange :
+                        for c in cRange :
+                            for p in pRange :
                                 if p == 'NKQ':
                                     for q in [2]:
                                         if a == 'LS' or a == 'rLS':

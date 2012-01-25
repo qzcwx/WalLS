@@ -16,12 +16,12 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q):
     return os.path.isfile(nameOfF)
 
 for k in [2, 4, 8]:
-    for n in [200, 500]:
+    for n in [20, 50, 100, 200, 500]:
         for i in [0]:
             for a in ['rLS']:
-                for f in ['fit','mean']:
-                    for c in ['wal']:
-                        for p in ['NK','NKQ']:
+                for f in ['fit']:
+                    for c in ['supm']:
+                        for p in ['NK']:
                             if p == 'NKQ':
                                 for q in [2]:
                                     s = 1
@@ -33,4 +33,4 @@ for k in [2, 4, 8]:
                                 s = 1
                                 print 'python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)
                                 if resultExist(p,a,f,i,s,c,n,k,q) == False:
-                                    os.system('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q) + ' >' + p+'-'+a+'-F'+f+'-C'+c+'-I'+str(i)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'&' )
+                                    os.system('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q) + '&')

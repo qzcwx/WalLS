@@ -85,7 +85,7 @@ class LocalSearch:
         
         self.WA = []
 
-        self.printInter()
+        #self.printInter()
         
         init = False
         updateT = 0
@@ -99,7 +99,7 @@ class LocalSearch:
             else:
                 improveN, bestI = self.updateFitBestsm(minimize)
 
-            print improveN, bestI
+            #print improveN, bestI
         
             if improveN == False:
                 if restart == True:
@@ -107,6 +107,7 @@ class LocalSearch:
                     startR = time.time()
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
+                    #print 'restart'
 
                     self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize, False)
@@ -124,7 +125,7 @@ class LocalSearch:
             else : # improveN is TRUE 
                 self.updateList = copy.deepcopy(self.Buffer)
                 self.updateList.append(bestI)
-                print self.updateList
+                #print self.updateList
                 for i in self.updateList:
                     self.update(i)
                     self.updateWAS(i)
@@ -160,7 +161,7 @@ class LocalSearch:
         self.WA = []
         #takenBits = self.dim*[False]
 
-        self.printInter()
+        #self.printInter()
         
         init = False
         #lenImproveA = []
@@ -186,7 +187,7 @@ class LocalSearch:
 #                start = time.time()
                 improveN, bestI = self.updateFitBest(bestI,minimize)
 #                updateT = updateT + time.time() - start
-            print improveN, bestI
+            #print improveN, bestI
             #lenImproveA.append( len(self.improveA) )
 #            sBuffer = 0
 #            sBufferNotChange = 0
@@ -824,6 +825,7 @@ class LocalSearch:
                         improveA.append(j)
         if not improveA:
             return False, None
+        #print improveA
 
         for i in improveA:
             if i == improveA[0]:
