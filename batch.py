@@ -104,8 +104,8 @@ if __name__== "__main__":
         for n in [20,50,100,200,500] :
             for i in [0]:
                 for a in ['rLS']:
-                    for f in ['fit', 'mean']:
-                        for c in ['wal']:
+                    for f in ['fit']:
+                        for c in ['supm']:
                             for p in ['NKQ','NK']:
                                 if p == 'NKQ':
                                     for q in [2]:
@@ -133,8 +133,8 @@ if __name__== "__main__":
         for n in [20,50,100,200,500] :
             for i in [0]:
                 for a in ['rLS']:
-                    for f in ['fit', 'mean']:
-                        for c in ['wal']:
+                    for f in ['fit']:
+                        for c in ['supm']:
                             for p in ['NKQ','NK']:
                                 if p == 'NKQ':
                                     for q in [2]:

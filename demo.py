@@ -37,6 +37,7 @@ fitName = tl.getArgv() # fit/mean/std
 #if compMeth == 'wal' and fitName != 'mean':
 #    print 'ERROR: Walsh analysis can only be applied to compute mean'
 #    sys.exit()
+
 inst = int(tl.getArgv())
 s = tl.getArgv() # get the setting for population size
 n = int(tl.getArgv())
@@ -46,7 +47,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 30 
+runs = 1
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -127,7 +128,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'wal':
+    if compMeth == 'wal' or compMeth == 'supm':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         walTime = time.time() - start
@@ -208,4 +209,4 @@ else:
         print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
 
-    print 'Job complete: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
