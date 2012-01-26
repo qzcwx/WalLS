@@ -61,7 +61,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+#print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """
@@ -128,7 +128,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'wal' or compMeth == 'supm':
+    if compMeth == 'wal' or compMeth == 'supm' or compMeth == 'bitImp':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         walTime = time.time() - start
@@ -184,30 +184,30 @@ else:
 #    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
 #    plt.show()
 
-    """ store results to files """
-    if probName == 'NKQ':
-        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-    elif probName == 'NK':
-        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+#    """ store results to files """
+#    if probName == 'NKQ':
+#        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+#    elif probName == 'NK':
+#        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+#
+#    f = open(nameOfF, 'w')
+#    for i in range(runs):
+#        if fitName != 'fit':
+#            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+#        else:
+#            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+#    f.close()
+#
+#    """ store runtime to files """
+#    if probName == 'NKQ':
+#        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+#    elif probName == 'NK':
+#        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+#
+#    f = open(nameOfF, 'w')
+#    for i in range(runs):
+#        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
+#    f.close()
 
-    f = open(nameOfF, 'w')
-    for i in range(runs):
-        if fitName != 'fit':
-            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-        else:
-            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
-    f.close()
-
-    """ store runtime to files """
-    if probName == 'NKQ':
-        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-    elif probName == 'NK':
-        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
-
-    f = open(nameOfF, 'w')
-    for i in range(runs):
-        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
-    f.close()
-
-    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k
+#    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k
     print

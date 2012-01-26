@@ -67,6 +67,41 @@ class LocalSearch:
                 return self.runFitsm(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeansm(fitName, minimize, restart)
+        elif compM == 'bitImp':
+            return self.bitImpact()
+
+    def bitImpact(self):
+        self.transWal()
+        self.indiv = self.initIndiv(self.dim)
+        self.fitEval = 0
+        self.initWal()
+        rep = 100
+        fitChange = np.zeros(self.dim)
+        for i in range(rep):
+            self.indiv = self.initIndiv(self.dim)
+            self.indiv = self.evalPop(self.indiv)
+#            print 'fx', self.indiv.bit, self.indiv.fit
+#            print
+            fx = self.indiv.fit
+            for j in range(self.dim):
+                self.newIndiv = copy.deepcopy(self.indiv)
+                if self.newIndiv.bit[j] == '1':
+                    self.newIndiv.bit[j] = '0'
+                else:
+                    self.newIndiv.bit[j] = '1'
+                self.newIndiv = self.evalPop(self.newIndiv)
+#                print 'fy', self.newIndiv.bit, self.newIndiv.fit
+                fy = self.newIndiv.fit
+                fitChange[j] = fitChange[j] + np.abs(fx-fy)
+#                print fitChange
+#                print 
+            fitChange[j] = fitChange[j]/float(rep)
+
+
+#        for i in zip(fitChange,self.InterCount):
+#            print i
+        print "%.2f" % (np.corrcoef([fitChange,self.InterCount])[1,0])
+        return {'nEvals': None, 'sol': None, 'bit': None, 'init': None, 'update': None}
 
     def runFitsm(self,fitName, minimize, restart):
         """ 

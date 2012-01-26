@@ -15,13 +15,23 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q):
         print nameOfF, 'exists!!!'
     return os.path.isfile(nameOfF)
 
-for k in [2, 4, 8]:
-    for n in [20, 50, 100, 200, 500]:
-        for i in [0]:
-            for a in ['rLS']:
-                for f in ['fit']:
-                    for c in ['supm']:
-                        for p in ['NK']:
+#nRange = [20]
+#kRange = [2]
+kRange = [2,4,8]
+nRange = [20,50,100]
+iRange = [1]
+aRange = ['rLS']
+fRange = ['fit']
+cRange = ['bitImp']
+pRange = ['NK']
+
+for k in kRange:
+    for n in nRange :
+        for i in iRange :
+            for a in aRange :
+                for f in fRange :
+                    for c in cRange :
+                        for p in pRange :
                             if p == 'NKQ':
                                 for q in [2]:
                                     s = 1
@@ -33,4 +43,4 @@ for k in [2, 4, 8]:
                                 s = 1
                                 print 'python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)
                                 if resultExist(p,a,f,i,s,c,n,k,q) == False:
-                                    os.system('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q) + '&')
+                                    os.system('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q) )
