@@ -15,14 +15,15 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q):
         print nameOfF, 'exists!!!'
     return os.path.isfile(nameOfF)
 
-#nRange = [20]
-#kRange = [2]
-kRange = [2,4,8]
-nRange = [20,50,100]
-iRange = [1]
+nRange = [50]
+kRange = [2]
+#kRange = [2,4,8]
+#nRange = [20,50,100]
+iRange = [0]
 aRange = ['rLS']
 fRange = ['fit']
-cRange = ['bitImp']
+#cRange = ['supm', 'wal']
+cRange = ['supm']
 pRange = ['NK']
 
 for k in kRange:

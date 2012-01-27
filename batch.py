@@ -103,7 +103,7 @@ if __name__== "__main__":
     aRange = ['rLS']
     fRange = ['fit']
     cRange = ['supm']
-    pRange = ['NK']
+    pRange = ['NK', 'NKQ']
 
     random.seed(rseed)
 

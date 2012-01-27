@@ -115,6 +115,7 @@ class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
+        #self.printInter()
         
         self.bsf = copy.deepcopy(self.oldindiv)
         
@@ -127,14 +128,15 @@ class LocalSearch:
         initT = time.time() - start
         start = time.time()
         while self.fitEval < self.MaxFit:
-            self.fitEval = self.fitEval + self.dim
             if init == False:
                 improveN, bestI = self.genFitBestsm(minimize)
                 init = True
             else:
                 improveN, bestI = self.updateFitBestsm(minimize)
 
-            #print improveN, bestI
+#            print improveN, bestI
+#            print self.sumArr
+#            print self.Buffer
         
             if improveN == False:
                 if restart == True:
@@ -142,7 +144,7 @@ class LocalSearch:
                     startR = time.time()
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
-                    #print 'restart'
+#                    print 'restart'
 
                     self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize, False)
@@ -158,10 +160,9 @@ class LocalSearch:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
-                self.updateList = copy.deepcopy(self.Buffer)
-                self.updateList.append(bestI)
-                #print self.updateList
-                for i in self.updateList:
+#                print self.P
+                self.fitEval = self.fitEval + len(self.P) * self.dim
+                for i in self.P:
                     self.update(i)
                     self.updateWAS(i)
                     #takenBits[bestI] = True
@@ -171,7 +172,6 @@ class LocalSearch:
                         self.oldindiv.bit[i] = '0'
                     else:
                         self.oldindiv.bit[i] = '1'
-                self.Buffer = []
 
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + time.time() - start
@@ -222,7 +222,8 @@ class LocalSearch:
 #                start = time.time()
                 improveN, bestI = self.updateFitBest(bestI,minimize)
 #                updateT = updateT + time.time() - start
-            #print improveN, bestI
+#            print improveN, bestI
+#            print self.improveA
             #lenImproveA.append( len(self.improveA) )
 #            sBuffer = 0
 #            sBufferNotChange = 0
@@ -257,7 +258,7 @@ class LocalSearch:
 #                    resT = resT + time.time() - start
                     
                     #takenBits = self.dim*[False]
-                    #print 'restart'
+#                    print 'restart'
                     for i in diff:
                         self.update(i)
                         self.updateWAS(i)
@@ -820,56 +821,75 @@ class LocalSearch:
         """
         # check improving move
         improve = False
-        improveA = []
         self.Buffer = []
         for i in range(self.dim):
             if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
-                improveA.append(i) 
+                self.Buffer.append(i) 
                 improve = True
 
         if improve == False:
             return False, None
 
-        for i in improveA:
-            if i == improveA[0]:
+        for i in self.Buffer:
+            if i == self.Buffer[0]:
                 best = self.sumArr[i]
                 bestI = i
             elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
                 best = self.sumArr[i]
                 bestI = i
-        
-        #print improveA
+
+        self.P = [bestI]
 
         # produce buffer list (the independent improving set)
-        improveA.remove(bestI)
-        if bestI not in self.Inter:
-            self.Buffer = copy.deepcopy(improveA)
-        else:
-            for i in improveA:
-                if i not in self.Inter[bestI].arr:
-                    self.Buffer.append(i)
+        for i in [ j for j in self.Buffer if j != bestI]:
+            if i not in self.Inter:
+                self.P.append(i)
+            else :
+                inter = False
+                for j in self.P:
+                    if j in self.Inter[i].arr:
+                        inter = True
+                if inter == False:
+                    self.P.append(i)
 
         return True, bestI
 
     def updateFitBestsm(self, minimize):
-        improveA = []
-        for i in self.updateList:
+        for i in self.P:
+            self.Buffer.remove(i)
             if i in self.Inter:
                 for j in self.Inter[i].arr:
-                    if ((minimize == True and self.sumArr[j] > 0) or (minimize == False and self.sumArr[j]<0)) and (j not in improveA):
-                        improveA.append(j)
-        if not improveA:
+                    if ((minimize == True and self.sumArr[j] > 0) or (minimize == False and self.sumArr[j]<0)): 
+                        if j not in self.Buffer:
+                            self.Buffer.append(j)
+                    elif j in self.Buffer:
+                        self.Buffer.remove(j)
+
+        if not self.Buffer:
             return False, None
         #print improveA
 
-        for i in improveA:
-            if i == improveA[0]:
+        for i in self.Buffer:
+            if i == self.Buffer[0]:
                 best = self.sumArr[i]
                 bestI = i
             elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
                 best = self.sumArr[i]
                 bestI = i
-                    
+
+        self.P = [bestI]
+
+        for i in [ j for j in self.Buffer if j != bestI]:
+            if i not in self.Inter:
+                self.P.append(i)
+            else :
+                inter = False
+                for j in self.P:
+                    if j in self.Inter[i].arr:
+                        inter = True
+                if inter == False:
+                    self.P.append(i)
+
         return True, bestI
 
     def updateFitBest(self, p, minimize):

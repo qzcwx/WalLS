@@ -47,7 +47,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 1
+runs = 30
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -184,30 +184,36 @@ else:
 #    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
 #    plt.show()
 
-#    """ store results to files """
-#    if probName == 'NKQ':
-#        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-#    elif probName == 'NK':
-#        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
-#
-#    f = open(nameOfF, 'w')
-#    for i in range(runs):
-#        if fitName != 'fit':
-#            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-#        else:
-#            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
-#    f.close()
-#
-#    """ store runtime to files """
-#    if probName == 'NKQ':
-#        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
-#    elif probName == 'NK':
-#        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
-#
-#    f = open(nameOfF, 'w')
-#    for i in range(runs):
-#        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
-#    f.close()
+    """ store results to files """
+    if probName == 'NKQ':
+        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+    elif probName == 'NK':
+        nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
-#    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k
+    """ print the mean over multiple runs """
+    r = np.zeros(runs)
+    for i in range(runs):
+        r[i] = res[i]['sol']
+    print np.mean(r)
+
+    f = open(nameOfF, 'w')
+    for i in range(runs):
+        if fitName != 'fit':
+            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+        else:
+            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+    f.close()
+
+    """ store runtime to files """
+    if probName == 'NKQ':
+        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+    elif probName == 'NK':
+        nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+
+    f = open(nameOfF, 'w')
+    for i in range(runs):
+        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
+    f.close()
+
+    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k
     print
