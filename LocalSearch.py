@@ -196,6 +196,8 @@ class LocalSearch:
         self.WA = []
         #takenBits = self.dim*[False]
 
+        walkLen = 10
+
         #self.printInter()
         
         init = False
@@ -247,16 +249,11 @@ class LocalSearch:
                 if restart == True:
                     updateT = updateT + time.time() - start
                     startR = time.time()
-                    oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
 
-#                    start = time.time()
-                    self.fitEval = self.fitEval - 1
-                    self.restart(fitName, minimize, False)
+                    diff = self.walk(fitName, minimize,False, walkLen)
                     init = False
-                    diff = self.diffBits(oldbit, self.oldindiv.bit)
-#                    resT = resT + time.time() - start
-                    
+
                     #takenBits = self.dim*[False]
 #                    print 'restart'
                     for i in diff:
@@ -393,11 +390,12 @@ class LocalSearch:
 #        print '+ initial', time.time()-start
 
         self.bsf = copy.deepcopy(self.oldindiv)
-        takenBits = self.dim*[False]
+        #takenBits = self.dim*[False]
         self.WA = []
 
         init = False
         updateT = 0
+        walkLen = 10
         initT = time.time() - start
         #lenImproveA = []
 #        genT = 0
@@ -454,19 +452,17 @@ class LocalSearch:
                 if restart == True:
                     updateT = updateT + time.time() - start
                     startR = time.time()
-                    oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
 #                    fitGT = fitGT + time.time() - start  
                     
 #                    start = time.time()
-                    self.restart(fitName, minimize,False)
+                    diff = self.walk( fitName, minimize, False, walkLen )
                     init = False
-                    diff = self.diffBits(oldbit, self.oldindiv.bit)
                     #print oldbit, self.oldindiv.bit
 #                    resT = resT + time.time() - start
                     #print 'restart'
-                    takenBits = self.dim*[False]
+                    #takenBits = self.dim*[False]
                     
                     for i in diff:
 #                        start = time.time()
@@ -694,6 +690,30 @@ class LocalSearch:
 #        print self.oldindiv.bit, self.oldindiv.fit, self.oldindiv.fitG
 #        print self.bsf.bit, self.bsf.fit, self.bsf.fitG
 
+    def walk(self, fitName, minimize, evaluate, length):
+        # update the bsf solution
+        if fitName == 'fit' and minimize == True :
+            if self.bsf.fit > self.oldindiv.fit:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif fitName == 'fit' and minimize == False :
+            if self.bsf.fit < self.oldindiv.fit:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif minimize == True :
+            if self.bsf.fitG > self.oldindiv.fitG:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif minimize == False :
+            if self.bsf.fitG < self.oldindiv.fitG:
+                self.bsf = copy.deepcopy(self.oldindiv)
+
+        flipBits = random.sample(xrange(self.dim), length)
+        for i in flipBits:
+            if self.oldindiv.bit[i] == '1':
+                self.oldindiv.bit[i] = '0'
+            else:
+                self.oldindiv.bit[i] = '1'
+        return flipBits
+
+
     def neighbors(self):
         neighs = []
         for j in range(self.dim):
@@ -841,7 +861,7 @@ class LocalSearch:
         self.P = [bestI]
 
         # produce buffer list (the independent improving set)
-        for i in [ j for j in self.Buffer if j != bestI]:
+        for i in [ j for j in self.Buffer if j != bestI ]:
             if i not in self.Inter:
                 self.P.append(i)
             else :

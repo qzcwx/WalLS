@@ -44,7 +44,6 @@ n = int(tl.getArgv())
 if probName != 'SAT':
     k = int(tl.getArgv())
 
-
 maxFit = 1000 * n
 #maxFit = 50
 runs = 30
@@ -190,11 +189,11 @@ else:
     elif probName == 'NK':
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
-    """ print the mean over multiple runs """
-    r = np.zeros(runs)
-    for i in range(runs):
-        r[i] = res[i]['sol']
-    print np.mean(r)
+#    """ print the mean over multiple runs """
+#    r = np.zeros(runs)
+#    for i in range(runs):
+#        r[i] = res[i]['sol']
+#    print np.mean(r)
 
     f = open(nameOfF, 'w')
     for i in range(runs):
