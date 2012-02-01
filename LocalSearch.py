@@ -214,15 +214,17 @@ class LocalSearch:
 #        exceedLimit = 0
         start = time.time()
         while self.fitEval < self.MaxFit:
-            self.fitEval = self.fitEval + self.dim
             if init == False:
                 #start = time.time()
-                improveN, bestI = self.genFitBest(minimize)
+                improveN, bestI, evalCount = self.genFitBest(minimize)
                 #genT = genT + time.time() - start
                 init = True
             else:
 #                start = time.time()
-                improveN, bestI = self.updateFitBest(bestI,minimize)
+                improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
+
+            self.fitEval = self.fitEval + evalCount
+
 #                updateT = updateT + time.time() - start
 #            print improveN, bestI
 #            print self.improveA
@@ -410,17 +412,18 @@ class LocalSearch:
 #        exceedLimit = 0
         start = time.time()
         while self.fitEval < self.MaxFit:
-            self.fitEval = self.fitEval + self.dim
             #print 'SC', self.SC
 
             if init == False:
 #                start = time.time()
-                improveN, bestI = self.genMeanBest(minimize)
+                improveN, bestI, evalCount = self.genMeanBest(minimize)
 #                genT = genT + time.time() - start
                 init = True
             else :
 #                start = time.time()
-                improveN, bestI = self.updateMeanBest(bestI,minimize)
+                improveN, bestI, evalCount = self.updateMeanBest(bestI,minimize)
+
+            self.fitEval = self.fitEval + evalCount
 #                updateT = updateT + time.time() - start
 #            sBuffer = 0
 #            sBufferNotChange = 0
@@ -823,7 +826,7 @@ class LocalSearch:
                 improve = True
 
         if improve == False:
-            return False, None
+            return False, None, self.dim
 
         for i in self.improveA:
             if i == self.improveA[0]:
@@ -833,7 +836,7 @@ class LocalSearch:
                 best = self.sumArr[i]
                 bestI = i
                     
-        return True, bestI
+        return True, bestI, self.dim
 
     def genFitBestsm(self,minimize):
         """
@@ -914,8 +917,10 @@ class LocalSearch:
 
     def updateFitBest(self, p, minimize):
         self.improveA.remove(p)
+        evalCount = 0
         if p in self.Inter:
             for i in self.Inter[p].arr: 
+                evalCount = evalCount + 1
                 if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
                     if i not in self.improveA:
                         self.improveA.append(i)
@@ -923,7 +928,7 @@ class LocalSearch:
                     self.improveA.remove(i)
 
         if not self.improveA:
-            return False, None
+            return False, None, evalCount
 
         for i in self.improveA:
             if i == self.improveA[0]:
@@ -933,7 +938,7 @@ class LocalSearch:
                 best = self.sumArr[i]
                 bestI = i
                     
-        return True, bestI
+        return True, bestI, evalCount
 
     def genMeanBest(self,minimize):
         """
@@ -948,7 +953,7 @@ class LocalSearch:
                 improve = True
 
         if improve == False:
-            return False, None
+            return False, None, self.dim
 
         # find the best value
         for i in self.improveA:
@@ -958,12 +963,14 @@ class LocalSearch:
             elif ( best<self.SC[i] and minimize == True ) or ( best>self.SC[i] and minimize == False ): # seek for max S
                 best = self.SC[i]
                 bestI = i
-        return True, bestI
+        return True, bestI, self.dim
 
     def updateMeanBest(self, p, minimize):
         self.improveA.remove(p)
+        evalCount = 0
         if p in self.Inter:
             for i in self.Inter[p].arr:
+                evalCount = evalCount + 1
                 if (minimize == True and self.SC[i] > 0) or (minimize == False and self.SC[i]<0):
                     if i not in self.improveA:
                         self.improveA.append(i)
@@ -971,7 +978,7 @@ class LocalSearch:
                     self.improveA.remove(i)
 
         if not self.improveA:
-            return False, None
+            return False, None, evalCount
 
         for i in self.improveA:
             if i == self.improveA[0]:
@@ -981,7 +988,7 @@ class LocalSearch:
                 best = self.SC[i]
                 bestI = i
                     
-        return True, bestI
+        return True, bestI, evalCount
 
     def initWal(self):
         """ 
