@@ -196,7 +196,7 @@ class LocalSearch:
         self.WA = []
         #takenBits = self.dim*[False]
 
-        walkLen = 10
+        walkLen = 50
 
         #self.printInter()
         
@@ -212,6 +212,9 @@ class LocalSearch:
 #        bufferSize = 5
 #        withinLimit = 0
 #        exceedLimit = 0
+        diffLocOpt = []
+        LocOptC = 0
+
         start = time.time()
         while self.fitEval < self.MaxFit:
             if init == False:
@@ -252,7 +255,9 @@ class LocalSearch:
                     updateT = updateT + time.time() - start
                     startR = time.time()
                     self.oldindiv = self.evalPop(self.oldindiv)
-
+                    LocOptC = LocOptC + 1
+                    if self.checkExist(self.oldindiv.bit, diffLocOpt) == False:
+                        diffLocOpt.append(copy.deepcopy(self.oldindiv.bit))
                     diff = self.walk(fitName, minimize,False, walkLen)
                     init = False
 
@@ -294,6 +299,7 @@ class LocalSearch:
         updateT = updateT + time.time() - start
         #print 'Percentage of be withing buffer size limit', bufferSize, ':', withinLimit / (withinLimit + exceedLimit + 0.0)
         #print  withinLimit / (withinLimit + exceedLimit + 0.0)
+        print LocOptC, len(diffLocOpt)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitWal(self,fitName, minimize, restart):
@@ -1311,3 +1317,16 @@ class LocalSearch:
     def printInter(self):
         for i in self.Inter:
             print i,self.Inter[i].arr
+
+    def checkExist(self, opt, diffLocOpt):
+        """ check whether opt has already in diffLocOpt or not """
+        for i in diffLocOpt:
+            same = True
+            for j in range(len(i)):
+                if opt[j] != i[j]:
+                    same = False
+                    break
+            if same == True:
+                return same
+        return False
+
