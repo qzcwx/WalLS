@@ -196,7 +196,7 @@ class LocalSearch:
         self.WA = []
         #takenBits = self.dim*[False]
 
-        walkLen = 10
+        walkLen = 20
 
         #self.printInter()
         
@@ -397,7 +397,7 @@ class LocalSearch:
 
         init = False
         updateT = 0
-        walkLen = 10
+        walkLen = 20
         initT = time.time() - start
         #lenImproveA = []
 #        genT = 0
