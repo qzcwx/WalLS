@@ -131,7 +131,7 @@ Constrains:
 4) for NK, Q = None
 5) for NKQ, Q = {2, 4, 8, 16}
 6) for LS,  PopSize = 1
-7) [ComputeMethod] = {bf (brute force), wal (walsh coefficient), supm (super move), bitImp (bit impact)}. If 'wal', 'mean' 
+7) [ComputeMethod] = {bf (brute force), walWalk (walsh coefficient with random walk), walRest (walsh coefficient with random walk), supm (super move), bitImp (bit impact)}. If 'wal', 'mean' 
         """
         sys.exit()
  
