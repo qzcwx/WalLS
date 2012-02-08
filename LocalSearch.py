@@ -25,6 +25,7 @@ class LocalSearch:
         self.model = model
         self.MaxFit = MaxFit
         self.dim = dim
+        self.threshold = 1e-15
 
     def initIndiv(self, dim):
         """ initial the search inidividual with random bit string """
@@ -260,7 +261,8 @@ class LocalSearch:
                 improveN, bestI, evalCount = self.updateFitBest2(bestI,minimize)
             self.fitEval = self.fitEval + evalCount
 
-            print self.oldindiv.bit
+#            print 'oldindiv',self.oldindiv.bit
+            print 'improveA',self.improveA
             print improveN, bestI, self.fitEval
             print 
 #            pdb.set_trace()
@@ -847,9 +849,9 @@ class LocalSearch:
         """
         generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness)
 
-        return: 1) whether there is an improving move in distance 2 neigh
-                2) the index of best distance 1 neigh for taking the next move
-                3) the number of evaluations consumed by this step
+        return : 1) whether there is an improving move in distance 2 neigh
+                 2) the index of best distance 1 neigh for taking the next move
+                 3) the number of evaluations consumed by this step
         """
         improve = False
         self.improveA = []
@@ -857,9 +859,9 @@ class LocalSearch:
 
         # checking the distance 1 neigh
         for i in range(self.dim):
-            if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
+            if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
                 self.improveA.append(i) 
-               # neighImprove.append(Struct(index =[i], val = self.sumArr[i]))
+                neighImprove.append(Struct(index =[i], val = self.sumArr[i]))
                 improve = True
 
 #        print self.sumArr
@@ -871,25 +873,42 @@ class LocalSearch:
             self.updateFake(i)
             #self.updateWASfake(i)
             for j in [k for k in range(self.dim) if k!=i]:
-                if (minimize == True and self.sumArrFake[j] > 0) or (minimize == False and self.sumArrFake[j]<0):
+                self.sumArrFake[j] = self.sumArrFake[j]+self.sumArr[i]
+                if (minimize == True and self.sumArrFake[j] > self.threshold) or (minimize == False and self.sumArrFake[j]<-self.threshold):
                     neighImprove.append(Struct(index =[i,j], val = self.sumArrFake[j]))
                     improve = True
+
+#        for i in range(len(neighImprove)):
+#            print neighImprove[i].index, neighImprove[i].val
 
 #        for i in neighImprove:
 #            print i.index, i.val
                
         if improve == False:
-            return False, None, self.dim*self.dim
+            #return False, None, self.dim*self.dim
+            return False, None, self.dim
 
         for i in range(len(neighImprove)):
             if i == 0:
                 best = neighImprove[i].val
                 bestI = neighImprove[i].index[0]
-            elif (best<neighImprove[i].val and minimize == True) or (best>neighImprove[i].val and minimize == False): # seek for max S
+            elif (best<neighImprove[i].val - self.threshold and minimize == True) or (best>neighImprove[i].val + self.threshold and minimize == False): # seek for max S
                 best = neighImprove[i].val
                 bestI = neighImprove[i].index[0]
+
+        bestIlist = []
+        for i in range(len(neighImprove)):
+            if abs(best - neighImprove[i].val) < self.threshold:
+                candI = neighImprove[i].index[0]
+                if candI not in bestIlist:
+                    bestIlist.append(candI)
+
+        bestI = random.choice(bestIlist)
+#        print 'bestList', bestIlist
+#        print 'bestI', bestI
                     
-        return True, bestI, self.dim*self.dim
+        #return True, bestI, self.dim*self.dim
+        return True, bestI, self.dim
 
     def genFitBestsm(self,minimize):
         """
@@ -1006,37 +1025,53 @@ class LocalSearch:
         if p in self.Inter:
             for i in self.Inter[p].arr: 
                 evalCount = evalCount + 1
-                if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
+                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
 
-#        for i in self.improveA:
-#            """ add distance 1 neigh under consideration """
-#            neighImprove.append(Struct(index=[i], val = self.sumArr[i]))
+        for i in self.improveA:
+            """ add distance 1 neigh under consideration """
+            neighImprove.append(Struct(index=[i], val = self.sumArr[i]))
 
         # checking the distance 2 neigh, remember to preserve context
         for i in [k for k in range(self.dim) if k!=p]:
             self.mirrorParam() # everything is reset, pretending nothing happened
             self.updateFake(i)
-            #self.updateWASfake(i)
             for j in [k for k in range(self.dim) if k!=i]:
-                if (minimize == True and self.sumArrFake[j] > 0) or (minimize == False and self.sumArrFake[j]<0):
+                self.sumArrFake[j] = self.sumArrFake[j]+self.sumArr[i]
+                if (minimize == True and self.sumArrFake[j] > self.threshold) or (minimize == False and self.sumArrFake[j]<-self.threshold):
                     neighImprove.append(Struct(index =[i,j], val = self.sumArrFake[j]))
 
+#        for i in range(len(neighImprove)):
+#            print neighImprove[i].index, neighImprove[i].val
+        
         if not neighImprove:
-            return False, None, evalCount + self.dim * (self.dim-1)
+            #return False, None, evalCount + self.dim * (self.dim-1)
+            return False, None, evalCount 
 
         for i in range(len(neighImprove)):
             if i == 0:
                 best = neighImprove[i].val
                 bestI = neighImprove[i].index[0]
-            elif (best<neighImprove[i].val and minimize == True) or (best>neighImprove[i].val and minimize == False): # seek for max S
+            elif (best<neighImprove[i].val - self.threshold and minimize == True) or (best>neighImprove[i].val + self.threshold and minimize == False): # seek for max S
                 best = neighImprove[i].val
                 bestI = neighImprove[i].index[0]
-                    
-        return True, bestI, evalCount + self.dim * (self.dim-1)
+
+        bestIlist = []
+        for i in range(len(neighImprove)):
+            if abs(best - neighImprove[i].val) < self.threshold:
+                candI = neighImprove[i].index[0]
+                if candI not in bestIlist:
+                    bestIlist.append(candI)
+
+        bestI = random.choice(bestIlist)
+#        print 'bestList', bestIlist
+#        print 'bestI', bestI
+
+        #return True, bestI, evalCount + self.dim * (self.dim-1)
+        return True, bestI, evalCount 
 
     def genMeanBest(self,minimize):
         """
