@@ -46,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 50
-runs = 30
+runs = 1
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -174,6 +174,40 @@ else:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
         tAll[i] = time.time() - start
 
+    for i in range(runs):
+        # print trace
+        if probName == 'NKQ':
+            nameOfF = nameOfDir+'Trace-'+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'-R'+str(i)+'.txt'
+        elif probName == 'NK':
+            nameOfF = nameOfDir+'Trace-'+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-R'+str(i)+'.txt'
+        f = open(nameOfF, 'w')
+        for j in res[i]['trace']:
+            print >>f, j.fitEval, j.fit
+        f.close()
+
+        # print inflection points only
+        if probName == 'NKQ':
+            nameOfF = nameOfDir+'Inf-'+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'-R'+str(i)+'.txt'
+        elif probName == 'NK':
+            nameOfF = nameOfDir+'Inf-'+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-R'+str(i)+'.txt'
+        f = open(nameOfF, 'w')
+        for j in res[i]['inf']:
+            print >>f, j.fitEval, j.fit
+        f.close()
+
+#    """ print the mean over multiple runs """
+#    r = np.zeros(runs)
+#    for i in range(runs):
+#        r[i] = res[i]['sol']
+#    print np.mean(r)
+
+#    f = open(nameOfF, 'w')
+#    for i in range(runs):
+#        if fitName != 'fit':
+#            print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+#        else:
+#            print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+#    f.close()
 #    trace = res[0]['trace']
 #    for i in trace:
 ##        print 'Eval', i.fitEval, 'fit', i.fit

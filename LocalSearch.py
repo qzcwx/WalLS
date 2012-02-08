@@ -217,8 +217,15 @@ class LocalSearch:
 #        bufferSize = 5
 #        withinLimit = 0
 #        exceedLimit = 0
+        traceA = []
+        infA = []
+
         start = time.time()
         while self.fitEval < self.MaxFit:
+            """ for the purpose of trace """
+            self.oldindiv = self.evalPop(self.oldindiv)
+            traceA.append(Struct(fitEval = self.fitEval, fit = self.oldindiv.fit))
+
             if init == False:
                 #start = time.time()
                 improveN, bestI, evalCount = self.genFitBest(minimize)
@@ -257,6 +264,10 @@ class LocalSearch:
                     updateT = updateT + time.time() - start
                     startR = time.time()
                     self.oldindiv = self.evalPop(self.oldindiv)
+
+                    """ for the purpose of trace """
+                    traceA.append(Struct(fitEval = self.fitEval, fit = self.oldindiv.fit))
+                    infA.append(Struct(fitEval = self.fitEval, fit = self.oldindiv.fit))
 
                     diff = self.walk(fitName, minimize,False, walkLen)
                     init = False
@@ -299,7 +310,9 @@ class LocalSearch:
         updateT = updateT + time.time() - start
         #print 'Percentage of be withing buffer size limit', bufferSize, ':', withinLimit / (withinLimit + exceedLimit + 0.0)
         #print  withinLimit / (withinLimit + exceedLimit + 0.0)
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+        #return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+        #return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT, 'trace':traceA, 'inf': infA}
 
     def runFitWal(self,fitName, minimize, restart):
         """ 
@@ -407,8 +420,15 @@ class LocalSearch:
 #        bufferSize = 5
 #        withinLimit = 0
 #        exceedLimit = 0
+        traceA = []
+        infA = []
+
         start = time.time()
         while self.fitEval < self.MaxFit:
+            """ for the purpose of trace """
+            self.oldindiv = self.evalPop(self.oldindiv)
+            traceA.append(Struct(fitEval = self.fitEval, fit = self.oldindiv.fit))
+
             if init == False:
                 #start = time.time()
                 improveN, bestI, evalCount = self.genFitBest(minimize)
@@ -444,6 +464,10 @@ class LocalSearch:
                     startR = time.time()
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
+
+                    """ for the purpose of trace """
+                    traceA.append(Struct(fitEval = self.fitEval, fit = self.oldindiv.fit))
+                    infA.append(Struct(fitEval = self.fitEval, fit = self.oldindiv.fit))
 
 #                    start = time.time()
                     self.fitEval = self.fitEval - 1
@@ -493,7 +517,8 @@ class LocalSearch:
         updateT = updateT + time.time() - start
         #print 'Percentage of be withing buffer size limit', bufferSize, ':', withinLimit / (withinLimit + exceedLimit + 0.0)
         #print  withinLimit / (withinLimit + exceedLimit + 0.0)
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+        #return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT, 'trace':traceA, 'inf': infA}
 
     def runMeanSCwalk(self,fitName, minimize, restart):
         """ 
