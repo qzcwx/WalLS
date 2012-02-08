@@ -253,6 +253,7 @@ class LocalSearch:
         updateT = 0
         initT = time.time() - start
         start = time.time()
+
         while self.fitEval < self.MaxFit:
             if init == False:
                 improveN, bestI, evalCount = self.genFitBest2(minimize)
@@ -262,9 +263,8 @@ class LocalSearch:
             self.fitEval = self.fitEval + evalCount
 
 #            print 'oldindiv',self.oldindiv.bit
-            print 'improveA',self.improveA
-            print improveN, bestI, self.fitEval
-            print 
+#            print 'improveA',self.improveA
+#            print improveN, bestI, self.fitEval
 #            pdb.set_trace()
         
             if improveN == False:
@@ -287,12 +287,13 @@ class LocalSearch:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
             else : # improveN is TRUE 
-                self.update(bestI)
-                self.updateWAS(bestI)
-                if self.oldindiv.bit[bestI] == '1':
-                    self.oldindiv.bit[bestI] = '0'
-                else:
-                    self.oldindiv.bit[bestI] = '1'
+                for i in bestI:
+                    self.update(i)
+                    self.updateWAS(i)
+                    if self.oldindiv.bit[i] == '1':
+                        self.oldindiv.bit[i] = '0'
+                    else:
+                        self.oldindiv.bit[i] = '1'
 
         if fitName == 'fit' and minimize == True :
             if self.bsf.fit > self.oldindiv.fit:
@@ -861,7 +862,7 @@ class LocalSearch:
         for i in range(self.dim):
             if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
                 self.improveA.append(i) 
-                neighImprove.append(Struct(index =[i], val = self.sumArr[i]))
+                neighImprove.append(Struct(index =[i], val = self.sumArr[i])) # add dist 1 neigh into consideration as well
                 improve = True
 
 #        print self.sumArr
@@ -891,21 +892,25 @@ class LocalSearch:
         for i in range(len(neighImprove)):
             if i == 0:
                 best = neighImprove[i].val
-                bestI = neighImprove[i].index[0]
-            elif (best<neighImprove[i].val - self.threshold and minimize == True) or (best>neighImprove[i].val + self.threshold and minimize == False): # seek for max S
+                bestI = neighImprove[i].index
+            elif ( best<neighImprove[i].val - self.threshold and minimize == True) or ( best>neighImprove[i].val + self.threshold and minimize == False ): # seek for max S
                 best = neighImprove[i].val
-                bestI = neighImprove[i].index[0]
+                bestI = neighImprove[i].index
 
         bestIlist = []
         for i in range(len(neighImprove)):
             if abs(best - neighImprove[i].val) < self.threshold:
-                candI = neighImprove[i].index[0]
+                candI = neighImprove[i].index
                 if candI not in bestIlist:
                     bestIlist.append(candI)
 
+        #print 'bestIlist',bestIlist
         bestI = random.choice(bestIlist)
 #        print 'bestList', bestIlist
 #        print 'bestI', bestI
+        if type(bestI) is int:
+            # make a consistent interface
+            bestI = [bestI]
                     
         #return True, bestI, self.dim*self.dim
         return True, bestI, self.dim
@@ -1013,23 +1018,25 @@ class LocalSearch:
                     
         return True, bestI, evalCount
 
-    def updateFitBest2(self, p, minimize):
+    def updateFitBest2(self, P, minimize):
         """ 
         generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness), by performing partial updates
         """
         neighImprove = []
         evalCount = 0
-
-        if p in self.improveA:
-            self.improveA.remove(p)
-        if p in self.Inter:
-            for i in self.Inter[p].arr: 
-                evalCount = evalCount + 1
-                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
-                    if i not in self.improveA:
-                        self.improveA.append(i)
-                elif i in self.improveA:
-                    self.improveA.remove(i)
+        
+        for p in P:
+            if p in self.improveA:
+                self.improveA.remove(p)
+            if p in self.Inter:
+                for i in self.Inter[p].arr: 
+                    evalCount = evalCount + 1
+                    if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
+                        if i not in self.improveA:
+                            self.improveA.append(i)
+                    elif i in self.improveA:
+                        self.improveA.remove(i)
+        p = P[-1]
 
         for i in self.improveA:
             """ add distance 1 neigh under consideration """
@@ -1062,13 +1069,14 @@ class LocalSearch:
         bestIlist = []
         for i in range(len(neighImprove)):
             if abs(best - neighImprove[i].val) < self.threshold:
-                candI = neighImprove[i].index[0]
+                candI = neighImprove[i].index
                 if candI not in bestIlist:
                     bestIlist.append(candI)
 
         bestI = random.choice(bestIlist)
-#        print 'bestList', bestIlist
-#        print 'bestI', bestI
+        if type(bestI) is int:
+            # make a consistent interface
+            bestI = [bestI]
 
         #return True, bestI, evalCount + self.dim * (self.dim-1)
         return True, bestI, evalCount 
