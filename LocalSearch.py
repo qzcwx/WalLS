@@ -229,10 +229,10 @@ class LocalSearch:
         walkLen = 10
         init = False
         updateT = 0
+        evalCountA = []
+
         initT = time.time() - start
         start = time.time()
-
-        evalCountA = []
 
         while self.fitEval < self.MaxFit:
             if init == False:
@@ -506,6 +506,7 @@ class LocalSearch:
         init = False
         updateT = 0
         walkLen = 10
+        evalCountA = []
         initT = time.time() - start
         start = time.time()
         while self.fitEval < self.MaxFit:
@@ -515,6 +516,7 @@ class LocalSearch:
                 init = True
             else :
                 improveN, bestI, evalCount = self.updateMeanBest(bestI,minimize)
+                evalCountA.append(evalCount)
 
             self.fitEval = self.fitEval + evalCount
 
@@ -554,6 +556,7 @@ class LocalSearch:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
         updateT = updateT + time.time() - start
+        print 'mean', np.mean(evalCountA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runMeanSC2walk(self,fitName, minimize, restart):
@@ -579,17 +582,21 @@ class LocalSearch:
         init = False
         updateT = 0
         walkLen = 10
+        evalCountA = []
+
         initT = time.time() - start
         start = time.time()
+
         while self.fitEval < self.MaxFit:
 
             if init == False:
-                improveN, bestI, evalCount = self.genMeanBest(minimize)
+                improveN, bestI, evalCount = self.genMeanBest2(minimize)
                 init = True
             else :
-                improveN, bestI, evalCount = self.updateMeanBest(bestI,minimize)
+                improveN, bestI, evalCount = self.updateMeanBest2(bestI,minimize)
 
             self.fitEval = self.fitEval + evalCount
+            evalCountA.append(evalCount)
 
             if improveN == False:
                 if restart == True:
@@ -612,13 +619,14 @@ class LocalSearch:
                     self.fitEval = self.fitEval - 1
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
-                self.update(bestI)
-                self.updateSC(bestI)
-                self.updateWAS(bestI)
-                if self.oldindiv.bit[bestI] == '1':
-                    self.oldindiv.bit[bestI] = '0'
-                else:
-                    self.oldindiv.bit[bestI] = '1'
+                for i in bestI:
+                    self.update(i)
+                    self.updateSC(i)
+                    self.updateWAS(i)
+                    if self.oldindiv.bit[i] == '1':
+                        self.oldindiv.bit[i] = '0'
+                    else:
+                        self.oldindiv.bit[i] = '1'
 
         self.bsf = self.evalPop(self.bsf)
         self.fitEval = self.fitEval - 1
@@ -627,6 +635,7 @@ class LocalSearch:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
         updateT = updateT + time.time() - start
+        print 'mean', np.mean(evalCountA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
 
@@ -1125,7 +1134,6 @@ class LocalSearch:
         for i in range(self.dim):
             self.mirrorParam() # everything is reset, pretending nothing happened
             self.updateFake(i)
-            #self.updateWASfake(i)
             if i in self.improveAfake:
                 self.improveAfake.remove(i)
             if i in self.Inter:
@@ -1363,7 +1371,7 @@ class LocalSearch:
         improve = False
         self.improveA = []
         for i in range(self.dim):
-            if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<self.threshold):
+            if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<-self.threshold):
                 self.improveA.append(i)
                 improve = True
 
@@ -1380,13 +1388,82 @@ class LocalSearch:
                 bestI = i
         return True, bestI, self.dim
 
+    def genMeanBest2(self,minimize):
+        """
+        generate the index of best distance 2 neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
+
+        return: 1) whether there is an improving move in distance 2 neigh
+                2) the index of best distance 1 neigh for taking the next move
+                3) the number of evaluations consumed by this step
+        """
+        # check improving move 
+        evalCount = self.dim
+        self.improveA = []
+        neighImprove = []
+
+        # check dist 1 neigh
+        for i in range(self.dim):
+            if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<-self.threshold):
+                self.improveA.append(i)
+                neighImprove.append(Struct(index =[i], val = self.SC[i])) # add dist 1 neigh into consideration as well
+
+        # checking the distance 2 neigh, remember to preserve context
+        for i in range(self.dim):
+            self.mirrorSCParam() # everything is reset, pretending nothing happened
+            self.updateFake(i)
+            self.updateSCfake(i)
+            if i in self.improveAfake:
+                self.improveAfake.remove(i)
+            if i in self.Inter:
+                for j in self.Inter[i].arr:
+                    evalCount = evalCount + 1
+                    self.SCfake[j] = self.SCfake[j]+self.SC[i]
+                    if (minimize == True and self.SCfake[j] > self.threshold) or (minimize == False and self.SCfake[j]<-self.threshold):
+                        if j not in self.improveAfake:
+                            self.improveAfake.append(j)
+                    elif j in self.improveAfake:
+                        self.improveAfake.remove(j)
+
+            for j in self.improveAfake:
+                neighImprove.append(Struct(index =[i,j], val = self.SCfake[j]))
+
+        if not neighImprove:
+            #return False, None, self.dim*self.dim
+            return False, None, evalCount
+
+        for i in range(len(neighImprove)):
+            if i == 0:
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index
+            elif ( best<neighImprove[i].val - self.threshold and minimize == True) or ( best>neighImprove[i].val + self.threshold and minimize == False ): # seek for max S
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index
+
+        bestIlist = []
+        for i in range(len(neighImprove)):
+            if abs(best - neighImprove[i].val) < self.threshold:
+                candI = neighImprove[i].index
+                if candI not in bestIlist:
+                    bestIlist.append(candI)
+
+        #print 'bestIlist',bestIlist
+        bestI = random.choice(bestIlist)
+#        print 'bestList', bestIlist
+#        print 'bestI', bestI
+        if type(bestI) is int:
+            # make a consistent interface
+            bestI = [bestI]
+                    
+        #return True, bestI, self.dim*self.dim
+        return True, bestI, evalCount
+
     def updateMeanBest(self, p, minimize):
         self.improveA.remove(p)
         evalCount = 0
         if p in self.Inter:
             for i in self.Inter[p].arr:
                 evalCount = evalCount + 1
-                if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<self.threshold):
+                if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<-self.threshold):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
@@ -1404,6 +1481,78 @@ class LocalSearch:
                 bestI = i
                     
         return True, bestI, evalCount
+
+    def updateMeanBest2(self, P, minimize):
+        evalCount = 0
+        neighImprove = []
+
+        for p in P:
+            if p in self.improveA:
+                self.improveA.remove(p)
+            if p in self.Inter:
+                for i in self.Inter[p].arr: 
+                    evalCount = evalCount + 1
+                    if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<-self.threshold):
+                        if i not in self.improveA:
+                            self.improveA.append(i)
+                    elif i in self.improveA:
+                        self.improveA.remove(i)
+        p = P[-1]
+
+        for i in self.improveA:
+            """ add distance 1 neigh under consideration """
+            neighImprove.append(Struct(index=[i], val = self.SC[i]))
+
+        # checking the distance 2 neigh, remember to preserve context
+        for i in [k for k in range(self.dim) if k!=p]:
+            self.mirrorSCParam() # everything is reset, pretending nothing happened
+            self.updateFake(i)
+            self.updateSCfake(i)
+            if i in self.improveAfake:
+                self.improveAfake.remove(i)
+            if i in self.Inter:
+                for j in self.Inter[i].arr:
+                    evalCount = evalCount + 1
+                    self.SCfake[j] = self.SCfake[j]+self.SC[i]
+                    if (minimize == True and self.SCfake[j] > self.threshold) or (minimize == False and self.SCfake[j]<-self.threshold):
+                        if j not in self.improveAfake:
+                            self.improveAfake.append(j)
+                    elif j in self.improveAfake:
+                        self.improveAfake.remove(j)
+
+            for j in self.improveAfake:
+                neighImprove.append(Struct(index =[i,j], val = self.SCfake[j]))
+
+        if not neighImprove:
+            #return False, None, self.dim*self.dim
+            return False, None, evalCount
+
+        for i in range(len(neighImprove)):
+            if i == 0:
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index
+            elif ( best<neighImprove[i].val - self.threshold and minimize == True) or ( best>neighImprove[i].val + self.threshold and minimize == False ): # seek for max S
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index
+
+        bestIlist = []
+        for i in range(len(neighImprove)):
+            if abs(best - neighImprove[i].val) < self.threshold:
+                candI = neighImprove[i].index
+                if candI not in bestIlist:
+                    bestIlist.append(candI)
+
+        #print 'bestIlist',bestIlist
+        bestI = random.choice(bestIlist)
+#        print 'bestList', bestIlist
+#        print 'bestI', bestI
+        if type(bestI) is int:
+            # make a consistent interface
+            bestI = [bestI]
+                    
+        #return True, bestI, self.dim*self.dim
+        return True, bestI, evalCount
+
 
     def initWal(self):
         """ 
@@ -1627,32 +1776,13 @@ class LocalSearch:
             for i in self.Inter[p].arr:
                 if i < p:
                     self.sumArrFake[i] = self.sumArrFake[i] - 2*self.C[i,p]
-#                    self.Cfake[i,p] = - self.Cfake[i,p]
                 else:
                     self.sumArrFake[i] = self.sumArrFake[i] - 2*self.C[p,i]
-#                    self.Cfake[p,i] = - self.Cfake[p,i]
-
-#        # update the rest of elements in C matrix
-#        if p in self.infectBit.keys():
-#            for i in self.infectBit[p]:
-#                arr = copy.deepcopy(i.arr)
-#                arr.remove(p)
-#                comb = self.genComb(len(arr))
-#                for k in range(len(comb)):
-#                    k0 = arr[int(comb[k][0])]
-#                    k1 = arr[int(comb[k][1])]
-#                    self.Cfake[k0,k1] = self.Cfake[k0,k1] - 2 * self.WASfake[i.WI].w
 
     def updateWAS(self,p):
         if p in self.Inter:
             for i in self.Inter[p].WI:
                 self.WAS[i].w = - self.WAS[i].w
-
-#    def updateWAS(self,p):
-#        """ fake version """
-#        if p in self.Inter:
-#            for i in self.Inter[p].WI:
-#                self.WASfake[i].w = - self.WASfake[i].w
 
     def updateSC(self, p):
         self.SC[p] = - self.SC[p]
@@ -1667,16 +1797,6 @@ class LocalSearch:
                 else :
                     self.Z[i] = self.Z[i]  - 2* self.orderC[p,i]
                     self.orderC[p,i] = - self.orderC[p,i]
-#                phi = np.zeros(self.model.k+1)
-#                if p in self.Inter:
-#                    for i in self.Inter[p].WI:
-#                        order = len(self.WAS[i].arr)
-#                        phi[order-1] = phi[order-1] + self.WAS[i].w
-#
-#                Z[i] = self.sumArr[p]
-#                for i in range(1, self.model.k+1):
-#                    if phi[i] != 0:
-#                        Z[i] = Z[i] + i * phi[i]
                 self.SC[i] = self.sumArr[i] - 2/float(self.dim) * self.Z[i]
 
         if p in self.infectBit.keys():
@@ -1689,6 +1809,19 @@ class LocalSearch:
                     k0 = arr[int(comb[k][0])]
                     k1 = arr[int(comb[k][1])]
                     self.orderC[k0,k1] = self.orderC[k0,k1] - 2 * (lenArr + 1)* self.WAS[i.WI].w
+
+    def updateSCfake(self, p):
+        self.SCfake[p] = - self.SCfake[p]
+        self.Zfake[p] = - self.Zfake[p]
+
+        #update Z array
+        if p in self.Inter:
+            for i in self.Inter[p].arr:
+                if i < p :
+                    self.Zfake[i] = self.Zfake[i]  - 2* self.orderC[i,p]
+                else :
+                    self.Zfake[i] = self.Zfake[i]  - 2* self.orderC[p,i]
+                self.SCfake[i] = self.sumArrFake[i] - 2/float(self.dim) * self.Zfake[i]
 
     def neighWal(self):
         """ 
@@ -1748,6 +1881,13 @@ class LocalSearch:
         self.improveAfake = copy.deepcopy(self.improveA)
 #        self.Cfake = copy.deepcopy(self.C)
 #        self.WASfake = copy.deepcopy(self.WAS)
+
+    def mirrorSCParam(self):
+        """ create a copy of all data structures required for SC update """
+        self.sumArrFake = copy.deepcopy(self.sumArr)
+        self.Zfake = copy.deepcopy(self.Z)
+        self.SCfake = copy.deepcopy(self.SC)
+        self.improveAfake = copy.deepcopy(self.improveA)
 
     def bitImpact(self):
         self.transWal()
