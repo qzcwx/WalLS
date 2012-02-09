@@ -25,6 +25,7 @@ class LocalSearch:
         self.model = model
         self.MaxFit = MaxFit
         self.dim = dim
+        self.threshold = 1e-15
 
     def initIndiv(self, dim):
         """ initial the search inidividual with random bit string """
@@ -1101,7 +1102,7 @@ class LocalSearch:
         improve = False
         self.improveA = []
         for i in range(self.dim):
-            if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
+            if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
                 self.improveA.append(i) 
                 improve = True
 
@@ -1112,7 +1113,7 @@ class LocalSearch:
             if i == self.improveA[0]:
                 best = self.sumArr[i]
                 bestI = i
-            elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
+            elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False): # seek for max S
                 best = self.sumArr[i]
                 bestI = i
                     
@@ -1201,7 +1202,7 @@ class LocalSearch:
         if p in self.Inter:
             for i in self.Inter[p].arr: 
                 evalCount = evalCount + 1
-                if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
+                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
@@ -1214,7 +1215,7 @@ class LocalSearch:
             if i == self.improveA[0]:
                 best = self.sumArr[i]
                 bestI = i
-            elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): # seek for max S
+            elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False): # seek for max S
                 best = self.sumArr[i]
                 bestI = i
                     
@@ -1228,7 +1229,7 @@ class LocalSearch:
         improve = False
         self.improveA = []
         for i in range(self.dim):
-            if (minimize == True and self.SC[i] > 0) or (minimize == False and self.SC[i]<0):
+            if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<self.threshold):
                 self.improveA.append(i)
                 improve = True
 
@@ -1240,7 +1241,7 @@ class LocalSearch:
             if i == self.improveA[0]:
                 best = self.SC[i]
                 bestI = i
-            elif ( best<self.SC[i] and minimize == True ) or ( best>self.SC[i] and minimize == False ): # seek for max S
+            elif ( best<self.SC[i] - self.threshold and minimize == True ) or ( best>self.SC[i] + self.threshold and minimize == False ): # seek for max S
                 best = self.SC[i]
                 bestI = i
         return True, bestI, self.dim
@@ -1251,7 +1252,7 @@ class LocalSearch:
         if p in self.Inter:
             for i in self.Inter[p].arr:
                 evalCount = evalCount + 1
-                if (minimize == True and self.SC[i] > 0) or (minimize == False and self.SC[i]<0):
+                if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<self.threshold):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
@@ -1264,7 +1265,7 @@ class LocalSearch:
             if i == self.improveA[0]:
                 best = self.SC[i]
                 bestI = i
-            elif (best<self.SC[i] and minimize == True) or (best>self.SC[i] and minimize == False): # seek for max S
+            elif (best<self.SC[i] - self.threshold and minimize == True) or (best>self.SC[i]+self.threshold and minimize == False): # seek for max S
                 best = self.SC[i]
                 bestI = i
                     
