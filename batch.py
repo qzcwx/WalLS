@@ -102,7 +102,7 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
-    cRange = ['walRest']
+    cRange = ['walWalk']
     pRange = ['NK', 'NKQ']
 
     random.seed(rseed)

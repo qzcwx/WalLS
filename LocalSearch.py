@@ -171,7 +171,6 @@ class LocalSearch:
         updateT = 0
         initT = time.time() - start
         start = time.time()
-        evalCountA = []
         while self.fitEval < self.MaxFit:
             if init == False:
                 improveN, bestI, evalCount = self.genFitBest(minimize)
@@ -180,8 +179,6 @@ class LocalSearch:
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
 
             self.fitEval = self.fitEval + evalCount
-            if evalCount!=self.dim:
-                evalCountA.append(evalCount)
         
             if improveN == False:
                 if restart == True:
@@ -209,7 +206,6 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + time.time() - start
-        print 'mean', np.mean(evalCountA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitS2walk(self,fitName, minimize, restart):
@@ -229,7 +225,6 @@ class LocalSearch:
         walkLen = 10
         init = False
         updateT = 0
-        evalCountA = []
 
         initT = time.time() - start
         start = time.time()
@@ -242,7 +237,6 @@ class LocalSearch:
                 improveN, bestI, evalCount = self.updateFitBest2(bestI,minimize)
             self.fitEval = self.fitEval + evalCount
 
-            evalCountA.append(evalCount)
 #            print 'oldindiv',self.oldindiv.bit
 #            print 'improveA',self.improveA
 #            print improveN, bestI, self.fitEval
@@ -286,7 +280,6 @@ class LocalSearch:
             if self.bsf.fit < self.oldindiv.fit:
                 self.bsf = copy.deepcopy(self.oldindiv)
         updateT = updateT + time.time() - start
-        print 'mean', np.mean(evalCountA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitWal(self,fitName, minimize, restart):
@@ -506,7 +499,6 @@ class LocalSearch:
         init = False
         updateT = 0
         walkLen = 10
-        evalCountA = []
         initT = time.time() - start
         start = time.time()
         while self.fitEval < self.MaxFit:
@@ -516,7 +508,6 @@ class LocalSearch:
                 init = True
             else :
                 improveN, bestI, evalCount = self.updateMeanBest(bestI,minimize)
-                evalCountA.append(evalCount)
 
             self.fitEval = self.fitEval + evalCount
 
@@ -556,7 +547,6 @@ class LocalSearch:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
         updateT = updateT + time.time() - start
-        print 'mean', np.mean(evalCountA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runMeanSC2walk(self,fitName, minimize, restart):
@@ -582,7 +572,6 @@ class LocalSearch:
         init = False
         updateT = 0
         walkLen = 10
-        evalCountA = []
 
         initT = time.time() - start
         start = time.time()
@@ -596,7 +585,6 @@ class LocalSearch:
                 improveN, bestI, evalCount = self.updateMeanBest2(bestI,minimize)
 
             self.fitEval = self.fitEval + evalCount
-            evalCountA.append(evalCount)
 
             if improveN == False:
                 if restart == True:
@@ -635,7 +623,6 @@ class LocalSearch:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
         updateT = updateT + time.time() - start
-        print 'mean', np.mean(evalCountA)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
 
