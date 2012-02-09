@@ -59,13 +59,14 @@ class LocalSearch:
                 return self.runNeigh(fitName, minimize,restart)
         elif compM == 'walWalk':
             if fitName == 'fit':
-                return self.runFitSwalk(fitName, minimize, restart)
+                #return self.runFitSwalk(fitName, minimize, restart)
+                return self.runFitS2walk(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCwalk(fitName, minimize, restart)
                 #return self.runMeanWal(fitName, minimize, restart)
         elif compM == 'walRest':
             if fitName == 'fit':
-                return self.runFitSrest(fitName, minimize, restart)
+                return self.runFitS2rest(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCrest(fitName, minimize, restart)
         elif compM == 'supm':
@@ -188,70 +189,28 @@ class LocalSearch:
         steepest descent local search running on S
         """
         self.fitEval = 0
-        
         start = time.time()
         self.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
-        
         self.bsf = copy.deepcopy(self.oldindiv)
-        #bestBitsCount = np.zeros(self.dim)
-        
         self.WA = []
-        #takenBits = self.dim*[False]
 
         walkLen = 10
-
-        #self.printInter()
-        
         init = False
-        #lenImproveA = []
         updateT = 0
         initT = time.time() - start
-#        genT = 0
-#        updateT = 0
-#        updateCT = 0
-#        endT = 0
-#        resT = 0
-#        bufferSize = 5
-#        withinLimit = 0
-#        exceedLimit = 0
         start = time.time()
         while self.fitEval < self.MaxFit:
             if init == False:
-                #start = time.time()
                 improveN, bestI, evalCount = self.genFitBest(minimize)
-                #genT = genT + time.time() - start
                 init = True
             else:
-#                start = time.time()
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
 
             self.fitEval = self.fitEval + evalCount
-
-#                updateT = updateT + time.time() - start
-#            print improveN, bestI
-#            print self.improveA
-            #lenImproveA.append( len(self.improveA) )
-#            sBuffer = 0
-#            sBufferNotChange = 0
-#            for i in self.improveA:
-#                if bestI != None :
-#                    if (bestI in self.Inter) and (i not in self.Inter[bestI].arr):
-#                        sBuffer = sBuffer + 1
-#                        if takenBits[i] == False:
-#                            sBufferNotChange = sBufferNotChange + 1
-#                    elif bestI not in self.Inter:
-#                        sBuffer = sBuffer + 1
-#                        if takenBits[i] == False:
-#                            sBufferNotChange = sBufferNotChange + 1
-#            #print sBuffer, len(self.improveA)
-#            if sBuffer <= bufferSize:
-#               withinLimit = withinLimit + 1
-#            else:
-#               exceedLimit = exceedLimit + 1
         
             if improveN == False:
                 if restart == True:
@@ -262,8 +221,6 @@ class LocalSearch:
                     diff = self.walk(fitName, minimize,False, walkLen)
                     init = False
 
-                    #takenBits = self.dim*[False]
-#                    print 'restart'
                     for i in diff:
                         self.update(i)
                         self.updateWAS(i)
@@ -279,27 +236,76 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '0'
                 else:
                     self.oldindiv.bit[bestI] = '1'
-#                start = time.time()
-
-#        print bestBitsCount 
-#        print self.InterCount
-#        plt.plot(bestBitsCount,'o')
-#        plt.plot(self.InterCount,'o')
-#        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
-#        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
-        
-#        start = time.time()
         self.bsf = self.evalPop(self.bsf)
-#        endT = endT + time.time() - start
-        #print np.mean(lenImproveA), np.std(lenImproveA)
-#        print 'genBest', genT
-#        print 'updateBest', updateT
-#        print 'restart', resT
-#        print 'updateCT',updateCT
-#        print 'endT', endT
         updateT = updateT + time.time() - start
-        #print 'Percentage of be withing buffer size limit', bufferSize, ':', withinLimit / (withinLimit + exceedLimit + 0.0)
-        #print  withinLimit / (withinLimit + exceedLimit + 0.0)
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+
+    def runFitS2walk(self,fitName, minimize, restart):
+        """ 
+        steepest descent local search running on S
+        """
+        self.fitEval = 0
+        start = time.time()
+        self.transWal()
+        self.oldindiv = self.initIndiv(self.dim)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+        self.initWal()
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.WA = []
+
+        walkLen = 10
+        init = False
+        updateT = 0
+        initT = time.time() - start
+        start = time.time()
+        while self.fitEval < self.MaxFit:
+            if init == False:
+                improveN, bestI, evalCount = self.genFitBest2(minimize)
+                init = True
+            else:
+                improveN, bestI, evalCount = self.updateFitBest2(bestI,minimize)
+            self.fitEval = self.fitEval + evalCount
+
+            print self.oldindiv.bit
+            print improveN, bestI, self.fitEval
+            print 
+#            pdb.set_trace()
+        
+            if improveN == False:
+                if restart == True:
+                    updateT = updateT + time.time() - start
+                    startR = time.time()
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    diff = self.walk(fitName, minimize,False, walkLen)
+                    init = False
+
+#                    print self.bsf.fit
+#                    pdb.set_trace()
+
+                    for i in diff:
+                        self.update(i)
+                        self.updateWAS(i)
+                    initT = initT + time.time() - startR
+                    start = time.time()
+                else:
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+            else : # improveN is TRUE 
+                self.update(bestI)
+                self.updateWAS(bestI)
+                if self.oldindiv.bit[bestI] == '1':
+                    self.oldindiv.bit[bestI] = '0'
+                else:
+                    self.oldindiv.bit[bestI] = '1'
+
+        if fitName == 'fit' and minimize == True :
+            if self.bsf.fit > self.oldindiv.fit:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        elif fitName == 'fit' and minimize == False :
+            if self.bsf.fit < self.oldindiv.fit:
+                self.bsf = copy.deepcopy(self.oldindiv)
+        updateT = updateT + time.time() - start
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitWal(self,fitName, minimize, restart):
@@ -1119,10 +1125,59 @@ class LocalSearch:
                     
         return True, bestI, self.dim
 
+    def genFitBest2(self,minimize):
+        """
+        generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness)
+
+        return: 1) whether there is an improving move in distance 2 neigh
+                2) the index of best distance 1 neigh for taking the next move
+                3) the number of evaluations consumed by this step
+        """
+        improve = False
+        self.improveA = []
+        neighImprove = []
+
+        # checking the distance 1 neigh
+        for i in range(self.dim):
+            if (minimize == True and self.sumArr[i] > self.threshold ) or (minimize == False and self.sumArr[i]< self.threshold ):
+                self.improveA.append(i) 
+               # neighImprove.append(Struct(index =[i], val = self.sumArr[i]))
+                improve = True
+
+#        print self.sumArr
+#        print self.improveA
+
+        # checking the distance 2 neigh, remember to preserve context
+        for i in range(self.dim):
+            self.mirrorParam() # everything is reset, pretending nothing happened
+            self.updateFake(i)
+            #self.updateWASfake(i)
+            for j in [k for k in range(self.dim) if k!=i]:
+                if (minimize == True and self.sumArrFake[j] > self.threshold ) or (minimize == False and self.sumArrFake[j] < -self.threshold):
+                    neighImprove.append(Struct(index =[i,j], val = self.sumArrFake[j]))
+                    improve = True
+
+#        for i in neighImprove:
+#            print i.index, i.val
+               
+        if improve == False:
+            return False, None, self.dim*self.dim
+
+        for i in range(len(neighImprove)):
+            if i == 0:
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index[0]
+            elif (best< neighImprove[i].val - self.threshold and minimize == True) or (best>neighImprove[i].val + self.threshold and minimize == False): # seek for max S
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index[0]
+                    
+        return True, bestI, self.dim*self.dim
+
     def genFitBestsm(self,minimize):
         """
         generate the index of best neigh according to sumArr only (surrogate of fitness)
         """
+        #TODO need to update the threshold
         # check improving move
         improve = False
         self.Buffer = []
@@ -1159,6 +1214,7 @@ class LocalSearch:
         return True, bestI
 
     def updateFitBestsm(self, minimize):
+        #TODO need to update the threshold
         for i in self.P:
             self.Buffer.remove(i)
             if i in self.Inter:
@@ -1215,11 +1271,55 @@ class LocalSearch:
             if i == self.improveA[0]:
                 best = self.sumArr[i]
                 bestI = i
-            elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False): # seek for max S
+            elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): 
                 best = self.sumArr[i]
                 bestI = i
                     
         return True, bestI, evalCount
+
+    def updateFitBest2(self, p, minimize):
+        """ 
+        generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness), by performing partial updates
+        """
+        neighImprove = []
+        evalCount = 0
+
+        if p in self.improveA:
+            self.improveA.remove(p)
+        if p in self.Inter:
+            for i in self.Inter[p].arr: 
+                evalCount = evalCount + 1
+                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<self.threshold):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+
+#        for i in self.improveA:
+#            """ add distance 1 neigh under consideration """
+#            neighImprove.append(Struct(index=[i], val = self.sumArr[i]))
+
+        # checking the distance 2 neigh, remember to preserve context
+        for i in [k for k in range(self.dim) if k!=p]:
+            self.mirrorParam() # everything is reset, pretending nothing happened
+            self.updateFake(i)
+            #self.updateWASfake(i)
+            for j in [k for k in range(self.dim) if k!=i]:
+                if (minimize == True and self.sumArrFake[j] > self.threshold) or (minimize == False and self.sumArrFake[j]<self.threshold):
+                    neighImprove.append(Struct(index =[i,j], val = self.sumArrFake[j]))
+
+        if not neighImprove:
+            return False, None, evalCount + self.dim * (self.dim-1)
+
+        for i in range(len(neighImprove)):
+            if i == 0:
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index[0]
+            elif (best<neighImprove[i].val-self.threshold and minimize == True) or (best>neighImprove[i].val+self.threshold and minimize == False): # seek for max S
+                best = neighImprove[i].val
+                bestI = neighImprove[i].index[0]
+                    
+        return True, bestI, evalCount + self.dim * (self.dim-1)
 
     def genMeanBest(self,minimize):
         """
@@ -1428,21 +1528,12 @@ class LocalSearch:
         if p in self.Inter:
             for i in self.Inter[p].WI:
                 order = len(self.WAS[i].arr)
-                #order = self.order[i]
                 phi[order-1] = phi[order-1] + self.WAS[i].w
-
-        #print 'WAS'
-#        for i in range(len(self.WAS)):
-#            print self.WAS[i].arr,self.WAS[i].w
-#        print
-#        print 'p',p, 'phi', phi, 's', self.sumArr[p]
 
         s = self.sumArr[p]
         for i in range(1, self.model.k+1):
             if phi[i] != 0:
                 s = s + i * phi[i]
-
-        #print 'Phi', s
         return s
 
     def compCsum(self,p):
@@ -1460,17 +1551,6 @@ class LocalSearch:
         s = s + self.sumArr[p]
 
         return s
-
-#    def updateFit(self,p):
-#        """
-#        super fast and simple update
-#        """
-#        self.sumArr[p] = - self.sumArr[p]
-#        for i in range(p): # i < p
-#            self.sumArr[i] = self.sumArr[i] - 2*self.C[i,p]
-#
-#        for i in range(p+1, self.dim): # i > p
-#            self.sumArr[i] = self.sumArr[i] - 2*self.C[p,i]
 
     def update(self, p):
         """
@@ -1500,10 +1580,45 @@ class LocalSearch:
                     k1 = arr[int(comb[k][1])]
                     self.C[k0,k1] = self.C[k0,k1] - 2 * self.WAS[i.WI].w
 
+    def updateFake(self, p):
+        """
+        The fake version, the updates are made to the mirror data structures
+        By keeping track of coincidence matrix, 
+        Cij stands for S_i(y_j) = S_i(x) - C_ij
+        partially update the Sum Array and self.WAS, given the bit which is changed
+        """
+        self.sumArrFake[p] = - self.sumArrFake[p]
+        
+        if p in self.Inter:
+            for i in self.Inter[p].arr:
+                if i < p:
+                    self.sumArrFake[i] = self.sumArrFake[i] - 2*self.Cfake[i,p]
+#                    self.Cfake[i,p] = - self.Cfake[i,p]
+                else:
+                    self.sumArrFake[i] = self.sumArrFake[i] - 2*self.Cfake[p,i]
+#                    self.Cfake[p,i] = - self.Cfake[p,i]
+
+#        # update the rest of elements in C matrix
+#        if p in self.infectBit.keys():
+#            for i in self.infectBit[p]:
+#                arr = copy.deepcopy(i.arr)
+#                arr.remove(p)
+#                comb = self.genComb(len(arr))
+#                for k in range(len(comb)):
+#                    k0 = arr[int(comb[k][0])]
+#                    k1 = arr[int(comb[k][1])]
+#                    self.Cfake[k0,k1] = self.Cfake[k0,k1] - 2 * self.WASfake[i.WI].w
+
     def updateWAS(self,p):
         if p in self.Inter:
             for i in self.Inter[p].WI:
                 self.WAS[i].w = - self.WAS[i].w
+
+#    def updateWAS(self,p):
+#        """ fake version """
+#        if p in self.Inter:
+#            for i in self.Inter[p].WI:
+#                self.WASfake[i].w = - self.WASfake[i].w
 
     def updateSC(self, p):
         self.SC[p] = - self.SC[p]
@@ -1592,3 +1707,10 @@ class LocalSearch:
     def printInter(self):
         for i in self.Inter:
             print i,self.Inter[i].arr
+
+    def mirrorParam(self):
+        """ create a copy of all data structures required for update """
+        self.sumArrFake = copy.deepcopy(self.sumArr)
+        self.Cfake = copy.deepcopy(self.C)
+        self.WASfake = copy.deepcopy(self.WAS)
+
