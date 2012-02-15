@@ -20,7 +20,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 0
+rseed = 1
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
@@ -44,8 +44,8 @@ n = int(tl.getArgv())
 if probName != 'SAT':
     k = int(tl.getArgv())
 
-maxFit = 1000 * n  * n
-#maxFit = 50
+#maxFit = 1000 * n  * n
+maxFit = 0
 runs = 1
 popSize = 50 # always keep popSize to even number
 
@@ -130,6 +130,7 @@ else:
     if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp':
         start = time.time()
         w = model.WalshCofLinearLinklist()
+        # print Walsh coefficients
         walTime = time.time() - start
 
         """ store runtime to files """
@@ -142,9 +143,14 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-#    bit,fit = tl.compFit(model)
+    bit,fit = tl.compFit(model)
+    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+    for i in a:
+        print i[0], '%.2f' %(i[1])
+
 #    for i in zip(bit,fit):
 #        print i
+        
 #    print 'bit',bit
 #    print 'fit',fit
 #    print 'mean',np.mean(fit)

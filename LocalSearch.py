@@ -14,6 +14,7 @@ import sys
 import time
 import pdb
 from sets import Set
+from operator import itemgetter
 
 class Struct:
     def __init__(self, **kwds):
@@ -1103,7 +1104,7 @@ class LocalSearch:
         """
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
-#        self.printW()
+        self.printWsort()
         self.WA = [] # array representing Walsh terms
         for k in self.model.w.keys(): 
             if self.model.w[k] != 0:
@@ -1745,7 +1746,16 @@ class LocalSearch:
         print all the original walsh terms
         """
         for k in self.model.w.keys():
-            print k, self.model.w[k]
+            print k, '%.3f' % (self.model.w[k])
+
+    def printWsort(self):
+        """
+        print all the sorted Walsh terms
+        """
+#        sorted(self.model.w.values())
+        a = sorted(self.model.w.iteritems(), key=itemgetter(1), reverse=True)
+        for i in a:
+            print i[0], '%.3f' %(i[1])
 
     def printWA(self):
         """
