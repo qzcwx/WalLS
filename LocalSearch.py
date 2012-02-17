@@ -7,7 +7,9 @@ Local Search module:
 import numpy as np
 #import matplotlib.pyplot as plt
 import WalshAnalysis as wal
+import itertools as it
 import random
+import string
 import math
 import copy
 import sys
@@ -52,7 +54,7 @@ class LocalSearch:
         indiv = Struct( fit = 0, fitG = 0, bit = randBitStr)
         return indiv
 
-    def run(self, fitName, minimize, restart, compM ):
+    def run(self, fitName, minimize, restart, compM):
         if compM == 'bf':
             if fitName =='fit': 
                 return self.runFit(minimize,restart)
@@ -76,6 +78,8 @@ class LocalSearch:
                 return self.runMeansm(fitName, minimize, restart)
         elif compM == 'bitImp':
             return self.bitImpact()
+        elif compM == 'walSearch':
+            return self.runWalSearch(fitName, minimize, restart)
 
     def bitImpact(self):
         self.transWal()
@@ -966,6 +970,81 @@ class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
         return { 'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit}
 
+    def runWalSearch(self,fitName, minimize, restart):
+        """
+        initial assignment according Walsh coffecients
+        """
+        self.combLoopup = dict()
+        self.transWal()
+        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+        sol = []
+        for i in range(self.dim) :
+            sol.append('0')
+
+
+#        self.printWAsort()
+        poss = []
+        for i in range(1,len(self.WAsort)):
+            arr = self.WAsort[i].arr
+#            print 
+#            print 'arr',arr
+            
+            if (minimize == True and self.WAsort[i].w < -self.threshold) or (minimize == False and self.WAsort[i].w > self.threshold):
+                odd = False
+            else :
+                odd = True
+            iters = self.genPossBit(odd, arr)
+
+            #pdb.set_trace()
+            
+            # reduce and reconstruct the possible cases
+            if len(poss)!=0:
+                copyPoss = copy.copy(poss)
+                for j in range(len(copyPoss)):
+#                    print 'j.a',copyPoss[j].a
+                    join = list(Set(arr).intersection(copyPoss[j].a)) #[filter(lambda x: x in arr, sublist) for sublist in j.a]
+#                    print 'join', join
+                    # for every bit in jion set, both arrs should be identical
+                    if len(join)!=0:
+                        tempArr = []
+                        for ii in iters:
+                            for jj in copyPoss[j].i:
+                                itent = True
+                                for k in join:
+#                                    print 'k', k, 'ii', ii, 'jj', jj
+                                    if bool(k in ii) ^ bool(k in jj):
+                                        itent = False
+                                        break
+                                if itent == True:
+                                    # reconstruct the possible bitstring
+                                    tempArr.append(list(Set(ii).union(Set(jj))))
+
+                        poss.pop(j) # TODO may be problematic
+                        poss.append( Struct(i=copy.deepcopy(tempArr), a=list(Set(copyPoss[j].a).union(Set(arr))) ))
+                    A = list(Set(copyPoss[j].a).union(Set(arr)))
+                    if len(A) == self.dim and len(tempArr) == 1:
+                        for k in tempArr:
+                            sol[k] = '1'
+                        sol =  ''.join(sol)
+                        print  '%.3f' %(self.func(sol))
+                        sys.exit()
+            else:
+                poss.append(Struct(i=iters, a=arr))
+#            print 'len',len(poss)
+
+            if len(arr) == 1:
+                if odd == False :
+                    sol[arr[0]] = '0'
+                else:
+                    sol[arr[0]] = '1'
+             
+        sol =  ''.join(sol)
+#        print sol
+        print  '%.3e' %(self.func(sol))
+        print 
+        return { 'nEvals': 1, 'sol': None, 'bit': None}
+
+
     def diffBits(self, a, b):
         diff = []
         for i in range(self.dim):
@@ -1104,7 +1183,6 @@ class LocalSearch:
         """
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
-        self.printWsort()
         self.WA = [] # array representing Walsh terms
         for k in self.model.w.keys(): 
             if self.model.w[k] != 0:
@@ -1114,6 +1192,9 @@ class LocalSearch:
                         a.append(i)
                 self.WA.append( Struct(arr = a, w = self.model.w[k]) )
 #        self.printWA()
+
+#        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+#        self.printWAsort()
 
     def binCount(self, arr, bit):
         """
@@ -1757,6 +1838,10 @@ class LocalSearch:
         for i in a:
             print i[0], '%.3f' %(i[1])
 
+    def printWAsort(self):
+        for i in self.WAsort:
+            print i.arr,'\t\t%.3f' %(i.w)
+
     def printWA(self):
         """
         print all walsh terms with array representation
@@ -1788,3 +1873,31 @@ class LocalSearch:
         self.Cfake = copy.deepcopy(self.C)
         self.WASfake = copy.deepcopy(self.WAS)
 
+    def genCombOne(self, odd, order):
+        """ generate the number of possible ones, 
+            given whether it should be odd or not,
+            and the order of Walsh coefficients
+        """
+        if odd == True:
+            if (odd, order) not in self.combLoopup:
+                self.combLoopup[odd, order] = 2*np.array(range((order+1)/2)) + 1
+        else:
+            if (odd, order) not in self.combLoopup:
+                self.combLoopup[odd, order] = 2*np.array(range((order)/2+1))
+
+        return copy.deepcopy(self.combLoopup[odd, order])
+
+    def genPossBit(self, odd, arr):
+        comb = self.genCombOne(odd, len(arr))
+        iters = []
+        for i in comb:
+            #print 'comb', i
+            for j in it.combinations(arr, i):
+           #     print 'j', list(j)
+                iters.append(list(j))
+           # print 'temp', temp
+#            iters.append(copy.deepcopy(temp))
+#            a = self.combinations(arr, i)
+#            pdb.set_trace()
+            #iters.append(self.combinations(arr, i))
+        return iters

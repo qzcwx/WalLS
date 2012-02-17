@@ -20,7 +20,7 @@ import sys
 """ consider as a minimization problem """
 tl.checkParam(sys.argv)
 
-rseed = 1
+rseed = 0
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
@@ -127,7 +127,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp':
+    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         # print Walsh coefficients
@@ -143,10 +143,12 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-    bit,fit = tl.compFit(model)
-    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-    for i in a:
-        print i[0], '%.2f' %(i[1])
+#    bit,fit = tl.compFit(model)
+#    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+#    init = False
+##    for i in a:
+##        print i[0], '%.2f' %(i[1])
+#    print 'opti\n', a[0][0], a[0][1]
 
 #    for i in zip(bit,fit):
 #        print i
@@ -168,7 +170,7 @@ else:
 
     tAll = np.zeros(runs)
     for i in range(runs):
-        print 'run', i, ':probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+#        print 'run', i, ':probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
         start = time.time()
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName))
