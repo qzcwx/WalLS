@@ -972,22 +972,22 @@ class LocalSearch:
 
     def runWalSearch(self,fitName, minimize, restart):
         """
-        initial assignment according Walsh coffecients
+        initial assignment according Walsh coefficients
         """
         self.combLoopup = dict()
         self.transWal()
         self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
         sol = []
+        determineBit = []
         for i in range(self.dim) :
             sol.append('0')
-
-
+            determineBit.append(False)
 #        self.printWAsort()
         poss = []
         for i in range(1,len(self.WAsort)):
             arr = self.WAsort[i].arr
-#            print 
-#            print 'arr',arr
+            print 
+            print 'arr',arr
             
             if (minimize == True and self.WAsort[i].w < -self.threshold) or (minimize == False and self.WAsort[i].w > self.threshold):
                 odd = False
@@ -995,51 +995,71 @@ class LocalSearch:
                 odd = True
             iters = self.genPossBit(odd, arr)
 
-            #pdb.set_trace()
             
             # reduce and reconstruct the possible cases
             if len(poss)!=0:
                 copyPoss = copy.copy(poss)
                 for j in range(len(copyPoss)):
-#                    print 'j.a',copyPoss[j].a
+                    print 'j.a',copyPoss[j].a
                     join = list(Set(arr).intersection(copyPoss[j].a)) #[filter(lambda x: x in arr, sublist) for sublist in j.a]
-#                    print 'join', join
+                    print 'join', join
                     # for every bit in jion set, both arrs should be identical
+                    tempArr = []
                     if len(join)!=0:
-                        tempArr = []
+                        conflict = True 
                         for ii in iters:
                             for jj in copyPoss[j].i:
                                 itent = True
                                 for k in join:
-#                                    print 'k', k, 'ii', ii, 'jj', jj
-                                    if bool(k in ii) ^ bool(k in jj):
+                                    # check whether all bits in intersection bits are the same
+                                    print 'ii', ii, '\tjj', jj, '\tk', k
+                                    if bool(k in ii) ^ bool(k in jj): 
+                                        # bits in the overlapping position are not identical
                                         itent = False
                                         break
+                                    print 'identical', itent
                                 if itent == True:
                                     # reconstruct the possible bitstring
                                     tempArr.append(list(Set(ii).union(Set(jj))))
+                                    conflict = False
+                                    print 'tempArr', tempArr
+                        if conflict == False:
+                            poss.pop(j) # TODO may be problematic
+                            print 'join arr', list(Set(copyPoss[j].a).union(Set(arr)))
+                            poss.append( Struct(i=copy.deepcopy(tempArr), a=list(Set(copyPoss[j].a).union(Set(arr))) ))
+                    else:
+                        poss.append(Struct(i=iters, a=arr))
 
-                        poss.pop(j) # TODO may be problematic
-                        poss.append( Struct(i=copy.deepcopy(tempArr), a=list(Set(copyPoss[j].a).union(Set(arr))) ))
-                    A = list(Set(copyPoss[j].a).union(Set(arr)))
-                    if len(A) == self.dim and len(tempArr) == 1:
-                        for k in tempArr:
+                    if len(poss[-1].i) == 1:
+                        for k in poss[-1].i[0]:
                             sol[k] = '1'
+                        for k in poss[-1].a:
+                            determineBit[k] = True  
+
+                    print 'determineBit', determineBit
+                    if False not in determineBit:
                         sol =  ''.join(sol)
-                        print  '%.3f' %(self.func(sol))
+                        print sol
+                        print '%.3e' %(self.func(sol))
                         sys.exit()
             else:
                 poss.append(Struct(i=iters, a=arr))
-#            print 'len',len(poss)
+
+            if len(arr)==1:
+                sol[arr[0]] = str(int(odd))
+                determineBit[arr[0]] = True
+            print 'len',len(poss)
 
             if len(arr) == 1:
                 if odd == False :
                     sol[arr[0]] = '0'
                 else:
                     sol[arr[0]] = '1'
+
+            pdb.set_trace()
              
         sol =  ''.join(sol)
-#        print sol
+        print sol
         print  '%.3e' %(self.func(sol))
         print 
         return { 'nEvals': 1, 'sol': None, 'bit': None}

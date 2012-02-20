@@ -143,12 +143,12 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-#    bit,fit = tl.compFit(model)
-#    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-#    init = False
-##    for i in a:
-##        print i[0], '%.2f' %(i[1])
-#    print 'opti\n', a[0][0], a[0][1]
+    bit,fit = tl.compFit(model)
+    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+    print 'opti\n', a[0][0], a[0][1]
+
+#    for i in a:
+#        print i[0], '%.2f' %(i[1])
 
 #    for i in zip(bit,fit):
 #        print i
