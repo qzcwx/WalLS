@@ -418,7 +418,7 @@ class LocalSearch:
             else:
 #                start = time.time()
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
-            self.fitEval = self.fitEval + evalCount
+            self.fitEval = self.fitEval + self.dim
 #                updateT = updateT + time.time() - start
             #lenImproveA.append( len(self.improveA) )
 #            sBuffer = 0
@@ -689,7 +689,6 @@ class LocalSearch:
 #        exceedLimit = 0
         start = time.time()
         while self.fitEval < self.MaxFit:
-            self.fitEval = self.fitEval + self.dim
             #print 'SC', self.SC
 
             if init == False:
@@ -700,8 +699,7 @@ class LocalSearch:
             else :
 #                start = time.time()
                 improveN, bestI, evalCount = self.updateMeanBest(bestI,minimize)
-
-            self.fitEval = self.fitEval + evalCount
+            self.fitEval = self.fitEval + self.dim
 
 #                updateT = updateT + time.time() - start
 #            sBuffer = 0
