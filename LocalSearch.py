@@ -8,6 +8,8 @@ import numpy as np
 #import matplotlib.pyplot as plt
 import WalshAnalysis as wal
 import itertools as it
+import nkLandscape as nk
+import tool as tl
 import random
 import string
 import math
@@ -80,6 +82,223 @@ class LocalSearch:
             return self.bitImpact()
         elif compM == 'walSearch':
             return self.runWalSearch(fitName, minimize, restart)
+        elif compM == 'checkOptWal':
+            self.checkOptWal()
+            return None
+        elif compM == 'checkHyper':
+            return self.checkHyper()
+        elif compM == 'checkHyperRank':
+            return self.checkHyperRank()
+
+    def checkHyperRank(self):
+        """
+        examine the rank of optimum hyperplane in those list of hyperplanes associated with each subfunction
+        """
+        self.transWal()
+        bit,fit = tl.compFit(self.model)
+        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+        optBit = a[0][0]
+        optFit = a[0][1]
+        print 'opti\n',optBit, optFit
+        rank = 0
+
+        for i in range(self.dim):
+            subBit = self.model.neighs[i][:]
+            subBit.append(i)
+            subBit.sort()
+
+            optTpl = []
+            for j in subBit:
+                if optBit[j] == '1':
+                    optTpl.append(j)
+
+            # check every template that matches the subfunction
+            seqBits = nk.genSeqBits(len(subBit))
+            print 
+            schFitArr = []
+            for j in seqBits:
+                schFit = 0
+                # convert bit string to array representation
+                schTpl = []
+                for k in range(len(j)):
+                    if j[k] == '1':
+                        schTpl.append(subBit[k])
+
+                for k in self.WA:
+                    subset = True
+                    for l in k.arr:
+                        if l not in subBit:
+                            subset = False
+                            break
+                    if subset == True:
+                        schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
+                schFitArr.append(Struct(fit=schFit,arr=schTpl))
+                #print subBit, j, schFit
+            print subBit
+
+            schFitSort = sorted(schFitArr, key=lambda i: abs(i.fit))
+            # check the rank of optimum solution in the  list of hyperplane associated with a subfunction
+            for j in range(len(schFitSort)):
+                if schFitSort[j].arr == optTpl:
+                    rank = rank + j
+                    print j
+
+        print 'rank',rank
+
+    def checkHyper(self):
+        """
+        examine the fitness of one particular bit over all hyperplanes associated with each subfunction
+        """
+        self.transWal()
+        bit,fit = tl.compFit(self.model)
+        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+        optBit = a[0][0]
+        optFit = a[0][1]
+        print 'opti\n',optBit, optFit
+        #for i in range(len(a)): 
+#        for i in range(10): 
+#            print '%s\t%.3f' %(a[i][0],a[i][1])
+        
+        # initialize sumFitA 
+        sumFitA = []
+        for i in range(self.dim):
+            sumFitA.append(Struct(one=0,zero=0))
+        
+
+        for i in range(self.dim):
+            subBit = self.model.neighs[i][:]
+            subBit.append(i)
+            subBit.sort()
+
+            # check every template that matches the subfunction
+            seqBits = nk.genSeqBits(len(subBit))
+#            print 
+            schFitArr = []
+            for j in seqBits:
+                schFit = 0
+
+                # convert bit string to array representation
+                schTpl = []
+                for k in range(len(j)):
+                    if j[k] == '1':
+                        schTpl.append(subBit[k])
+
+                # compute schema fitness
+                for k in self.WA:
+                    subset = True
+                    for l in k.arr:
+                        if l not in subBit:
+                            subset = False
+                            break
+                    if subset == True:
+                        schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
+
+                # accumulate the sum of schema fitnesses associated with a particular bit 
+                for k in range(len(j)):
+                    if j[k] == '0':
+                        sumFitA[subBit[k]].zero = sumFitA[subBit[k]].zero + schFit
+                    else: 
+                        sumFitA[subBit[k]].one = sumFitA[subBit[k]].one + schFit
+
+                schFitArr.append(Struct(fit=schFit,arr=schTpl))
+#                print subBit, j, schFit
+
+#        for i in range(self.dim):
+#            print '%d\tzero: %.3f\tone: %.3f' %(i,sumFitA[i].zero, sumFitA[i].one)
+            
+
+        sol = []
+        for i in range(self.dim):
+            if sumFitA[i].zero < sumFitA[i].one:
+                sol.append('0')
+            else:
+                sol.append('1')
+        
+        hamDist = 0
+        # compute the hamming distance
+        for i in range(self.dim):
+            if sol[i] != optBit[i]:
+                hamDist = hamDist + 1
+        print 'Hyper solution\t', self.func(sol), hamDist
+
+        randSol = self.initIndiv(self.dim)
+        hamDistRand = 0
+        for i in range(self.dim):
+            if randSol.bit[i] != optBit[i]:
+                hamDistRand = hamDistRand + 1
+        print 'Random Solution\t', self.func(randSol.bit), hamDistRand
+
+        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
+       
+    
+    def checkOptWal(self):
+        """
+        check the sorted Walsh signs for all Walsh coefficients
+        """
+        bit,fit = tl.compFit(self.model)
+        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+        self.transWal()
+        
+        fit = []
+        allCount = []
+        for i in range(2):
+            optBit = a[i][0]
+            optFit = a[i][1]
+            print 'Top', i+1, 'solution', optBit, optFit
+            self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+            WAS = []
+            negCount = 0
+            for i in self.WAsort:
+                temp = int(math.pow(-1, self.binCount(i.arr, optBit))) * i.w
+                if temp  < -self.threshold:
+                    negCount = negCount + 1
+                WAS.append(int(math.pow(-1, self.binCount(i.arr, optBit))) * i.w)
+
+            for i in range(50):
+                if i != 0:
+                    print '%.4f' %(WAS[i]), self.WAsort[i].arr
+
+            #print 'negative / All non-zero:\n%d/%d\n' %(negCount, len(WAS)-1)
+            fit.append(optFit)
+            allCount.append(negCount)
+
+        print 'Correlation: fitness / negetive Count', (np.corrcoef([fit,allCount])[1,0])
+#        i = len(a)/2
+#        optBit = a[i][0]
+#        optFit = a[i][1]
+#        print 'Ave solution', optBit, optFit
+#        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+#        WAS = []
+#        negCount = 0
+#        for i in self.WAsort:
+#            temp = int(math.pow(-1, self.binCount(i.arr, optBit))) * i.w
+#            if temp  < -self.threshold:
+#                negCount = negCount + 1
+#            WAS.append(int(math.pow(-1, self.binCount(i.arr, optBit))) * i.w)
+#
+##        for i in range(len(WAS)):
+##            if i != 0:
+##                print '%.4f' %(WAS[i])
+#
+#        print 'Negative / All non-zero:\n%d/%d\n' %(negCount, len(WAS)-1)
+#
+#        i = len(a) - 1
+#        optBit = a[i][0]
+#        optFit = a[i][1]
+#        print 'Worst solution', optBit, optFit
+#        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+#        WAS = []
+#        negCount = 0
+#        for i in self.WAsort:
+#            temp = int(math.pow(-1, self.binCount(i.arr, optBit))) * i.w
+#            if temp  < -self.threshold:
+#                negCount = negCount + 1
+#            WAS.append(int(math.pow(-1, self.binCount(i.arr, optBit))) * i.w)
+#
+##        for i in range(len(WAS)):
+##            if i != 0:
+##                print '%.4f' %(WAS[i])
+#        print 'Negative / All non-zero:\n%d/%d\n' %(negCount, len(WAS)-1)
 
     def bitImpact(self):
         self.transWal()
@@ -1224,6 +1443,17 @@ class LocalSearch:
         for i in arr:
             if bit[i] == '1':
                 s = s + 1
+        return s
+
+    def binCountArr(self, a1, a2):
+        """
+        count the number of one bits appearing in both a1 and a2
+        """
+        s = 0
+        for i in a1:
+            if i in a2:
+                s = s + 1
+
         return s
 
     def genFitBest(self,minimize):

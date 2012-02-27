@@ -15,16 +15,16 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q):
         print nameOfF, 'exists!!!'
     return os.path.isfile(nameOfF)
 
-nRange = [20]
-kRange = [2]
+nRange = [10,15]
+kRange = [2,4]
 #kRange = [2,4,8]
 #nRange = [20,50,100]
-iRange = [0]
+iRange = range(1)
 aRange = ['rLS']
-fRange = ['mean']
+fRange = ['fit']
 #cRange = ['supm', 'wal']
-cRange = ['wal']
-pRange = ['NK']
+cRange = ['checkHyper']
+pRange = ['NK','NKQ']
 
 for k in kRange:
     for n in nRange :
@@ -36,12 +36,12 @@ for k in kRange:
                             if p == 'NKQ':
                                 for q in [2]:
                                     s = 1
-                                    print 'python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)
+#                                    print 'python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)
                                     if resultExist(p,a,f,i,s,c,n,k,q) == False:
                                         os.system('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q))
                             elif p == 'NK': # for NK problem
                                 q = 0
                                 s = 1
-                                print 'python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)
+#                                print 'python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)
                                 if resultExist(p,a,f,i,s,c,n,k,q) == False:
                                     os.system('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q) )

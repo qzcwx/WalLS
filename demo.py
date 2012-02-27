@@ -60,7 +60,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-#print 'probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
+print 'probName', probName, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """
@@ -127,7 +127,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch':
+    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         # print Walsh coefficients
@@ -143,15 +143,16 @@ else:
         print >>f,"%g" % (walTime)
         f.close()
 
-    bit,fit = tl.compFit(model)
-    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-    print 'opti\n', a[0][0], a[0][1]
+#    bit,fit = tl.compFit(model)
+#    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+#    print 'opti\n', a[0][0], a[0][1]
+#    print
 
 #    for i in a:
 #        print i[0], '%.2f' %(i[1])
 
 #    for i in zip(bit,fit):
-#        print i
+#        print i[0],'%.3f' %(i[1])
         
 #    print 'bit',bit
 #    print 'fit',fit
@@ -202,7 +203,6 @@ else:
 #    for i in range(runs):
 #        r[i] = res[i]['sol']
 #    print np.mean(r)
-
     f = open(nameOfF, 'w')
     for i in range(runs):
         if fitName != 'fit':
@@ -222,5 +222,4 @@ else:
         print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
 
-    print 'Main program finished: probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k
     print

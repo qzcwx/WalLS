@@ -131,7 +131,7 @@ Constrains:
 4) for NK, Q = None
 5) for NKQ, Q = {2, 4, 8, 16}
 6) for LS,  PopSize = 1
-7) [ComputeMethod] = {bf (brute force), walWalk (walsh coefficient with random walk), walRest (walsh coefficient with random walk), supm (super move), bitImp (bit impact), walSearch (Search completely relying on Walsh terms)}. 
+7) [ComputeMethod] = {bf (brute force), walWalk (walsh coefficient with random walk), walRest (walsh coefficient with random walk), supm (super move), bitImp (bit impact), walSearch (Search completely relying on Walsh terms), null (run nothing)}. 
     If 'walSearch', rLS, fit. 
         """
         sys.exit()
