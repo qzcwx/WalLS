@@ -89,6 +89,8 @@ class LocalSearch:
             return self.checkHyper()
         elif compM == 'checkHyperRank':
             return self.checkHyperRank()
+        elif compM == 'checkHyperVote':
+            return self.checkHyperVote()
 
     def checkHyperRank(self):
         """
@@ -230,6 +232,98 @@ class LocalSearch:
 
         return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
        
+    def checkHyperVote(self):
+        """
+        using the voting strategy where only best hyperplane have the chance to vote
+        """
+        self.transWal()
+        bit,fit = tl.compFit(self.model)
+        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+        optBit = a[0][0]
+        optFit = a[0][1]
+        print 'opti\n',optBit, optFit
+
+        #for i in range(len(a)): 
+#        for i in range(10): 
+#            print '%s\t%.3f' %(a[i][0],a[i][1])
+        # initialize sumFitA 
+        sumFitA = []
+        evalSubFunc = []
+        for i in range(self.dim):
+            sumFitA.append(Struct(one=0,zero=0))
+        
+        for i in range(self.dim):
+            subBit = self.model.neighs[i][:]
+            subBit.append(i)
+            subBit.sort()
+
+            if subBit not in evalSubFunc:
+                evalSubFunc.append(subBit)
+
+                # check every template that matches the subfunction
+                seqBits = nk.genSeqBits(len(subBit))
+                schFitArr = []
+                for j in seqBits:
+                    schFit = 0
+
+                    # convert bit string to array representation
+                    schTpl = []
+                    for k in range(len(j)):
+                        if j[k] == '1':
+                            schTpl.append(subBit[k])
+
+                    # compute schema fitness
+                    for k in self.WA:
+                        subset = True
+                        for l in k.arr:
+                            if l not in subBit:
+                                subset = False
+                                break
+                        if subset == True:
+                            schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
+
+                    schFitArr.append(Struct(fit=schFit,arr=schTpl))
+#                    print subBit, j, schFit
+#                print 
+
+                schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
+
+                # perform voting from the best hyperplane associated with the subfunction
+                for j in subBit:
+                    if j in schFitArrSort[0].arr:
+                        #sumFitA[j].one = sumFitA[j].one + schFitArrSort[0].fit
+                        sumFitA[j].one = sumFitA[j].one + 1
+                    else:
+                        #sumFitA[j].zero = sumFitA[j].zero + schFitArrSort[0].fit
+                        sumFitA[j].zero = sumFitA[j].zero + 1
+
+
+#        for i in range(self.dim):
+#            print '%d\tOne: %d\tZero: %d' %(i, sumFitA[i].one, sumFitA[i].zero)
+
+        rep = 10 
+        for i in range(rep):
+            sol = []
+            for i in range(self.dim):
+                if random.random() < sumFitA[i].zero / (sumFitA[i].one + sumFitA[i].zero + 0.0):
+                    sol.append('0')
+                else:
+                    sol.append('1')
+        
+            hamDist = 0
+            # compute the hamming distance
+            for i in range(self.dim):
+                if sol[i] != optBit[i]:
+                    hamDist = hamDist + 1
+            print 'Hyper solution\t', sol, self.func(sol), hamDist
+
+        randSol = self.initIndiv(self.dim)
+        hamDistRand = 0
+        for i in range(self.dim):
+            if randSol.bit[i] != optBit[i]:
+                hamDistRand = hamDistRand + 1
+        print 'Random Solution\t', self.func(randSol.bit), hamDistRand
+        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
     
     def checkOptWal(self):
         """

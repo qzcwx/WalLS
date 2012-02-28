@@ -127,7 +127,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank':
+    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'checkHyperVote':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         # print Walsh coefficients
