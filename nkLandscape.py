@@ -15,17 +15,17 @@ class NKLandscape:
         self.k = inK
 
         # for run experiments
-#        if fileName == None:
-#            self.genNeigh()
-#            self.genFunc()
-#        else:
-#            self.readFile(fileName)
+        if fileName == None:
+            self.genNeigh()
+            self.genFunc()
+        else:
+            self.readFile(fileName)
 
-        # for generating benchmarks
-        self.genNeigh()
-        self.genFunc()
-        self.exportToFile(fileName)
-
+#        # for generating benchmarks
+#        self.genNeigh()
+#        self.genFunc()
+#        self.exportToFile(fileName)
+#
         self.Kbits = genSeqBits(self.k+1)
 
     def exportToFile(self, fileName):

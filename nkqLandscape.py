@@ -10,19 +10,18 @@ class NKQLandcape(nk.NKLandscape):
         self.n = inN
         self.k = inK
 
-        self.genNeigh()
-        self.genFunc()
-        self.genFuncQ()
-        self.exportToFile(fileName)
-        self.Kbits = nk.genSeqBits(self.k+1)
+#        self.genNeigh()
+#        self.genFunc()
+#        self.genFuncQ()
+#        self.exportToFile(fileName)
 
-#        nk.NKLandscape.__init__(self, inN, inK, fileName)
-#        if fileName == None:
-#            self.genFuncQ()
-#        #self.exportToFile(fileName)
-#        else:
-#            print 'read', fileName
-#            self.readFile(fileName)
+        nk.NKLandscape.__init__(self, inN, inK, fileName)
+        if fileName == None:
+            self.genFuncQ()
+        else:
+            print 'read', fileName
+            self.readFile(fileName)
+        self.Kbits = nk.genSeqBits(self.k+1)
 
     def genFuncQ(self):
         self.func = []

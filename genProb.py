@@ -6,6 +6,7 @@ Generates 10 instances for each of the following configuraion (10 combinations)
 import nkLandscape as nk
 import nkqLandscape as nkq
 import pdb
+import random as random
 
 numOfInstances = 10
 prefixNK = './benchmark/NK/'

@@ -44,9 +44,9 @@ n = int(tl.getArgv())
 if probName != 'SAT':
     k = int(tl.getArgv())
 
-#maxFit = 1000 * n  * n
-maxFit = 0
-runs = 1
+maxFit = 1000 * n
+#maxFit = 0
+runs = 30
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -60,7 +60,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'n', n, 'k', k 
+print 'probName', probName, 'inst', inst, 'n', n, 'k', k 
 
 if probName == 'SAT':
     """ with SAT, we are forced to set n to 100 """
@@ -127,7 +127,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'checkHyperVote':
+    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         # print Walsh coefficients
@@ -219,7 +219,10 @@ else:
 
     f = open(nameOfF, 'w')
     for i in range(runs):
-        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
+        if compMeth == 'hyperSearch':
+            print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'], res[i]['hyper'])
+        else:
+            print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
 
     print
