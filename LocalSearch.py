@@ -154,7 +154,6 @@ class LocalSearch:
         """
         examine the fitness of one particular bit over all hyperplanes associated with each subfunction
         """
-        self.transWal()
         bit,fit = tl.compFit(self.model)
         a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
         optBit = a[0][0]
@@ -163,68 +162,17 @@ class LocalSearch:
         #for i in range(len(a)): 
 #        for i in range(10): 
 #            print '%s\t%.3f' %(a[i][0],a[i][1])
+        self.genHyperVote()
         
-        # initialize sumFitA 
-        sumFitA = []
-        for i in range(self.dim):
-            sumFitA.append(Struct(one=0,zero=0))
-        
-
-        for i in range(self.dim):
-            subBit = self.model.neighs[i][:]
-            subBit.append(i)
-            subBit.sort()
-
-            # check every template that matches the subfunction
-            seqBits = nk.genSeqBits(len(subBit))
-#            print 
-            schFitArr = []
-            for j in seqBits:
-                schFit = 0
-
-                # convert bit string to array representation
-                schTpl = []
-                for k in range(len(j)):
-                    if j[k] == '1':
-                        schTpl.append(subBit[k])
-
-                # compute schema fitness
-                for k in self.WA:
-                    subset = True
-                    for l in k.arr:
-                        if l not in subBit:
-                            subset = False
-                            break
-                    if subset == True:
-                        schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-
-                # accumulate the sum of schema fitnesses associated with a particular bit 
-                for k in range(len(j)):
-                    if j[k] == '0':
-                        sumFitA[subBit[k]].zero = sumFitA[subBit[k]].zero + schFit
-                    else: 
-                        sumFitA[subBit[k]].one = sumFitA[subBit[k]].one + schFit
-
-                schFitArr.append(Struct(fit=schFit,arr=schTpl))
-#                print subBit, j, schFit
-
-#        for i in range(self.dim):
-#            print '%d\tzero: %.3f\tone: %.3f' %(i,sumFitA[i].zero, sumFitA[i].one)
-            
-
-        sol = []
-        for i in range(self.dim):
-            if sumFitA[i].zero < sumFitA[i].one:
-                sol.append('0')
-            else:
-                sol.append('1')
-        
-        hamDist = 0
-        # compute the hamming distance
-        for i in range(self.dim):
-            if sol[i] != optBit[i]:
-                hamDist = hamDist + 1
-        print 'Hyper solution\t', self.func(sol), hamDist
+        rep = 10
+        for i in range(rep):
+            sol = self.genSolProp(self.sumFitA)
+            hamDist = 0
+            # compute the hamming distance
+            for i in range(self.dim):
+                if sol[i] != optBit[i]:
+                    hamDist = hamDist + 1
+            print 'Hyper solution\n', sol, self.func(sol), hamDist
 
         randSol = self.initIndiv(self.dim)
         hamDistRand = 0
@@ -297,15 +245,15 @@ class LocalSearch:
                 #for k in range(self.model.k*2):
                     for j in subBit:
                         if j in schFitArrSort[k].arr:
-                            self.sumFitA[j].one = self.sumFitA[j].one + schFitArrSort[k].fit
-                            #sumFitA[j].one = sumFitA[j].one + 1
+                            #self.sumFitA[j].one = self.sumFitA[j].one + schFitArrSort[k].fit
+                            self.sumFitA[j].one = self.sumFitA[j].one + 1
                         else:
-                            self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
-                            #sumFitA[j].zero = sumFitA[j].zero + 1
+                            #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
+                            self.sumFitA[j].zero = self.sumFitA[j].zero + 1
 
 
-#        for i in range(self.dim):
-#            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
+        for i in range(self.dim):
+            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
 
 #            hamDist = 0
 #            # compute the hamming distance
@@ -328,13 +276,13 @@ class LocalSearch:
         compose the template on the bases of union of two subfunction, in this way each variable can have more than one vote
         """
         self.transWal()
-        print 'genHyperSqVote'
-
-        bit,fit = tl.compFit(self.model)
-        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-        optBit = a[0][0]
-        optFit = a[0][1]
-        print 'opti\n',optBit, optFit
+#        print 'genHyperSqVote'
+#
+#        bit,fit = tl.compFit(self.model)
+#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+#        optBit = a[0][0]
+#        optFit = a[0][1]
+#        print 'opti\n',optBit, optFit
 #
 #        for i in range(len(a)): 
 ##        for i in range(10): 
@@ -345,8 +293,8 @@ class LocalSearch:
         for i in range(self.dim):
             self.sumFitA.append(Struct(one=0,zero=0))
 
-        scan = 0
-        reuse = 0
+#        scan = 0
+#        reuse = 0
         
         evalOuterFunc = []
         mergeFunc = []
@@ -402,11 +350,11 @@ class LocalSearch:
                                             schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
                                             walTouch.append(k)
                                     init = True
-                                    scan = scan + 1
+#                                    scan = scan + 1
                                 else:
                                     for k in walTouch:
                                         schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-                                    reuse = reuse + 1 
+#                                    reuse = reuse + 1 
 
                                 schFitArr.append(Struct(fit=schFit,arr=schTpl))
                                 #print subBitIn, j, schFit
@@ -425,27 +373,28 @@ class LocalSearch:
                                     else:
                                         #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
                                         self.sumFitA[j].zero = self.sumFitA[j].zero + 1
-        print 'scan', scan, 'reuse', reuse
 
-        for i in range(self.dim):
-            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-
-        rep = 10
-        for i in range(rep):
-            sol = self.genSolProp(self.sumFitA)
-            hamDist = 0
-            # compute the hamming distance
-            for i in range(self.dim):
-                if sol[i] != optBit[i]:
-                    hamDist = hamDist + 1
-            print 'Hyper solution\n', sol, self.func(sol), hamDist
-
-        randSol = self.initIndiv(self.dim)
-        hamDistRand = 0
-        for i in range(self.dim):
-            if randSol.bit[i] != optBit[i]:
-                hamDistRand = hamDistRand + 1
-        print 'Random Solution\n', self.func(randSol.bit), hamDistRand
+#        print 'scan', scan, 'reuse', reuse
+#
+#        for i in range(self.dim):
+#            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
+#
+#        rep = 10
+#        for i in range(rep):
+#            sol = self.genSolProp(self.sumFitA)
+#            hamDist = 0
+#            # compute the hamming distance
+#            for i in range(self.dim):
+#                if sol[i] != optBit[i]:
+#                    hamDist = hamDist + 1
+#            print 'Hyper solution\n', sol, self.func(sol), hamDist
+#
+#        randSol = self.initIndiv(self.dim)
+#        hamDistRand = 0
+#        for i in range(self.dim):
+#            if randSol.bit[i] != optBit[i]:
+#                hamDistRand = hamDistRand + 1
+#        print 'Random Solution\n', self.func(randSol.bit), hamDistRand
 #        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
 
     def genSolProp(self, sumFitA):

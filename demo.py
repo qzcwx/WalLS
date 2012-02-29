@@ -46,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 0
-runs = 1
+runs = 30
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
