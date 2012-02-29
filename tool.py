@@ -225,6 +225,42 @@ def fitRank(s, fit):
     return fitNSort
 
 
+def listMerge(l1, l2):
+    """  
+    merge two sorted list
+    """
+
+    if not l1:
+        return l2
+    elif not l2:
+        return l1
+    else:
+        merge = []
+        i = 0 
+        j = 0 
+        while True:
+            if l1[i] < l2[j]:
+                if not merge or merge[-1] != l1[i]:
+                    merge.append(l1[i])
+                i = i+1
+            else:
+                if not merge or merge[-1] != l2[j]:
+                    merge.append(l2[j])
+                j = j+1
+            if i>=len(l1) :
+                while j<len(l2):
+                    if merge[-1] != l2[j]:
+                        merge.append(l2[j])
+                    j = j+1
+                break
+            elif j>=len(l2):
+                while i<len(l1):
+                    if merge[-1] != l1[i]:    
+                        merge.append(l1[i])
+                    i = i+1
+                break
+        return merge
+    
 #plotDistNKQ()
 #plotDistNK()
 #plotDistMaxK()

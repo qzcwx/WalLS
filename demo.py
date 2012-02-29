@@ -46,7 +46,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 0
-runs = 30
+runs = 1
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -127,7 +127,7 @@ else:
         model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch':
+    if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch' or compMeth == 'hyperSqSearch':
         start = time.time()
         w = model.WalshCofLinearLinklist()
         # print Walsh coefficients

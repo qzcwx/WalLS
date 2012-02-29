@@ -40,7 +40,7 @@ class NKLandscape:
             print >>f
 
     def readFile(self, fName):
-        self.neighs = np.genfromtxt(fName, delimiter="\t", skip_footer=self.n, autostrip=True, usecols = range(self.k)).tolist()
+        self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.n, autostrip=True, usecols = range(self.k)).tolist()
         self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.n, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
         
     """ generate neighborhood """
