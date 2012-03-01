@@ -219,7 +219,7 @@ else:
 
     f = open(nameOfF, 'w')
     for i in range(runs):
-        if compMeth == 'hyperSearch':
+        if compMeth == 'hyperSearch' or compMeth == 'hyperSqSearch':
             print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'], res[i]['hyper'])
         else:
             print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])

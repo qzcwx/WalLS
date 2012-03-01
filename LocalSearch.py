@@ -189,8 +189,6 @@ class LocalSearch:
         """
         self.transWal()
         self.classfiyWal()
-        scan=0
-        lookup=0
 
 #        bit,fit = tl.compFit(self.model)
 #        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
@@ -219,8 +217,17 @@ class LocalSearch:
                 # check every template that matches the subfunction
                 seqBits = nk.genSeqBits(len(subBit))
                 schFitArr = []
-                init = False
                 walTouch = []
+
+                # compute schema fitness
+                for k in self.WA:
+                    subset = True
+                    for l in k.arr:
+                        if l not in subBit:
+                            subset = False
+                            break
+                    if subset == True:
+                        walTouch.append(k)
 
                 for j in seqBits:
                     schFit = 0
@@ -231,23 +238,8 @@ class LocalSearch:
                         if j[k] == '1':
                             schTpl.append(subBit[k])
 
-                    if init == False:
-                        # compute schema fitness
-                        for k in self.WA:
-                            subset = True
-                            for l in k.arr:
-                                if l not in subBit:
-                                    subset = False
-                                    break
-                            if subset == True:
-                                schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-                                walTouch.append(k)
-                        init = True
-                        scan = scan+1
-                    else: 
                         for k in walTouch:
                             schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-                        lookup = lookup+1
 
                     schFitArr.append(Struct(fit=schFit,arr=schTpl))
 #                    print subBit, j, schFit
@@ -268,10 +260,8 @@ class LocalSearch:
                             self.sumFitA[j].zero = self.sumFitA[j].zero + 1
 
 
-        for i in range(self.dim):
-            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-
-        print 'scan', scan, 'lookup', lookup
+#        for i in range(self.dim):
+#            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
 
 #            hamDist = 0
 #            # compute the hamming distance
