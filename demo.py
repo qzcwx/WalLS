@@ -10,6 +10,7 @@ import MAXSAT as mx
 import LocalSearch as ls
 import LocalOptima as lo
 import tool as tl
+import os
 import numpy as np
 import random
 import math
@@ -86,7 +87,7 @@ if probName == 'SAT':
     tAll = np.zeros(runs)
 
     for i in range(runs):
-        start = time.time()
+        start = os.times()[0]
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName, minimize = False))
         elif algoName == 'LS':
@@ -95,7 +96,7 @@ if probName == 'SAT':
             res.append(algo.run(fitName, minimize = False, restart = True))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName, minimize = False))
-        tAll[i] = time.time() - start
+        tAll[i] = os.times()[0] - start
 
     if probName == 'SAT':
         nameOfF = nameOfDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'.txt'
@@ -128,10 +129,10 @@ else:
         #model = nkq.NKQLandcape(n, k, q)
 
     if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch' or compMeth == 'hyperSqSearch' or 'hyperWalSearch':
-        start = time.time()
+        start = os.times()[0]
         w = model.WalshCofLinearLinklist()
         # print Walsh coefficients
-        walTime = time.time() - start
+        walTime = os.times()[0] - start
 
         """ store runtime to files """
         if probName == 'NKQ':
@@ -172,7 +173,7 @@ else:
     tAll = np.zeros(runs)
     for i in range(runs):
 #        print 'run', i, ':probName', probName, 'algoName', algoName, 'fitName', fitName, 'I', inst, 'n', n, 'k', k 
-        start = time.time()
+        start = os.times()[0]
         if algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, fitName))
         elif algoName == 'LS':
@@ -181,7 +182,7 @@ else:
             res.append(algo.run(fitName, minimize = True, restart = True,compM = compMeth))
         elif algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
-        tAll[i] = time.time() - start
+        tAll[i] = os.times()[0] - start
 
 #    trace = res[0]['trace']
 #    for i in trace:
