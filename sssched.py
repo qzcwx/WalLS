@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import sys
 import os
 import time
@@ -14,6 +13,7 @@ from threading import Thread
 from optparse import OptionParser
 
 idleThres = 20
+
 #
 # Machines use to run the tasks
 #
