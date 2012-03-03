@@ -100,7 +100,7 @@ class LocalSearch:
         """
         examine the rank of optimum hyperplane in those list of hyperplanes associated with each subfunction
         """
-        self.transWal()
+        self.model.transWal()
         bit,fit = tl.compFit(self.model)
         a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
         optBit = a[0][0]
@@ -130,7 +130,7 @@ class LocalSearch:
                     if j[k] == '1':
                         schTpl.append(subBit[k])
 
-                for k in self.WA:
+                for k in self.model.WA:
                     subset = True
                     for l in k.arr:
                         if l not in subBit:
@@ -163,11 +163,10 @@ class LocalSearch:
         #for i in range(len(a)): 
 #        for i in range(10): 
 #            print '%s\t%.3f' %(a[i][0],a[i][1])
-        self.genHyperVote()
         
         rep = 10
         for i in range(rep):
-            sol = self.genSolProp(self.sumFitA)
+            sol = self.genSolProp(self.model.sumFitA)
             hamDist = 0
             # compute the hamming distance
             for i in range(self.dim):
@@ -184,317 +183,7 @@ class LocalSearch:
 
         return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
        
-    def genHyperVote(self):
-        """
-        using the voting strategy where only best hyperplane have the chance to vote
-        """
-        self.transWal()
-        self.classfiyWal()
 
-#        bit,fit = tl.compFit(self.model)
-#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-#        optBit = a[0][0]
-#        optFit = a[0][1]
-#        print 'opti\n',optBit, optFit
-
-        #for i in range(len(a)): 
-#        for i in range(10): 
-#            print '%s\t%.3f' %(a[i][0],a[i][1])
-
-        # initialize sumFitA 
-        self.sumFitA = []
-        evalSubFunc = []
-        for i in range(self.dim):
-            self.sumFitA.append(Struct(one=0,zero=0))
-        
-        for i in range(self.dim):
-            subBit = self.model.neighs[i][:]
-            subBit.append(i)
-            subBit.sort()
-
-            if subBit not in evalSubFunc:
-                evalSubFunc.append(subBit)
-
-                # check every template that matches the subfunction
-                seqBits = nk.genSeqBits(len(subBit))
-                schFitArr = []
-                walTouch = []
-
-                # compute schema fitness
-                for k in self.WA:
-                    subset = True
-                    for l in k.arr:
-                        if l not in subBit:
-                            subset = False
-                            break
-                    if subset == True:
-                        walTouch.append(k)
-
-                for j in seqBits:
-                    schFit = 0
-
-                    # convert bit string to array representation
-                    schTpl = []
-                    for k in range(len(j)):
-                        if j[k] == '1':
-                            schTpl.append(subBit[k])
-
-                        for k in walTouch:
-                            schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-
-                    schFitArr.append(Struct(fit=schFit,arr=schTpl))
-#                    print subBit, j, schFit
-#                print 
-
-                schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
-
-                # perform voting from the best hyperplane associated with the subfunction
-                #for k in range(self.model.k+1):
-                for k in range(1):
-                #for k in range(self.model.k*2):
-                    for j in subBit:
-                        if j in schFitArrSort[k].arr:
-                            #self.sumFitA[j].one = self.sumFitA[j].one + schFitArrSort[k].fit
-                            self.sumFitA[j].one = self.sumFitA[j].one + 1
-                        else:
-                            #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
-                            self.sumFitA[j].zero = self.sumFitA[j].zero + 1
-
-
-#        for i in range(self.dim):
-#            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-
-#            hamDist = 0
-#            # compute the hamming distance
-#            for i in range(self.dim):
-#                if sol[i] != optBit[i]:
-#                    hamDist = hamDist + 1
-#            print 'Hyper solution\t', sol, self.func(sol), hamDist
-#
-#        randSol = self.initIndiv(self.dim)
-#        hamDistRand = 0
-#        for i in range(self.dim):
-#            if randSol.bit[i] != optBit[i]:
-#                hamDistRand = hamDistRand + 1
-#        print 'Random Solution\t', self.func(randSol.bit), hamDistRand
-#        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
-
-
-    def genHyperSqVote(self):
-        """
-        using the voting strategy where only best hyperplane have the chance to vote
-        compose the template on the bases of union of two subfunction, in this way each variable can have more than one vote
-        """
-        self.transWal()
-#        print 'genHyperSqVote'
-#
-#        bit,fit = tl.compFit(self.model)
-#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-#        optBit = a[0][0]
-#        optFit = a[0][1]
-#        print 'opti\n',optBit, optFit
-#
-#        for i in range(len(a)): 
-##        for i in range(10): 
-#            print '%s\t%.3f' %(a[i][0],a[i][1])
-        # initialize sumFitA 
-    
-        self.sumFitA = []
-        for i in range(self.dim):
-            self.sumFitA.append(Struct(one=0,zero=0))
-
-#        scan = 0
-#        reuse = 0
-        
-        evalOuterFunc = []
-        mergeFunc = []
-        for i in range(self.dim):
-            subBitOut = self.model.neighs[i][:]
-            subBitOut.append(i)
-            subBitOut.sort()
-#            print 'subBitOut', subBitOut
-
-            if subBitOut not in evalOuterFunc:
-                evalOuterFunc.append(subBitOut)
-
-                evalInnerFunc = []
-
-                for ii in range(i+1,self.dim):
-                    subBitIn = self.model.neighs[ii][:]
-                    subBitIn.append(ii)
-                    subBitIn.sort()
-#                    print '\tsubBitIn', subBitIn
-
-                    if subBitIn != subBitOut and subBitIn not in evalInnerFunc:
-                        evalInnerFunc.append(subBitIn)
-                        subBitIn = tl.listMerge(subBitOut,subBitIn)
-                        subBitIn.sort()
-                        
-                        if subBitIn not in mergeFunc:
-                            mergeFunc.append(subBitIn)
-#                            print '\t\tsubMerge', subBitIn
-                            # check every template that matches the subfunction
-                            seqBits = nk.genSeqBits(len(subBitIn))
-                            schFitArr = []
-                            walTouch = []
-                            init = False
-
-                            for j in seqBits:
-                                schFit = 0
-
-                                # convert bit string to array representation
-                                schTpl = []
-                                for k in range(len(j)):
-                                    if j[k] == '1':
-                                        schTpl.append(subBitIn[k])
-
-                                if init == False: 
-                                    # compute schema fitness from scan over all wal cof
-                                    for k in self.WA:
-                                        subset = True
-                                        for l in k.arr:
-                                            if l not in subBitIn:
-                                                subset = False
-                                                break
-                                        if subset == True:
-                                            schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-                                            walTouch.append(k)
-                                    init = True
-#                                    scan = scan + 1
-                                else:
-                                    for k in walTouch:
-                                        schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-#                                    reuse = reuse + 1 
-
-                                schFitArr.append(Struct(fit=schFit,arr=schTpl))
-                                #print subBitIn, j, schFit
-#                            print 
-
-                            schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
-
-                            # perform voting from the best hyperplane associated with the subfunction
-                            #for k in range(self.model.k+1):
-                            for k in range(1):
-                            #for k in range(self.model.k*2):
-                                for j in subBitIn:
-                                    if j in schFitArrSort[k].arr:
-                                        #self.sumFitA[j].one = self.sumFitA[j].one + schFitArrSort[k].fit
-                                        self.sumFitA[j].one = self.sumFitA[j].one + 1
-                                    else:
-                                        #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
-                                        self.sumFitA[j].zero = self.sumFitA[j].zero + 1
-
-#        print 'scan', scan, 'reuse', reuse
-#
-#        for i in range(self.dim):
-#            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-#
-#        rep = 10
-#        for i in range(rep):
-#            sol = self.genSolProp(self.sumFitA)
-#            hamDist = 0
-#            # compute the hamming distance
-#            for i in range(self.dim):
-#                if sol[i] != optBit[i]:
-#                    hamDist = hamDist + 1
-#            print 'Hyper solution\n', sol, self.func(sol), hamDist
-#
-#        randSol = self.initIndiv(self.dim)
-#        hamDistRand = 0
-#        for i in range(self.dim):
-#            if randSol.bit[i] != optBit[i]:
-#                hamDistRand = hamDistRand + 1
-#        print 'Random Solution\n', self.func(randSol.bit), hamDistRand
-#        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
-
-    def genHyperWalVote(self):
-        """
-        using the voting strategy where only best hyperplane have the chance to vote
-        selecting hyperplane template on the basis of nonzero Walsh coefficients
-        """
-        self.transWal()
-
-#        bit,fit = tl.compFit(self.model)
-#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-#        optBit = a[0][0]
-#        optFit = a[0][1]
-#        print 'opti\n',optBit, optFit
-
-        #for i in range(len(a)): 
-#        for i in range(10): 
-#            print '%s\t%.3f' %(a[i][0],a[i][1])
-        # initialize sumFitA 
-        self.sumFitA = []
-        evalSubFunc = []
-        for i in range(self.dim):
-            self.sumFitA.append(Struct(one=0,zero=0))
-        
-        for i in range(self.dim):
-            subBit = self.model.neighs[i][:]
-            subBit.append(i)
-            subBit.sort()
-
-            if subBit not in evalSubFunc:
-                evalSubFunc.append(subBit)
-
-                # check every template that matches the subfunction
-                seqBits = nk.genSeqBits(len(subBit))
-                schFitArr = []
-                for j in seqBits:
-                    schFit = 0
-
-                    # convert bit string to array representation
-                    schTpl = []
-                    for k in range(len(j)):
-                        if j[k] == '1':
-                            schTpl.append(subBit[k])
-
-                    # compute schema fitness
-                    for k in self.WA:
-                        subset = True
-                        for l in k.arr:
-                            if l not in subBit:
-                                subset = False
-                                break
-                        if subset == True:
-                            schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-
-                    schFitArr.append(Struct(fit=schFit,arr=schTpl))
-#                    print subBit, j, schFit
-#                print 
-
-                schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
-
-                # perform voting from the best hyperplane associated with the subfunction
-                #for k in range(self.model.k+1):
-                for k in range(1):
-                #for k in range(self.model.k*2):
-                    for j in subBit:
-                        if j in schFitArrSort[k].arr:
-                            #self.sumFitA[j].one = self.sumFitA[j].one + schFitArrSort[k].fit
-                            self.sumFitA[j].one = self.sumFitA[j].one + 1
-                        else:
-                            #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
-                            self.sumFitA[j].zero = self.sumFitA[j].zero + 1
-
-
-        for i in range(self.dim):
-            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-
-#            hamDist = 0
-#            # compute the hamming distance
-#            for i in range(self.dim):
-#                if sol[i] != optBit[i]:
-#                    hamDist = hamDist + 1
-#            print 'Hyper solution\t', sol, self.func(sol), hamDist
-#
-#        randSol = self.initIndiv(self.dim)
-#        hamDistRand = 0
-#        for i in range(self.dim):
-#            if randSol.bit[i] != optBit[i]:
-#                hamDistRand = hamDistRand + 1
-#        print 'Random Solution\t', self.func(randSol.bit), hamDistRand
-#        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
 
     def genSolProp(self, sumFitA):
         sol = []
@@ -509,25 +198,17 @@ class LocalSearch:
         """ 
         performing hyper search using the probability generated by Hyperplane analysis
         """
-        start = os.times()[0]
-        if compM == 'hyperSearch':
-            self.genHyperVote()
-        elif compM == 'hyperSqSearch':
-            self.genHyperSqVote()
-        elif compM == 'hyperWalSearch':
-            self.genHyperWalVote()
-        hyperT = os.times()[0] - start
 
         self.fitEval = 0
         start = os.times()[0]
-        self.oldindiv = Struct( fit = 0, bit = self.genSolProp(self.sumFitA) )
+        self.oldindiv = Struct( fit = 0, bit = self.genSolProp(self.model.sumFitA) )
 #        self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
         
         self.bsf = copy.deepcopy(self.oldindiv)
-        self.WA = []
+        self.model.WA = []
         
         init = False
         updateT = 0
@@ -574,7 +255,7 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT, 'hyper': hyperT} 
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT} 
 
     def checkOptWal(self):
         """
@@ -582,7 +263,7 @@ class LocalSearch:
         """
         bit,fit = tl.compFit(self.model)
         a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-        self.transWal()
+        self.model.transWal()
         
         fit = []
         allCount = []
@@ -590,7 +271,7 @@ class LocalSearch:
             optBit = a[i][0]
             optFit = a[i][1]
             print 'Top', i+1, 'solution', optBit, optFit
-            self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+            self.WAsort = sorted(self.model.WA, key=lambda i: abs(i.w), reverse=True)
             WAS = []
             negCount = 0
             for i in self.WAsort:
@@ -631,7 +312,7 @@ class LocalSearch:
 #        optBit = a[i][0]
 #        optFit = a[i][1]
 #        print 'Worst solution', optBit, optFit
-#        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+#        self.WAsort = sorted(self.model.WA, key=lambda i: abs(i.w), reverse=True)
 #        WAS = []
 #        negCount = 0
 #        for i in self.WAsort:
@@ -646,7 +327,7 @@ class LocalSearch:
 #        print 'Negative / All non-zero:\n%d/%d\n' %(negCount, len(WAS)-1)
 
     def bitImpact(self):
-        self.transWal()
+        self.model.transWal()
         self.indiv = self.initIndiv(self.dim)
         self.fitEval = 0
         self.initWal()
@@ -685,7 +366,7 @@ class LocalSearch:
         self.fitEval = 0
 
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
@@ -694,7 +375,7 @@ class LocalSearch:
         
         self.bsf = copy.deepcopy(self.oldindiv)
         
-        self.WA = []
+        self.model.WA = []
 
         #self.printInter()
         
@@ -758,13 +439,13 @@ class LocalSearch:
         """
         self.fitEval = 0
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
         self.bsf = copy.deepcopy(self.oldindiv)
-        self.WA = []
+        self.model.WA = []
 
         walkLen = 10
         init = False
@@ -814,13 +495,13 @@ class LocalSearch:
         """
         self.fitEval = 0
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
         self.bsf = copy.deepcopy(self.oldindiv)
-        self.WA = []
+        self.model.WA = []
 
         walkLen = 10
         init = False
@@ -834,13 +515,13 @@ class LocalSearch:
         """
         self.fitEval = 0
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
         self.bsf = copy.deepcopy(self.oldindiv)
-        self.WA = []
+        self.model.WA = []
 
         walkLen = 10
         init = False
@@ -908,7 +589,7 @@ class LocalSearch:
         self.oldindiv = self.initIndiv(self.dim)
         self.fitEval = 0
         
-        self.transWal()
+        self.model.transWal()
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
 #        self.initInter()
@@ -917,7 +598,7 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
-        self.WA = []
+        self.model.WA = []
 #        print 'C', self.C
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit, fitG = self.oldindiv.fitG)]
         init = False
@@ -983,7 +664,7 @@ class LocalSearch:
         self.fitEval = 0
         
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
@@ -992,7 +673,7 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         #bestBitsCount = np.zeros(self.dim)
         
-        self.WA = []
+        self.model.WA = []
         #takenBits = self.dim*[False]
         
         init = False
@@ -1103,7 +784,7 @@ class LocalSearch:
         self.fitEval = 0
         
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
@@ -1117,7 +798,7 @@ class LocalSearch:
 
         self.bsf = copy.deepcopy(self.oldindiv)
         #takenBits = self.dim*[False]
-        self.WA = []
+        self.model.WA = []
 
         init = False
         updateT = 0
@@ -1256,7 +937,7 @@ class LocalSearch:
         self.fitEval = 0
         
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
@@ -1270,7 +951,7 @@ class LocalSearch:
 
         self.bsf = copy.deepcopy(self.oldindiv)
         takenBits = self.dim*[False]
-        self.WA = []
+        self.model.WA = []
 
         init = False
         updateT = 0
@@ -1409,19 +1090,11 @@ class LocalSearch:
         """ 
         performing hyper search using the probability generated by Hyperplane analysis
         """
-        start = os.times()[0]
-        if compM == 'hyperSearch':
-            self.genHyperVote()
-        elif compM == 'hyperSqSearch':
-            self.genHyperSqVote()
-        elif compM == 'hyperWalSearch':
-            self.genHyperWalVote()
-        hyperT = os.times()[0] - start
 
         self.fitEval = 0
         
-        self.transWal()
-        self.oldindiv = Struct( fit = 0, fitG = 0, bit = self.genSolProp(self.sumFitA) )
+        self.model.transWal()
+        self.oldindiv = Struct( fit = 0, fitG = 0, bit = self.genSolProp(self.model.sumFitA) )
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
@@ -1431,7 +1104,7 @@ class LocalSearch:
         self.indiv.fitG = self.oldindiv.fitG
 
         self.bsf = copy.deepcopy(self.oldindiv)
-        self.WA = []
+        self.model.WA = []
 
         init = False
         updateT = 0
@@ -1487,7 +1160,7 @@ class LocalSearch:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
         updateT = updateT + os.times()[0] - start
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT, 'hyper': hyperT}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runMeanWal(self,fitName, minimize, restart):
         """ 
@@ -1497,7 +1170,7 @@ class LocalSearch:
         self.fitEval = 0
         
         start = os.times()[0]
-        self.transWal()
+        self.model.transWal()
         print 'transWal', os.times()[0] - start
 
         self.indiv = copy.deepcopy(self.oldindiv)
@@ -1511,7 +1184,7 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
 
-        self.WA = []
+        self.model.WA = []
         compPSumT = 0
         updateT = 0
         while self.fitEval < self.MaxFit:
@@ -1624,8 +1297,8 @@ class LocalSearch:
         initial assignment according Walsh coefficients
         """
         self.combLoopup = dict()
-        self.transWal()
-        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
+        self.model.transWal()
+        self.WAsort = sorted(self.model.WA, key=lambda i: abs(i.w), reverse=True)
         sol = []
         determineBit = []
         for i in range(self.dim) :
@@ -1763,11 +1436,11 @@ class LocalSearch:
                 self.bsf = copy.deepcopy(self.oldindiv)
 
         if fitName == 'fit':
-            self.oldindiv = Struct( fit = 0, bit = self.genSolProp(self.sumFitA) )
+            self.oldindiv = Struct( fit = 0, bit = self.genSolProp(self.model.sumFitA) )
             if evaluate == True:
                 self.oldindiv = self.evalPop(self.oldindiv)
         else :
-            self.oldindiv = Struct( fit = 0, fitG = 0, bit = self.genSolProp(self.sumFitA) )
+            self.oldindiv = Struct( fit = 0, fitG = 0, bit = self.genSolProp(self.model.sumFitA) )
             if evaluate == True:
                 self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
 
@@ -1864,29 +1537,10 @@ class LocalSearch:
             else:
                 return False
 
-    """ 
-    for Walsh Local Search
-    """
-    def transWal(self):
-        """
-        translate bitstring represented Walsh terms into arrays of bits that they touches
-        """
-        self.WA = [] # array representing Walsh terms
-        for k in self.model.w.keys(): 
-            if self.model.w[k] != 0:
-                a = []
-                for i in range(self.dim):
-                    if k[i] == '1':
-                        a.append(i)
-                self.WA.append( Struct(arr = a, w = self.model.w[k]) )
-#        self.printWA()
-
-#        self.WAsort = sorted(self.WA, key=lambda i: abs(i.w), reverse=True)
-#        self.printWAsort()
 
     def binCount(self, arr, bit):
         """
-        count the one bit of union self.WA[i].arr and bit
+        count the one bit of union self.model.WA[i].arr and bit
         """
         s = 0
         for i in arr:
@@ -2242,33 +1896,33 @@ class LocalSearch:
 #            self.Inter.append(Set()) # coincidence matrix
 
         #self.C = dict() # coincidence matrix
-        for i in range(len(self.WA)):
-            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.indiv.bit))) * self.WA[i].w
-            self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
-            comb = self.genComb(len(self.WA[i].arr))
-            #print i, self.WA[i].arr, comb
+        for i in range(len(self.model.WA)):
+            W = int(math.pow(-1, self.binCount(self.model.WA[i].arr, self.indiv.bit))) * self.model.WA[i].w
+            self.WAS[i] = Struct(arr = self.model.WA[i].arr, w = W)
+            comb = self.genComb(len(self.model.WA[i].arr))
+            #print i, self.model.WA[i].arr, comb
 
-            for j in self.WA[i].arr:
+            for j in self.model.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
-                if len(self.WA[i].arr)>1: # for at least order Walsh terms
+                if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
                     if j not in self.Inter: # the entry of i doesn't exist yet
                         self.Inter[j] = Struct(arr=Set(), WI=Set())
 
-                    for k in self.WA[i].arr:
+                    for k in self.model.WA[i].arr:
                         if k != j:
                             self.Inter[j].arr.add(k)
                     self.Inter[j].WI.add(i)
 
                 # add list of order >= 3 Walsh terms for the purpose of updating C matrix
-                if len(self.WA[i].arr) >= 3:
+                if len(self.model.WA[i].arr) >= 3:
                     if j not in self.infectBit: 
-                        self.infectBit[j] = [Struct(arr=self.WA[i].arr, WI=i)]
+                        self.infectBit[j] = [Struct(arr=self.model.WA[i].arr, WI=i)]
                     else :
-                        self.infectBit[j].append(Struct(arr=self.WA[i].arr, WI=i))
+                        self.infectBit[j].append(Struct(arr=self.model.WA[i].arr, WI=i))
 
             for j in comb: # for each list in comb
-                j0 = self.WA[i].arr[int(j[0])]
-                j1 = self.WA[i].arr[int(j[1])]
+                j0 = self.model.WA[i].arr[int(j[0])]
+                j1 = self.model.WA[i].arr[int(j[1])]
 #                if (j0, j1) in self.C.keys():
 #                    self.C[j0,j1] = self.C[j0,j1] + W
 #                elif W != 0:
@@ -2298,28 +1952,6 @@ class LocalSearch:
 #
 #        print 'sum array', self.sumArr
 
-    def classfiyWal(self):
-        """
-        classfiy Walsh coefficients into overlappping N lists
-        return self.walshList
-        """
-        self.walshList = []
-        for i in range(self.dim):
-            self.walshList.append([])
-        for i in self.WA:
-            for j in i.arr:
-                self.walshList[j].append(i)
-
-#        self.printWalClassify()
-    
-    def printWalClassify(self):
-        """
-        print the Walsh coefficients in terms of the classified list
-        """
-        for i in range(self.dim):
-            print i
-            for j in self.walshList[i]:
-                print j.arr, j.w
 
     def initSC(self):
         # compute the SC array
@@ -2568,8 +2200,8 @@ class LocalSearch:
         """
         print all walsh terms with array representation
         """
-        for i in range(len(self.WA)):
-           print self.WA[i].arr, self.WA[i].w
+        for i in range(len(self.model.WA)):
+           print self.model.WA[i].arr, self.model.WA[i].w
 
     def printC(self):
         a = 0
