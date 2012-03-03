@@ -122,7 +122,7 @@ def plotDistNK():
 
 def checkParam(argv):
     if len(argv) == 1:
-        print 'Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [PopSize] [N] [K] [Q]'
+        print 'Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [overwrite] [I] [PopSize] [N] [K] [Q]'
         print """
 Constrains: 
 1) for SAT, I = [1,100]
