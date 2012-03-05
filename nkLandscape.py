@@ -5,12 +5,10 @@
 import random
 import WalshAnalysis as wal
 import numpy as np
+import tool as tl
 import math
 import pdb
 
-class Struct:
-    def __init__(self, **kwds):
-        self.__dict__.update(kwds)
 
 class NKLandscape:
     """ NK-landscape class """
@@ -30,7 +28,7 @@ class NKLandscape:
 #        self.genFunc()
 #        self.exportToFile(fileName)
 #
-        self.Kbits = genSeqBits(self.k+1)
+        self.Kbits = tl.genSeqBits(self.k+1)
 
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
@@ -208,7 +206,7 @@ class NKLandscape:
                 evalSubFunc.append(subBit)
 
                 # check every template that matches the subfunction
-                seqBits = genSeqBits(len(subBit))
+                seqBits = tl.genSeqBits(len(subBit))
                 schFitArr = []
                 walTouch = []
 
@@ -325,7 +323,7 @@ class NKLandscape:
                             mergeFunc.append(subBitIn)
 #                            print '\t\tsubMerge', subBitIn
                             # check every template that matches the subfunction
-                            seqBits = genSeqBits(len(subBitIn))
+                            seqBits = tl.genSeqBits(len(subBitIn))
                             schFitArr = []
                             walTouch = []
                             init = False
@@ -414,22 +412,21 @@ class NKLandscape:
         #for i in range(len(a)): 
 #        for i in range(10): 
 #            print '%s\t%.3f' %(a[i][0],a[i][1])
+
         # initialize sumFitA 
         self.sumFitA = []
         evalSubFunc = []
         for i in range(self.n):
             self.sumFitA.append(Struct(one=0,zero=0))
         
-        for i in range(self.n):
-            subBit = self.neighs[i][:]
-            subBit.append(i)
-            subBit.sort()
+        for i in self.WA:
+            subBit = i.arr
 
-            if subBit not in evalSubFunc:
+            if subBit not in evalSubFunc and i.arr:
                 evalSubFunc.append(subBit)
 
                 # check every template that matches the subfunction
-                seqBits = genSeqBits(len(subBit))
+                seqBits = tl.genSeqBits(len(subBit))
                 schFitArr = []
                 for j in seqBits:
                     schFit = 0
@@ -469,23 +466,23 @@ class NKLandscape:
                             self.sumFitA[j].zero = self.sumFitA[j].zero + 1
 
 
-        for i in range(self.n):
-            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-
+#        rep = 10
+#        for i in range(rep):
+#            sol = self.genSolProp(self.sumFitA)
 #            hamDist = 0
 #            # compute the hamming distance
 #            for i in range(self.n):
 #                if sol[i] != optBit[i]:
 #                    hamDist = hamDist + 1
-#            print 'Hyper solution\t', sol, self.func(sol), hamDist
+#            print 'Hyper solution\n', sol, self.compFit(sol), hamDist
 #
 #        randSol = self.initIndiv(self.n)
 #        hamDistRand = 0
 #        for i in range(self.n):
 #            if randSol.bit[i] != optBit[i]:
 #                hamDistRand = hamDistRand + 1
-#        print 'Random Solution\t', self.func(randSol.bit), hamDistRand
-#        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
+#        print 'Random Solution\n', self.compFit(randSol.bit), hamDistRand
+
     def composeFullStr(self, i, j, interBits, n):
         """ return the integer representation of Full String """
         subStr = bin(j)
@@ -543,14 +540,16 @@ class NKLandscape:
                 s = s + 1
 
         return s
+    def genSolProp(self, sumFitA):
+        sol = []
+        for i in range(self.n):
+            if random.random() < sumFitA[i].zero / (sumFitA[i].one + sumFitA[i].zero + 0.0):
+                sol.append('0')
+            else:
+                sol.append('1')
+        return sol
 
 
-def genSeqBits(n):
-    bitStr = []
-    for i in range(int(math.pow(2,n))):
-       bit = bin(i)
-       bit = bit[2:]
-       if len(bit) < n:
-           bit = (n - len(bit))*'0' + bit
-       bitStr.append(bit)
-    return bitStr
+class Struct:
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)

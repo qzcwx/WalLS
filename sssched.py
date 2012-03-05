@@ -8,6 +8,7 @@ import threading
 import time
 import resource
 import subprocess
+import random
 
 from threading import Thread
 from optparse import OptionParser
@@ -67,6 +68,7 @@ class Task(Thread):
   def run(self):
     sys.stdout.write(str("%% "+self.machine.name+" running: "+self.command+'\n'))
     sys.stdout.flush()
+    sys.stderr.flush()
     exitValue = subprocess.call(["/usr/bin/ssh", "-x", self.machine.name,self.command], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     self.success = (exitValue == 0)
 
@@ -91,9 +93,11 @@ class Manager(Thread):
         if machinesTest[machine] == False:
           sys.stdout.write(str("%% "+lmachine.name+" is apparently dead\n"))
           sys.stdout.flush()
+          sys.stderr.flush()
         else:
           sys.stdout.write(str("%% "+lmachine.name+" is ok\n"))
           sys.stdout.flush()
+          sys.stderr.flush()
 
       if machinesTest[machine] == True:  
         self.machinesList.append(lmachine)    
@@ -106,12 +110,12 @@ class Manager(Thread):
 
   def run(self):
     while len(self.taskToPerform) > 0:
-      for machine in self.machinesList:
-        print machine.name
-        if machine.isDead:
+      machine = random.choice(self.machinesList)
+      print machine.name
+      if machine.isDead:
           print 'machine is dead'
           machine.test()
-        else:
+      else:
           if machine.free()==True:
             if len(self.taskToPerform) > 0:
               task = self.taskToPerform.pop()
@@ -208,4 +212,5 @@ def main():
 
 if __name__ == "__main__":
   main()
+  print 'All jobs done!!!'
   sys.exit()

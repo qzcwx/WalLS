@@ -47,7 +47,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 0
-runs = 1
+runs = 30
 popSize = 50 # always keep popSize to even number
 
 #maxFit = 1000
@@ -137,10 +137,10 @@ else:
         start = os.times()[0]
         if compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch':
             model.genHyperVote()
-        elif compM == 'hyperSqSearch':
-            self.model.genHyperSqVote()
-        elif compM == 'hyperWalSearch':
-            self.model.genHyperWalVote()
+        elif compMeth == 'hyperSqSearch':
+            model.genHyperSqVote()
+        elif compMeth == 'hyperWalSearch':
+            model.genHyperWalVote()
         hyperTime = os.times()[0] - start
             
 
@@ -233,4 +233,5 @@ else:
         print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
 
+    print nameOfF, 'Finish'
     print

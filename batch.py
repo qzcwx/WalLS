@@ -91,7 +91,7 @@ def submitJobs(numOfScript):
 
 if __name__== "__main__":
     count = 0
-    chunkSize = 24
+    chunkSize = 1000
     scriptNo = 0
     fileName = ''
     #numOfInstance = 1
@@ -103,7 +103,7 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
-    cRange = ['hyperSearch']
+    cRange = ['hyperWalSearch']
     pRange = ['NK', 'NKQ']
 
     random.seed(rseed)
