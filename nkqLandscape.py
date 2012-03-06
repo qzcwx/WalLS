@@ -1,4 +1,5 @@
 import nkLandscape as nk
+import tool as tl
 import random
 import numpy as np
 import math
@@ -21,7 +22,7 @@ class NKQLandcape(nk.NKLandscape):
         else:
             print 'read', fileName
             self.readFile(fileName)
-        self.Kbits = nk.genSeqBits(self.k+1)
+        self.Kbits = tl.genSeqBits(self.k+1)
 
     def genFuncQ(self):
         self.func = []

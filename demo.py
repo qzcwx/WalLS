@@ -146,6 +146,16 @@ else:
         # print Walsh coefficients
         walTime = os.times()[0] - start
 
+        start = os.times()[0]
+        if compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch':
+            model.genHyperVote()
+        elif compMeth == 'hyperSqSearch':
+            model.genHyperSqVote()
+        elif compMeth == 'hyperWalSearch':
+            model.genHyperWalVote()
+        hyperTime = os.times()[0] - start
+            
+
         """ store runtime to files """
         if probName == 'NKQ':
             nameOfF = waltimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
@@ -153,7 +163,7 @@ else:
             nameOfF = waltimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
         f = open(nameOfF, 'w')
-        print >>f,"%g" % (walTime)
+        print >>f,"%g\t%g" % (walTime,hyperTime) 
         f.close()
 
 #    bit,fit = tl.compFit(model)
@@ -232,10 +242,8 @@ else:
 
     f = open(nameOfF, 'w')
     for i in range(runs):
-        if compMeth == 'hyperSearch' or compMeth == 'hyperSqSearch':
-            print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'], res[i]['hyper'])
-        else:
-            print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
+        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
     f.close()
 
+    print nameOfF, 'Finish'
     print

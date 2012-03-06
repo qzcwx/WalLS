@@ -1,8 +1,4 @@
-import nkLandscape as nk
-import nkqLandscape as nkq
-
 import LocalSearch as ls
-
 #import matplotlib.pyplot as plt
 import random
 import numpy as np
@@ -37,7 +33,7 @@ def globalOpt(model):
 def compFit(model):
     n = model.getN()
     fit = np.zeros(math.pow(2,n))
-    bitStr = nk.genSeqBits(n)
+    bitStr = genSeqBits(n)
     for i in range(int(math.pow(2,n))):
        fit[i] = model.compFit(bitStr[i])
     return bitStr, fit
@@ -81,43 +77,43 @@ def plotDistNKQ():
                 plt.legend()
                 plt.savefig('N='+str(n)+'K='+str(k)+'Q='+str(q)+'I='+str(inst))
 
-def plotDistNK():
-    """ 
-        Plot the distribution of fitness of when K and Q vary, 1000 samples,
-        generate one instance of NK landscapes, for:
-            * N = 20, 50, 100
-            * K = 0, 2, 4, 8, 16
-            * q = 2, 4, 8, 16
-    """
-    nSamples = 1000
-
-    inst = 0
-    prefixNK = './benchmark/NK/'
-
-    for n in [20, 50, 100]:
-        for k in [0, 2, 4, 8, 16]:
-            print 'N=',n,'K=',k
-            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
-            res = np.zeros((nSamples, 3))
-            for r in range(nSamples):
-                randBitStr = []
-                for j in range(n):
-                    if random.random()<0.5:
-                        randBitStr.append('0')
-                    else:
-                        randBitStr.append('1')
-                res[r][0] = evalSol(randBitStr,model,'fit',True)
-                res[r][1] = evalSol(randBitStr,model,'mean',True)
-                res[r][2] = evalSol(randBitStr,model,'std',True)
-                #res[r] = model.compFit(randBitStr)
-
-                    
-            plt.figure()
-            plt.hist(res, histtype='bar',
-                        label=['fit', 'mean', 'std'])
-            plt.title('N='+str(n)+',K='+str(k)+',I='+str(inst))
-            plt.legend()
-            plt.savefig('N='+str(n)+'K='+str(k)+'I='+str(inst))
+#def plotDistNK():
+#    """ 
+#        Plot the distribution of fitness of when K and Q vary, 1000 samples,
+#        generate one instance of NK landscapes, for:
+#            * N = 20, 50, 100
+#            * K = 0, 2, 4, 8, 16
+#            * q = 2, 4, 8, 16
+#    """
+#    nSamples = 1000
+#
+#    inst = 0
+#    prefixNK = './benchmark/NK/'
+#
+#    for n in [20, 50, 100]:
+#        for k in [0, 2, 4, 8, 16]:
+#            print 'N=',n,'K=',k
+#            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+#            res = np.zeros((nSamples, 3))
+#            for r in range(nSamples):
+#                randBitStr = []
+#                for j in range(n):
+#                    if random.random()<0.5:
+#                        randBitStr.append('0')
+#                    else:
+#                        randBitStr.append('1')
+#                res[r][0] = evalSol(randBitStr,model,'fit',True)
+#                res[r][1] = evalSol(randBitStr,model,'mean',True)
+#                res[r][2] = evalSol(randBitStr,model,'std',True)
+#                #res[r] = model.compFit(randBitStr)
+#
+#                    
+#            plt.figure()
+#            plt.hist(res, histtype='bar',
+#                        label=['fit', 'mean', 'std'])
+#            plt.title('N='+str(n)+',K='+str(k)+',I='+str(inst))
+#            plt.legend()
+#            plt.savefig('N='+str(n)+'K='+str(k)+'I='+str(inst))
 
 
 def checkParam(argv):
@@ -265,3 +261,13 @@ def listMerge(l1, l2):
 #plotDistNK()
 #plotDistMaxK()
 #plotFitRank()
+
+def genSeqBits(n):
+    bitStr = []
+    for i in range(int(math.pow(2,n))):
+       bit = bin(i)
+       bit = bit[2:]
+       if len(bit) < n:
+           bit = (n - len(bit))*'0' + bit
+       bitStr.append(bit)
+    return bitStr
