@@ -59,13 +59,13 @@ class LocalSearch:
                 return self.runNeigh(fitName, minimize,restart)
         elif compM == 'walWalk':
             if fitName == 'fit':
-                return self.runFitS2walk(fitName, minimize, restart)
+                return self.runFitSwalk(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCwalk(fitName, minimize, restart)
                 #return self.runMeanWal(fitName, minimize, restart)
         elif compM == 'walRest':
             if fitName == 'fit':
-                return self.runFitS2rest(fitName, minimize, restart)
+                return self.runFitSrest(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCrest(fitName, minimize, restart)
         elif compM == 'supm':
@@ -290,9 +290,6 @@ class LocalSearch:
 #            print 'oldindiv',self.oldindiv.bit
 #            print 'improveA',self.improveA
 #            print improveN, bestI, self.fitEval
-            print self.oldindiv.bit
-            print improveN, bestI, self.fitEval
-            print 
 #            pdb.set_trace()
         
             if improveN == False:
