@@ -78,6 +78,11 @@ class LocalSearch:
                 return self.runFitSrest(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCrest(fitName, minimize, restart)
+        elif compM == 'walRestNext':
+            if fitName == 'fit':
+                return self.runFitSrestNext(fitName, minimize, restart)
+            elif fitName == 'mean':
+                return self.runMeanSCrestNext(fitName, minimize, restart)
         elif compM == 'supm':
             if fitName == 'fit':
                 return self.runFitsm(fitName, minimize, restart)
@@ -732,53 +737,19 @@ class LocalSearch:
         self.initWal()
         
         self.bsf = copy.deepcopy(self.oldindiv)
-        #bestBitsCount = np.zeros(self.dim)
         
         self.model.WA = []
-        #takenBits = self.dim*[False]
-        
         init = False
-        #lenImproveA = []
         updateT = 0
         initT = os.times()[0] - start
-#        genT = 0
-#        updateT = 0
-#        updateCT = 0
-#        endT = 0
-#        resT = 0
-#        bufferSize = 5
-#        withinLimit = 0
-#        exceedLimit = 0
         start = os.times()[0]
         while self.fitEval < self.MaxFit:
             if init == False:
-                #start = os.times()[0]
                 improveN, bestI, evalCount = self.genFitBest(minimize)
-                #genT = genT + os.times()[0] - start
                 init = True
             else:
-#                start = os.times()[0]
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
             self.fitEval = self.fitEval + evalCount
-#                updateT = updateT + os.times()[0] - start
-            #lenImproveA.append( len(self.improveA) )
-#            sBuffer = 0
-#            sBufferNotChange = 0
-#            for i in self.improveA:
-#                if bestI != None :
-#                    if (bestI in self.Inter) and (i not in self.Inter[bestI].arr):
-#                        sBuffer = sBuffer + 1
-#                        if takenBits[i] == False:
-#                            sBufferNotChange = sBufferNotChange + 1
-#                    elif bestI not in self.Inter:
-#                        sBuffer = sBuffer + 1
-#                        if takenBits[i] == False:
-#                            sBufferNotChange = sBufferNotChange + 1
-#            #print sBuffer, len(self.improveA)
-#            if sBuffer <= bufferSize:
-#               withinLimit = withinLimit + 1
-#            else:
-#               exceedLimit = exceedLimit + 1
         
             if improveN == False:
                 if restart == True:
@@ -787,15 +758,10 @@ class LocalSearch:
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
 
-#                    start = os.times()[0]
                     self.fitEval = self.fitEval - 1
                     self.restart(fitName, minimize, False)
                     init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
-#                    resT = resT + os.times()[0] - start
-                    
-                    #takenBits = self.dim*[False]
-                    #print 'restart'
                     for i in diff:
                         self.update(i)
                         self.updateWAS(i)
@@ -805,36 +771,69 @@ class LocalSearch:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
-#                start = os.times()[0]
                 self.update(bestI)
                 self.updateWAS(bestI)
-                #takenBits[bestI] = True
-#                updateCT = updateCT + os.times()[0] - start
-#                bestBitsCount[bestI] = bestBitsCount[bestI] + 1
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
                     self.oldindiv.bit[bestI] = '1'
 
-#        print bestBitsCount 
-#        print self.InterCount
-#        plt.plot(bestBitsCount,'o')
-#        plt.plot(self.InterCount,'o')
-#        plt.savefig('n'+str(self.model.n)+'k'+str(self.model.k)+'.png')
-#        print np.corrcoef([bestBitsCount,self.InterCount])[1,0]
-        
-#        start = os.times()[0]
         self.bsf = self.evalPop(self.bsf)
-#        endT = endT + os.times()[0] - start
-        #print np.mean(lenImproveA), np.std(lenImproveA)
-#        print 'genBest', genT
-#        print 'updateBest', updateT
-#        print 'restart', resT
-#        print 'updateCT',updateCT
-#        print 'endT', endT
         updateT = updateT + os.times()[0] - start
-        #print 'Percentage of be withing buffer size limit', bufferSize, ':', withinLimit / (withinLimit + exceedLimit + 0.0)
-        #print  withinLimit / (withinLimit + exceedLimit + 0.0)
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
+
+
+    def runFitSrestNext(self,fitName, minimize, restart):
+        """ 
+        next descent local search running on S
+        """
+        self.fitEval = 0
+        
+        start = os.times()[0]
+        self.model.transWal()
+        self.oldindiv = self.initIndiv(self.dim)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+        self.initWal()
+        
+        self.bsf = copy.deepcopy(self.oldindiv)
+        
+        self.model.WA = []
+        updateT = 0
+        initT = os.times()[0] - start
+        start = os.times()[0]
+        while self.fitEval < self.MaxFit:
+            improveN, bestI, evalCount = self.genFitNext(minimize)
+            self.fitEval = self.fitEval + evalCount
+        
+            if improveN == False:
+                if restart == True:
+                    updateT = updateT + os.times()[0] - start
+                    startR = os.times()[0]
+                    oldbit = self.oldindiv.bit
+                    self.oldindiv = self.evalPop(self.oldindiv)
+
+                    self.fitEval = self.fitEval - 1
+                    self.restart(fitName, minimize, False)
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    for i in diff:
+                        self.update(i)
+                        self.updateWAS(i)
+                    initT = initT + os.times()[0] - startR
+                    start = os.times()[0]
+                else:
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.update(bestI)
+                self.updateWAS(bestI)
+                if self.oldindiv.bit[bestI] == '1':
+                    self.oldindiv.bit[bestI] = '0'
+                else:
+                    self.oldindiv.bit[bestI] = '1'
+
+        self.bsf = self.evalPop(self.bsf)
+        updateT = updateT + os.times()[0] - start
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runMeanSCwalk(self,fitName, minimize, restart):
@@ -980,22 +979,16 @@ class LocalSearch:
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
-#        startA = os.times()[0]
         self.fitEval = 0
-        
         start = os.times()[0]
         self.model.transWal()
         self.oldindiv = self.initIndivNeigh(self.dim)
         self.oldindiv = self.evalPop(self.oldindiv)
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
-        
-#        start = os.times()[0]
         self.initSC()
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.sumArr))
         self.indiv.fitG = self.oldindiv.fitG
-#        print '+ initial', os.times()[0]-start
-
         self.bsf = copy.deepcopy(self.oldindiv)
         takenBits = self.dim*[False]
         self.model.WA = []
@@ -1003,60 +996,15 @@ class LocalSearch:
         init = False
         updateT = 0
         initT = os.times()[0] - start
-        #lenImproveA = []
-#        genT = 0
-#        updateT = 0
-#        updateCT = 0
-#        fitGT = 0
-#        updateSCT = 0
-#        endT = 0
-#        resT = 0
-#        bufferSize = 5
-#        withinLimit = 0
-#        exceedLimit = 0
         start = os.times()[0]
         while self.fitEval < self.MaxFit:
-            self.fitEval = self.fitEval + self.dim
-            #print 'SC', self.SC
-
             if init == False:
-#                start = os.times()[0]
                 improveN, bestI, evalCount = self.genMeanBest(minimize)
-#                genT = genT + os.times()[0] - start
                 init = True
             else :
-#                start = os.times()[0]
                 improveN, bestI, evalCount = self.updateMeanBest(bestI,minimize)
 
             self.fitEval = self.fitEval + evalCount
-
-#                updateT = updateT + os.times()[0] - start
-#            sBuffer = 0
-#            sBufferNotChange = 0
-#            for i in self.improveA:
-#                if bestI != None :
-#                    if (bestI in self.Inter) and (i not in self.Inter[bestI].arr):
-#                        sBuffer = sBuffer + 1
-#                        if takenBits[i] == False:
-#                            sBufferNotChange = sBufferNotChange + 1
-#                    elif bestI not in self.Inter:
-#                        sBuffer = sBuffer + 1
-#                        if takenBits[i] == False:
-#                            sBufferNotChange = sBufferNotChange + 1
-#            #print sBuffer, len(self.improveA)
-#            if sBuffer <= bufferSize:
-#               withinLimit = withinLimit + 1
-#            else:
-#               exceedLimit = exceedLimit + 1
-
-            #print 
-            #print 'Z', self.Z
-            #print self.fitEval, self.SC
-            #print improveN, bestI
-            #lenImproveA.append( len(self.improveA) )
-#            print self.oldindiv.bit
-#            print 
-
             if improveN == False:
                 if restart == True:
                     updateT = updateT + os.times()[0] - start
@@ -1064,28 +1012,15 @@ class LocalSearch:
                     oldbit = self.oldindiv.bit
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
-#                    fitGT = fitGT + os.times()[0] - start  
-                    
-#                    start = os.times()[0]
                     self.restart(fitName, minimize,False)
                     init = False
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
-                    #print oldbit, self.oldindiv.bit
-#                    resT = resT + os.times()[0] - start
-                    #print 'restart'
                     takenBits = self.dim*[False]
                     
                     for i in diff:
-#                        start = os.times()[0]
                         self.update(i)
-#                        updateCT = updateCT + os.times()[0] - start
-
-#                        start = os.times()[0]
                         self.updateSC(i)
-#                        updateSCT = updateSCT + os.times()[0] - start 
                         self.updateWAS(i)
-                        #print 'S', self.sumArr
-                        #print 'Z', self.Z
                     initT = initT + os.times()[0] - startR
                     start = os.times()[0]
                 else:
@@ -1094,24 +1029,16 @@ class LocalSearch:
                     self.fitEval = self.fitEval - 1
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
-#                start = os.times()[0]
                 self.update(bestI)
-#                updateCT = updateCT + os.times()[0] - start
-                #takenBits[bestI] = True
 
-#                start = os.times()[0]
                 self.updateSC(bestI)
-#                updateSCT = updateSCT + os.times()[0] - start
 
                 self.updateWAS(bestI)
                 if self.oldindiv.bit[bestI] == '1':
                     self.oldindiv.bit[bestI] = '0'
                 else:
                     self.oldindiv.bit[bestI] = '1'
-#        print 'while loop', os.times()[0] - startWhile
 
-        
-        #start = os.times()[0]
         self.bsf = self.evalPop(self.bsf)
         self.fitEval = self.fitEval - 1
         diff = self.diffBits(self.bsf.bit, self.oldindiv.bit)
@@ -1119,19 +1046,73 @@ class LocalSearch:
             self.update(i)
         self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
         updateT = updateT + os.times()[0] - start
-        #print np.mean(lenImproveA), np.std(lenImproveA)
-#        print 'genBest', genT
-#        print 'updateBest', updateT
-#        print 'fitGT', fitGT
-#        print 'restartT', resT
-#        print 'updateCT',updateCT
-#        print 'updateSCT', updateSCT
-#        print 'endT', endT
-#        print 'allT', os.times()[0] - startA
-        #print 'Percentage of be withing buffer size limit', bufferSize, ':', withinLimit / (withinLimit + exceedLimit + 0.0)
-        #print  withinLimit / (withinLimit + exceedLimit + 0.0)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
+    def runMeanSCrestNext(self,fitName, minimize, restart):
+        """ 
+        steepest descent local search with respect to mean of neighs by Walsh Analysis
+        """
+        self.fitEval = 0
+        start = os.times()[0]
+        self.model.transWal()
+        self.oldindiv = self.initIndivNeigh(self.dim)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+        self.initWal()
+        self.initSC()
+        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.sumArr))
+        self.indiv.fitG = self.oldindiv.fitG
+        self.bsf = copy.deepcopy(self.oldindiv)
+        takenBits = self.dim*[False]
+        self.model.WA = []
+
+        updateT = 0
+        initT = os.times()[0] - start
+        start = os.times()[0]
+        while self.fitEval < self.MaxFit:
+            improveN, bestI, evalCount = self.genMeanNext(minimize)
+            self.fitEval = self.fitEval + evalCount
+            if improveN == False:
+                if restart == True:
+                    updateT = updateT + os.times()[0] - start
+                    startR = os.times()[0]
+                    oldbit = self.oldindiv.bit
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+                    self.restart(fitName, minimize,False)
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    takenBits = self.dim*[False]
+                    
+                    for i in diff:
+                        self.update(i)
+                        self.updateSC(i)
+                        self.updateWAS(i)
+                    initT = initT + os.times()[0] - startR
+                    start = os.times()[0]
+                else:
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+                    self.fitEval = self.fitEval - 1
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.update(bestI)
+
+                self.updateSC(bestI)
+
+                self.updateWAS(bestI)
+                if self.oldindiv.bit[bestI] == '1':
+                    self.oldindiv.bit[bestI] = '0'
+                else:
+                    self.oldindiv.bit[bestI] = '1'
+
+        self.bsf = self.evalPop(self.bsf)
+        self.fitEval = self.fitEval - 1
+        diff = self.diffBits(self.bsf.bit, self.oldindiv.bit)
+        for i in diff:
+            self.update(i)
+        self.bsf.fitG = self.bsf.fit - 2/float(self.dim) * (np.sum(self.sumArr))
+        updateT = updateT + os.times()[0] - start
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
     
     def hyperSearchMean(self,fitName, minimize, restart):
         """ 
