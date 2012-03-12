@@ -32,6 +32,7 @@ class LocalSearch:
         self.MaxFit = MaxFit
         self.dim = dim
         self.threshold = 1e-15
+        self.nameOfDir = './result/'
 
     def initIndiv(self, dim):
         """ initial the search inidividual with random bit string """
@@ -58,6 +59,13 @@ class LocalSearch:
         return indiv
 
     def run(self, fitName, minimize, restart, compM):
+        if restart == True:
+            self.algoName = 'rLS'
+        else:
+            self.algoName = 'LS'
+            
+        self.compMeth = compM
+
         if compM == 'bf':
             if fitName =='fit': 
                 return self.runFit(minimize,restart)
@@ -101,7 +109,7 @@ class LocalSearch:
         examine the rank of optimum hyperplane in those list of hyperplanes associated with each subfunction
         """
         self.model.transWal()
-        bit,fit = tl.compFit(self.model)
+        bit,fit = tl.compFit(sself.model.elf.model)
         a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
         optBit = a[0][0]
         optFit = a[0][1]
@@ -453,6 +461,13 @@ class LocalSearch:
         self.initWal()
         self.bsf = copy.deepcopy(self.oldindiv)
         self.model.WA = []
+        
+
+        if self.model.probName == 'NKQ':
+            nameOfF = self.nameOfDir+'Trace-'+self.model.probName+'-'+self.algoName+'-F'+fitName+'-C'+self.compMeth+'-I'+str(self.model.inst)+'-S1'+'-N'+str(self.model.n)+'-K'+str(self.model.k)+'-Q'+str(self.model.q)+'.txt'
+        elif self.model.probName == 'NK':
+            nameOfF = self.nameOfDir+'Trace-'+self.model.probName+'-'+self.algoName+'-F'+fitName+'-C'+self.compMeth+'-I'+str(self.model.inst)+'-S1'+'-N'+str(self.model.n)+'-K'+str(self.model.k)+'.txt'
+        f = open(nameOfF, 'a')
 
         walkLen = 10
         init = False
@@ -474,6 +489,8 @@ class LocalSearch:
                     startR = os.times()[0]
                     self.oldindiv = self.evalPop(self.oldindiv)
 
+                    print >>f, initT+updateT, self.fitEval, self.oldindiv.fit
+
                     diff = self.walk(fitName, minimize,False, walkLen)
                     init = False
 
@@ -494,6 +511,7 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
+        f.close()
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitS2(self,fitName, minimize, restart):

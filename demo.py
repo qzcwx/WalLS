@@ -35,7 +35,7 @@ compMeth = tl.getArgv() # bf(brute force) / wal (walsh analysis)
 probName = tl.getArgv()
 algoName = tl.getArgv()
 fitName = tl.getArgv() # fit/mean/std
-overWrite = int(tl.getArgv())
+#overWrite = int(tl.getArgv())
 
 #if compMeth == 'wal' and fitName != 'mean':
 #    print 'ERROR: Walsh analysis can only be applied to compute mean'
@@ -47,9 +47,9 @@ n = int(tl.getArgv())
 if probName != 'SAT':
     k = int(tl.getArgv())
 
-maxFit = 1000 * n
+maxFit = 1000 * n * n
 #maxFit = 0
-runs = 30
+runs = 1
 popSize = 50 # always keep popSize to even number
 q = 0
 
@@ -127,18 +127,12 @@ else:
     res = []
 
     if probName == 'NK':
-        if overWrite == 1 or (overWrite == 0 and not batch.resultExist(probName,algoName,fitName,inst,popSize,compMeth,n,k,q)):
-            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
-            #model = nk.NKLandscape(n,k)
-        else:
-            sys.exit()
+        model = nk.NKLandscape(n,k,fileName = prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst), i = inst)
+        #model = nk.NKLandscape(n,k)
     elif probName == 'NKQ':
         q = int(tl.getArgv())
-        if overWrite == 1 or (overWrite == 0 and not batch.resultExist(probName,algoName,fitName,inst,popSize,compMeth,n,k,q)):
-            model = nkq.NKQLandcape(n, k, q, prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q))
-            #model = nkq.NKQLandcape(n, k, q)
-        else:
-            sys.exit()
+        model = nkq.NKQLandcape(n, k, q,fileName = prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(inst)+'-Q'+str(q),  i = inst)
+        #model = nkq.NKQLandcape(n, k, q)
 
     if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch' or compMeth == 'hyperSqSearch' or 'hyperWalSearch':
         start = os.times()[0]
@@ -206,7 +200,8 @@ else:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, fitName))
         tAll[i] = os.times()[0] - start
 
-#    trace = res[0]['trace']
+
+
 #    for i in trace:
 ##        print 'Eval', i.fitEval, 'fit', i.fit
 #        print 'Eval', i.fitEval, 'fit', i.fit, 'fitG', i.fitG

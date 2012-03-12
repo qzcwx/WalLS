@@ -12,9 +12,11 @@ import pdb
 
 class NKLandscape:
     """ NK-landscape class """
-    def __init__(self,inN,inK, fileName = None):
+    def __init__(self,inN,inK,  fileName = None, i = 0 ):
         self.n = inN
         self.k = inK
+        self.probName  = 'NK'
+        self.inst = i
 
         # for run experiments
         if fileName == None:

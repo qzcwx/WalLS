@@ -6,10 +6,12 @@ import math
 import pdb
 
 class NKQLandcape(nk.NKLandscape):
-    def __init__(self, inN, inK, inQ, fileName = None):
+    def __init__(self, inN, inK, inQ, fileName = None, i = 0):
         self.q = inQ
         self.n = inN
         self.k = inK
+        self.probName  = 'NKQ'
+        self.inst = i
 
 #        self.genNeigh()
 #        self.genFunc()
