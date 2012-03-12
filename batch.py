@@ -37,7 +37,7 @@ def writeScript(p,a,f,i,s,c,n,k,q,chunkSize, track):
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
 #        print 'python demo.py '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n'
-        fileName.write('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -103,7 +103,7 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
-    cRange = ['hyperWalSearch']
+    cRange = ['walWalkNext']
     pRange = ['NK', 'NKQ']
 
     random.seed(rseed)
