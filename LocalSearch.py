@@ -463,6 +463,9 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.model.WA = []
 
+#        initC = 0
+#        updateC = 0
+
         walkLen = 10
         init = False
         updateT = 0
@@ -471,9 +474,11 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             if init == False:
                 improveN, bestI, evalCount = self.genFitBest(minimize)
+#                initC = initC + 1
                 init = True
             else:
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
+#                updateC = updateC + 1
 
             self.fitEval = self.fitEval + evalCount
         
@@ -503,6 +508,7 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
+        print initC, updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitSwalkNext(self,fitName, minimize, restart):
@@ -519,12 +525,22 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.model.WA = []
 
+#        initC = 0
+#        updateC = 0
+
         walkLen = 10
         updateT = 0
+        init = False
         initT = os.times()[0] - start
         start = os.times()[0]
         while self.fitEval < self.MaxFit:
-            improveN, bestI, evalCount = self.genFitNext(minimize)
+            if init == False:
+                improveN, bestI, evalCount = self.genFitNext(minimize)
+#                initC = initC + 1
+                init = True
+            else:
+                improveN, bestI, evalCount = self.updateFitNext(bestI,minimize)
+#                updateC = updateC + 1
 
             self.fitEval = self.fitEval + evalCount
         
@@ -534,6 +550,7 @@ class LocalSearch:
                     startR = os.times()[0]
                     self.oldindiv = self.evalPop(self.oldindiv)
 
+                    init = False
                     diff = self.walk(fitName, minimize,False, walkLen)
 
                     for i in diff:
@@ -553,6 +570,7 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
+#        print initC, updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitS2(self,fitName, minimize, restart):
@@ -929,12 +947,19 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.model.WA = []
 
+        init = False
+
         updateT = 0
         walkLen = 10
         initT = os.times()[0] - start
         start = os.times()[0]
         while self.fitEval < self.MaxFit:
-            improveN, bestI, evalCount = self.genMeanNext(minimize)
+
+            if init == False:
+                improveN, bestI, evalCount = self.genMeanNext(minimize)
+                init = True
+            else :
+                improveN, bestI, evalCount = self.updateMeanNext(bestI,minimize)
 
             self.fitEval = self.fitEval + evalCount
 
@@ -945,6 +970,8 @@ class LocalSearch:
                     self.oldindiv = self.evalPop(self.oldindiv)
                     self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.sumArr))
                     diff = self.walk( fitName, minimize, False, walkLen )
+
+                    init = False
 
                     for i in diff:
                         self.update(i)
@@ -1617,20 +1644,19 @@ class LocalSearch:
         """
         # check improving move
         improve = False
-        count = 0 
-        randSeq= range(self.dim)
-        random.shuffle(randSeq)
-        for i in randSeq:
+        self.improveA = []
+        for i in range(self.dim):
             if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
-                bestI = i
+                self.improveA.append(i) 
                 improve = True
-                count = count + 1
-                break
 
         if improve == False:
-            return False, None, count
+            return False, None, self.dim
+
+        # randomly pick an improving move, which takes only constant time 
+        bestI = random.choice(self.improveA)
                     
-        return True, bestI, count
+        return True, bestI, self.dim
 
     def genFitBest2(self,minimize):
         """
@@ -1805,6 +1831,29 @@ class LocalSearch:
                     
         return True, bestI, evalCount
 
+    def updateFitNext(self, p, minimize):
+        """
+        find the next improving move by the similar update trick
+        """
+        self.improveA.remove(p)
+        evalCount = 0
+        if p in self.Inter:
+            for i in self.Inter[p].arr: 
+                evalCount = evalCount + 1
+                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+
+        if not self.improveA:
+            return False, None, evalCount
+
+        # randomly pick an improving move, which takes only constant time 
+        bestI = random.choice(self.improveA)
+                   
+        return True, bestI, evalCount
+
     def updateFitBest2(self, P, minimize):
         """ 
         generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness), by performing partial updates
@@ -1899,20 +1948,17 @@ class LocalSearch:
         """
         # check improving move 
         improve = False
-        count = 0
-        randSeq = range(self.dim)
-        random.shuffle(randSeq)
-        for i in randSeq:
+        self.improveA = []
+        for i in range(self.dim):
             if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<self.threshold):
-                bestI = i
-                count = count + 1
+                self.improveA.append(i)
                 improve = True
-                break
 
         if improve == False:
-            return False, None, count
+            return False, None, self.dim
 
-        return True, bestI, count
+        bestI = random.choice(self.improveA)
+        return True, bestI, self.dim
 
     def updateMeanBest(self, p, minimize):
         self.improveA.remove(p)
@@ -1937,6 +1983,24 @@ class LocalSearch:
                 best = self.SC[i]
                 bestI = i
                     
+        return True, bestI, evalCount
+
+    def updateMeanNext(self, p, minimize):
+        self.improveA.remove(p)
+        evalCount = 0
+        if p in self.Inter:
+            for i in self.Inter[p].arr:
+                evalCount = evalCount + 1
+                if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]<self.threshold):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+
+        if not self.improveA:
+            return False, None, evalCount
+
+        bestI = random.choice(self.improveA)
         return True, bestI, evalCount
 
     def initWal(self):
