@@ -271,3 +271,6 @@ def genSeqBits(n):
            bit = (n - len(bit))*'0' + bit
        bitStr.append(bit)
     return bitStr
+
+def printSep():
+    print 80*'*'

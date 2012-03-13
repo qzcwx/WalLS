@@ -88,6 +88,7 @@ class NKLandscape:
             """ sum up the sub-function values """ 
             sum = sum + self.func[i][int(interStr,2)]
         return sum/float(self.n)
+
     def WalCof(self):
         """ compute the Walsh coefficients """
         subW = [] # subW is a N*2^K matrix
@@ -549,6 +550,29 @@ class NKLandscape:
                 sol.append('1')
         return sol
 
+    def countInterBits(self):
+        """
+        count the number of subfunctions that touch a particular bit
+        """
+        self.interBit = dict()
+
+        for i in range(self.n):
+            sub = self.neighs[i][:]
+            sub.append(i)
+            for j in range(len(sub)):
+                for k in [h for h in range(len(sub)) if h > j]:
+                    if sub[j] not in self.interBit:
+                        self.interBit[sub[j]] = [sub[j],sub[k]]
+                    elif sub[k] not in self.interBit[sub[j]]:
+                        self.interBit[sub[j]].append(sub[k])
+
+                    if sub[k] not in self.interBit:
+                        self.interBit[sub[k]] = [sub[j],sub[k]]
+                    elif sub[j] not in self.interBit[sub[k]]:
+                        self.interBit[sub[k]].append(sub[j])
+
+#        for i in self.interBit.keys():
+#            print i, self.interBit[i]
 
 class Struct:
     def __init__(self, **kwds):

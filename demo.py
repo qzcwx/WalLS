@@ -135,8 +135,8 @@ else:
 
     if compMeth == 'walWalk' or compMeth == 'walRest' or compMeth == 'supm' or compMeth == 'bitImp' or compMeth == 'walSearch' or compMeth == 'checkOptWal' or compMeth == 'checkHyper' or compMeth == 'checkHyperRank' or compMeth == 'hyperSearch' or compMeth == 'hyperSqSearch' or compMeth == 'hyperWalSearch' or compMeth == 'walWalkNext' or compMeth == 'walRestNext':
         start = os.times()[0]
+        # Walsh analysis
         w = model.WalshCofLinearLinklist()
-        # print Walsh coefficients
         walTime = os.times()[0] - start
 
         start = os.times()[0]
@@ -147,7 +147,9 @@ else:
         elif compMeth == 'hyperWalSearch':
             model.genHyperWalVote()
         hyperTime = os.times()[0] - start
-            
+
+        # count the number of interative bits
+        model.countInterBits()
 
         """ store runtime to files """
         if probName == 'NKQ':

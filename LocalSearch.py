@@ -754,8 +754,8 @@ class LocalSearch:
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
 
-        initC = 0
-        updateC = 0
+#        initC = 0
+#        updateC = 0
         
         self.bsf = copy.deepcopy(self.oldindiv)
         init = False
@@ -767,10 +767,10 @@ class LocalSearch:
             if init == False:
                 improveN, bestI, evalCount = self.genFitBest(minimize)
                 init = True
-                initC = initC + 1
+#                initC = initC + 1
             else:
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
-                updateC = updateC + 1
+#                updateC = updateC + 1
             self.fitEval = self.fitEval + evalCount
         
             if improveN == False:
@@ -802,7 +802,7 @@ class LocalSearch:
 
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
-        print initC, updateC
+#        print initC, updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
 
@@ -819,8 +819,8 @@ class LocalSearch:
         self.indiv = copy.deepcopy(self.oldindiv)
         self.initWal()
 
-        initC = 0
-        updateC = 0
+#        initC = 0
+#        updateC = 0
         
         self.bsf = copy.deepcopy(self.oldindiv)
         init = False
@@ -831,11 +831,11 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             if init == False:
                 improveN, bestI, evalCount = self.genFitNext(minimize)
-                initC = initC + 1 
+#                initC = initC + 1 
                 init = True
             else:
                 improveN, bestI, evalCount = self.updateFitNext(bestI,minimize)
-                updateC = updateC + 1
+#                updateC = updateC + 1
             self.fitEval = self.fitEval + evalCount
         
             if improveN == False:
@@ -868,7 +868,7 @@ class LocalSearch:
 
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
-        print initC, updateC
+#        print initC, updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runMeanSCwalk(self,fitName, minimize, restart):
@@ -2039,7 +2039,8 @@ class LocalSearch:
         self.infectBit = dict()
         self.C = np.zeros((self.dim,self.dim)) # coincidence matrix
         self.Inter = dict()
-        self.InterCount = np.zeros(self.dim)
+
+#        self.InterCount = np.zeros(self.dim)
 
 #        for i in range(self.dim):
 #            self.Inter.append(Set()) # coincidence matrix
@@ -2078,11 +2079,11 @@ class LocalSearch:
 #                    self.C[j0,j1] = W
                 self.C[j0,j1] = self.C[j0,j1] + W
         
-        for i in range(self.dim):
-            if i in self.Inter:
-                self.InterCount[i] = len(self.Inter[i].arr)
-            else :
-                self.InterCount[i] = 0
+#        for i in range(self.dim):
+#            if i in self.Inter:
+#                self.InterCount[i] = len(self.Inter[i].arr)
+#            else :
+#                self.InterCount[i] = 0
 
 #        print self.Inter
 #        print 'C', self.C
