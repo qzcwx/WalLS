@@ -463,8 +463,8 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.model.WA = []
 
-#        initC = 0
-#        updateC = 0
+        initC = 0
+        updateC = 0
 
         walkLen = 10
         init = False
@@ -474,11 +474,11 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             if init == False:
                 improveN, bestI, evalCount = self.genFitBest(minimize)
-#                initC = initC + 1
+                initC = initC + 1
                 init = True
             else:
                 improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
-#                updateC = updateC + 1
+                updateC = updateC + 1
 
             self.fitEval = self.fitEval + evalCount
         
@@ -525,8 +525,8 @@ class LocalSearch:
         self.bsf = copy.deepcopy(self.oldindiv)
         self.model.WA = []
 
-#        initC = 0
-#        updateC = 0
+        initC = 0
+        updateC = 0
 
         walkLen = 10
         updateT = 0
@@ -536,11 +536,11 @@ class LocalSearch:
         while self.fitEval < self.MaxFit:
             if init == False:
                 improveN, bestI, evalCount = self.genFitNext(minimize)
-#                initC = initC + 1
+                initC = initC + 1
                 init = True
             else:
                 improveN, bestI, evalCount = self.updateFitNext(bestI,minimize)
-#                updateC = updateC + 1
+                updateC = updateC + 1
 
             self.fitEval = self.fitEval + evalCount
         
@@ -570,7 +570,7 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
-#        print initC, updateC
+        print initC, updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFitS2(self,fitName, minimize, restart):
