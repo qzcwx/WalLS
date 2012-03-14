@@ -26,6 +26,7 @@ rseed = 0
 nameOfDir = './result/'
 runtimeDir = './runtime/'
 waltimeDir = './walshtime/'
+traceDir = './trace/'
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
@@ -48,7 +49,7 @@ if probName != 'SAT':
 
 maxFit = 1000 * n
 #maxFit = 0
-runs = 1
+runs = 30
 popSize = 50 # always keep popSize to even number
 q = 0
 
@@ -63,7 +64,7 @@ D = n/4.0
 DR = 0.35
 M = 1
 
-print 'probName', probName, 'inst', inst, 'n', n, 'k', k 
+#print 'probName', probName, 'inst', inst, 'n', n, 'k', k 
 
 if algoName.find('LS') != -1:
     popSize = 1
@@ -229,6 +230,17 @@ else:
             print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
     f.close()
 
+    """ store trace to files """
+    if probName == 'NKQ':
+        nameOfF = traceDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+    elif probName == 'NK':
+        nameOfF = traceDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
+    f = open(nameOfF, 'w')
+    for i in range(runs):
+          print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
+    f.close()
+
+
     """ store runtime to files """
     if probName == 'NKQ':
         nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
@@ -237,7 +249,7 @@ else:
 
     f = open(nameOfF, 'w')
     for i in range(runs):
-        print >>f,"%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'])
+        print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['update'], res[i]['rest'])
     f.close()
 
     print nameOfF, 'Finish'

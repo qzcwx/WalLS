@@ -20,7 +20,6 @@ class NKQLandcape(nk.NKLandscape):
         if fileName == None:
             self.genFuncQ()
         else:
-            print 'read', fileName
             self.readFile(fileName)
         self.Kbits = tl.genSeqBits(self.k+1)
 
