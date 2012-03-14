@@ -15,6 +15,7 @@ class NKLandscape:
     def __init__(self,inN,inK, fileName = None):
         self.n = inN
         self.k = inK
+        self.probName = 'NK'
 
         # for run experiments
         if fileName == None:

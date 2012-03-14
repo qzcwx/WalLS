@@ -10,6 +10,7 @@ class NKQLandcape(nk.NKLandscape):
         self.q = inQ
         self.n = inN
         self.k = inK
+        self.probName = 'NKQ'
 
 #        self.genNeigh()
 #        self.genFunc()

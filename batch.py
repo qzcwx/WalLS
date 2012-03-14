@@ -102,8 +102,8 @@ if __name__== "__main__":
     nRange = [50,100,200,500,1000]
     iRange = [0]
     aRange = ['rLS']
-    fRange = ['fit','mean']
-    cRange = ['walRestNext','walRest','walWalk','walWalkNext']
+    fRange = ['fit']
+    cRange = ['longRun']
     pRange = ['NK', 'NKQ']
 
     random.seed(rseed)

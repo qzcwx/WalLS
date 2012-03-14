@@ -8,11 +8,11 @@ import nkqLandscape as nkq
 import pdb
 import random as random
 
-numOfInstances = 1
+numOfInstances = 10
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
-for n in [15]:
+for n in [1000]:
     for k in [2,4,8]:
         for i in range(numOfInstances):
             # NK landscapes:

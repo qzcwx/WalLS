@@ -32,6 +32,7 @@ class LocalSearch:
         self.MaxFit = MaxFit
         self.dim = dim
         self.threshold = 1e-15
+        self.nameOfDir = './result/'
 
     def initIndiv(self, dim):
         """ initial the search inidividual with random bit string """
@@ -104,6 +105,9 @@ class LocalSearch:
                 return self.hyperSearchFit(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.hyperSearchMean(fitName, minimize, restart)
+        elif compM == 'longRun':
+            if fitName == 'fit':
+                return self.runFitSwalkLong(fitName, minimize, restart)
 
     def checkHyperRank(self):
         """
@@ -448,6 +452,84 @@ class LocalSearch:
         updateT = updateT + os.times()[0] - start
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
+    def runFitSwalkLong(self,fitName, minimize, restart):
+        """ 
+        steepest descent local search running on S
+        """
+        self.fitEval = 0
+        start = os.times()[0]
+        self.model.transWal()
+        self.oldindiv = self.initIndiv(self.dim)
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.indiv = copy.deepcopy(self.oldindiv)
+        self.initWal()
+        self.bsf = copy.deepcopy(self.oldindiv)
+        self.model.WA = []
+
+        if self.model.probName == 'NKQ':
+            nameOfF = self.nameOfDir+'Trace-'+self.model.probName+'-N'+str(self.model.n)+'-K'+str(self.model.k)+'-Q'+str(self.model.q)+'.txt'
+        elif self.model.probName == 'NK':
+            nameOfF = self.nameOfDir+'Trace-'+self.model.probName+'-N'+str(self.model.n)+'-K'+str(self.model.k)+'.txt'
+        f = open(nameOfF, 'w', 0)
+
+        initC = 0
+        updateC = 0
+        restT = 0
+
+        walkLen = 10
+        updateT = 0
+        init = False
+
+        count = 0
+
+        initT = os.times()[0] - start
+
+        start = os.times()[0]
+        while self.fitEval < self.MaxFit:
+            if init == False:
+                improveN, bestI, evalCount = self.genFitBest(minimize)
+                initC = initC + 1
+                init = True
+            else:
+                improveN, bestI, evalCount = self.updateFitBest(bestI,minimize)
+                updateC = updateC + 1
+
+            self.fitEval = self.fitEval + evalCount
+        
+            if improveN == False:
+                if restart == True:
+                    updateT = updateT + os.times()[0] - start
+                    startR = os.times()[0]
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    
+                    count = count + 1
+                    if count % int(self.dim) == 0:
+                        f.write("%f\t%f\t%f\n" %(initT+updateT, self.fitEval, self.oldindiv.fit)) 
+                        
+                    diff = self.walk(fitName, minimize,False, walkLen)
+                    init = False
+
+                    for i in diff:
+                        self.update(i)
+                        self.updateWAS(i)
+                    restT = restT + os.times()[0] - startR
+                    start = os.times()[0]
+                else:
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                self.update(bestI)
+                self.updateWAS(bestI)
+                if self.oldindiv.bit[bestI] == '1':
+                    self.oldindiv.bit[bestI] = '0'
+                else:
+                    self.oldindiv.bit[bestI] = '1'
+        self.bsf = self.evalPop(self.bsf)
+        updateT = updateT + os.times()[0] - start
+#        print initC, updateC
+        f.close()
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT, 'rest': restT, 'initC': initC, 'updateC': updateC}
+
     def runFitSwalk(self,fitName, minimize, restart):
         """ 
         steepest descent local search running on S
@@ -510,7 +592,6 @@ class LocalSearch:
                     self.oldindiv.bit[bestI] = '1'
         self.bsf = self.evalPop(self.bsf)
         updateT = updateT + os.times()[0] - start
-#        print initC, updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'update':updateT, 'rest': restT, 'initC': initC, 'updateC': updateC}
 
     def runFitSwalkNext(self,fitName, minimize, restart):
