@@ -102,7 +102,7 @@ if __name__== "__main__":
     nRange = [50,100,200,500,1000]
     iRange = [0]
     aRange = ['rLS']
-    fRange = ['fit']
+    fRange = ['mean']
     cRange = ['longRun']
     pRange = ['NK', 'NKQ']
 

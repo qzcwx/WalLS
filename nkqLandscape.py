@@ -10,7 +10,6 @@ class NKQLandcape(nk.NKLandscape):
         self.q = inQ
         self.n = inN
         self.k = inK
-        self.probName = 'NKQ'
 
 #        self.genNeigh()
 #        self.genFunc()
@@ -18,6 +17,8 @@ class NKQLandcape(nk.NKLandscape):
 #        self.exportToFile(fileName)
 
         nk.NKLandscape.__init__(self, inN, inK, fileName)
+        self.probName = 'NKQ'
+
         if fileName == None:
             self.genFuncQ()
         else:
