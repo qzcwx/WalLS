@@ -99,7 +99,7 @@ if __name__== "__main__":
     overWrite = 0
 
     kRange = [2,4,8]
-    Range = [50,100,200,500]
+    nRange = [50,100,200,500]
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
