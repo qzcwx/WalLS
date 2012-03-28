@@ -47,9 +47,10 @@ n = int(tl.getArgv())
 if probName != 'SAT':
     k = int(tl.getArgv())
 
+#maxFit = 1 * n
 maxFit = 100 * n
 #maxFit = 0
-runs = 30
+runs = 1
 popSize = 50 # always keep popSize to even number
 q = 0
 
@@ -248,9 +249,9 @@ else:
         nameOfF = runtimeDir+probName+'-'+algoName+'-F'+fitName+'-C'+compMeth+'-I'+str(inst)+'-S'+str(s)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
     f = open(nameOfF, 'w')
-    print >>f,"All\t\tinit\t\tdesc\t\teval\t\tpert\t\tupdate\t\tupdatePert\t"
+    print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
     for i in range(runs):
-        print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['evalT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
+        print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
     f.close()
 
     print nameOfF, 'Finish'
