@@ -1,8 +1,4 @@
-import nkLandscape as nk
-import nkqLandscape as nkq
-
 import LocalSearch as ls
-
 #import matplotlib.pyplot as plt
 import random
 import numpy as np
@@ -37,7 +33,7 @@ def globalOpt(model):
 def compFit(model):
     n = model.getN()
     fit = np.zeros(math.pow(2,n))
-    bitStr = nk.genSeqBits(n)
+    bitStr = genSeqBits(n)
     for i in range(int(math.pow(2,n))):
        fit[i] = model.compFit(bitStr[i])
     return bitStr, fit
@@ -81,48 +77,48 @@ def plotDistNKQ():
                 plt.legend()
                 plt.savefig('N='+str(n)+'K='+str(k)+'Q='+str(q)+'I='+str(inst))
 
-def plotDistNK():
-    """ 
-        Plot the distribution of fitness of when K and Q vary, 1000 samples,
-        generate one instance of NK landscapes, for:
-            * N = 20, 50, 100
-            * K = 0, 2, 4, 8, 16
-            * q = 2, 4, 8, 16
-    """
-    nSamples = 1000
-
-    inst = 0
-    prefixNK = './benchmark/NK/'
-
-    for n in [20, 50, 100]:
-        for k in [0, 2, 4, 8, 16]:
-            print 'N=',n,'K=',k
-            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
-            res = np.zeros((nSamples, 3))
-            for r in range(nSamples):
-                randBitStr = []
-                for j in range(n):
-                    if random.random()<0.5:
-                        randBitStr.append('0')
-                    else:
-                        randBitStr.append('1')
-                res[r][0] = evalSol(randBitStr,model,'fit',True)
-                res[r][1] = evalSol(randBitStr,model,'mean',True)
-                res[r][2] = evalSol(randBitStr,model,'std',True)
-                #res[r] = model.compFit(randBitStr)
-
-                    
-            plt.figure()
-            plt.hist(res, histtype='bar',
-                        label=['fit', 'mean', 'std'])
-            plt.title('N='+str(n)+',K='+str(k)+',I='+str(inst))
-            plt.legend()
-            plt.savefig('N='+str(n)+'K='+str(k)+'I='+str(inst))
+#def plotDistNK():
+#    """ 
+#        Plot the distribution of fitness of when K and Q vary, 1000 samples,
+#        generate one instance of NK landscapes, for:
+#            * N = 20, 50, 100
+#            * K = 0, 2, 4, 8, 16
+#            * q = 2, 4, 8, 16
+#    """
+#    nSamples = 1000
+#
+#    inst = 0
+#    prefixNK = './benchmark/NK/'
+#
+#    for n in [20, 50, 100]:
+#        for k in [0, 2, 4, 8, 16]:
+#            print 'N=',n,'K=',k
+#            model = nk.NKLandscape(n,k,prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(inst))
+#            res = np.zeros((nSamples, 3))
+#            for r in range(nSamples):
+#                randBitStr = []
+#                for j in range(n):
+#                    if random.random()<0.5:
+#                        randBitStr.append('0')
+#                    else:
+#                        randBitStr.append('1')
+#                res[r][0] = evalSol(randBitStr,model,'fit',True)
+#                res[r][1] = evalSol(randBitStr,model,'mean',True)
+#                res[r][2] = evalSol(randBitStr,model,'std',True)
+#                #res[r] = model.compFit(randBitStr)
+#
+#                    
+#            plt.figure()
+#            plt.hist(res, histtype='bar',
+#                        label=['fit', 'mean', 'std'])
+#            plt.title('N='+str(n)+',K='+str(k)+',I='+str(inst))
+#            plt.legend()
+#            plt.savefig('N='+str(n)+'K='+str(k)+'I='+str(inst))
 
 
 def checkParam(argv):
     if len(argv) == 1:
-        print 'Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [PopSize] [N] [K] [Q]'
+        print 'Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [overwrite] [I] [PopSize] [N] [K] [Q]'
         print """
 Constrains: 
 1) for SAT, I = [1,100]
@@ -131,7 +127,8 @@ Constrains:
 4) for NK, Q = None
 5) for NKQ, Q = {2, 4, 8, 16}
 6) for LS,  PopSize = 1
-7) [ComputeMethod] = {bf (brute force), walWalk (walsh coefficient with random walk), walRest (walsh coefficient with random walk), supm (super move), bitImp (bit impact)}. If 'wal', 'mean' 
+7) [ComputeMethod] = {bf (brute force), walWalk (walsh coefficient with random walk), walRest (walsh coefficient with random walk), supm (super move), bitImp (bit impact), walSearch (Search completely relying on Walsh terms), null (run nothing)}. 
+    If 'walSearch', rLS, fit. 
         """
         sys.exit()
  
@@ -224,7 +221,56 @@ def fitRank(s, fit):
     return fitNSort
 
 
+def listMerge(l1, l2):
+    """  
+    merge two sorted list
+    """
+
+    if not l1:
+        return l2
+    elif not l2:
+        return l1
+    else:
+        merge = []
+        i = 0 
+        j = 0 
+        while True:
+            if l1[i] < l2[j]:
+                if not merge or merge[-1] != l1[i]:
+                    merge.append(l1[i])
+                i = i+1
+            else:
+                if not merge or merge[-1] != l2[j]:
+                    merge.append(l2[j])
+                j = j+1
+            if i>=len(l1) :
+                while j<len(l2):
+                    if merge[-1] != l2[j]:
+                        merge.append(l2[j])
+                    j = j+1
+                break
+            elif j>=len(l2):
+                while i<len(l1):
+                    if merge[-1] != l1[i]:    
+                        merge.append(l1[i])
+                    i = i+1
+                break
+        return merge
+    
 #plotDistNKQ()
 #plotDistNK()
 #plotDistMaxK()
 #plotFitRank()
+
+def genSeqBits(n):
+    bitStr = []
+    for i in range(int(math.pow(2,n))):
+       bit = bin(i)
+       bit = bit[2:]
+       if len(bit) < n:
+           bit = (n - len(bit))*'0' + bit
+       bitStr.append(bit)
+    return bitStr
+
+def printSep():
+    print 80*'*'

@@ -1,4 +1,5 @@
 import nkLandscape as nk
+import tool as tl
 import random
 import numpy as np
 import math
@@ -6,13 +7,21 @@ import pdb
 
 class NKQLandcape(nk.NKLandscape):
     def __init__(self, inN, inK, inQ, fileName = None):
-        nk.NKLandscape.__init__(self, inN, inK, fileName)
         self.q = inQ
+        self.n = inN
+        self.k = inK
+
+#        self.genNeigh()
+#        self.genFunc()
+#        self.genFuncQ()
+#        self.exportToFile(fileName)
+
+        nk.NKLandscape.__init__(self, inN, inK, fileName)
         if fileName == None:
             self.genFuncQ()
-        #self.exportToFile(fileName)
         else:
             self.readFile(fileName)
+        self.Kbits = tl.genSeqBits(self.k+1)
 
     def genFuncQ(self):
         self.func = []

@@ -37,7 +37,7 @@ def writeScript(p,a,f,i,s,c,n,k,q,chunkSize, track):
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
 #        print 'python demo.py '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n'
-        fileName.write('python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -91,18 +91,19 @@ def submitJobs(numOfScript):
 
 if __name__== "__main__":
     count = 0
-    chunkSize = 24
+    chunkSize = 1000
     scriptNo = 0
     fileName = ''
     #numOfInstance = 1
     rseed = 0
+    overWrite = 0
 
-    kRange = [2,4,8]
-    nRange = [20,50,100,200,500]
+    kRange = [8]
+    nRange = [200]
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
-    cRange = ['walRest']
+    cRange = ['walRestNext','walRest','walWalk','walWalkNext']
     pRange = ['NK', 'NKQ']
 
     random.seed(rseed)
