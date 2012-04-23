@@ -37,7 +37,7 @@ def writeScript(p,a,f,i,s,c,n,k,q,chunkSize, track):
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
 #        print 'python demo.py '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n'
-        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python demo.py '+c+' '+p+' '+a+' '+f+' '+str(i)+' '+str(s)+' '+str(n)+' '+str(k)+' '+str(q)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python demo.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -98,8 +98,8 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    kRange = [8]
-    nRange = [200]
+    kRange = [2]
+    nRange = [20]
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
