@@ -7,6 +7,7 @@ import WalshAnalysis as wal
 import numpy as np
 import tool as tl
 import math
+from sets import Set
 import pdb
 
 
@@ -374,45 +375,12 @@ class NKLandscape:
                                         #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
                                         self.sumFitA[j].zero = self.sumFitA[j].zero + 1
 
-#        print 'scan', scan, 'reuse', reuse
-#
-#        for i in range(self.n):
-#            print '%d\tOne: %.2f\tZero: %.2f' %(i, self.sumFitA[i].one, self.sumFitA[i].zero)
-#
-#        rep = 10
-#        for i in range(rep):
-#            sol = self.genSolProp(self.sumFitA)
-#            hamDist = 0
-#            # compute the hamming distance
-#            for i in range(self.n):
-#                if sol[i] != optBit[i]:
-#                    hamDist = hamDist + 1
-#            print 'Hyper solution\n', sol, self.func(sol), hamDist
-#
-#        randSol = self.initIndiv(self.n)
-#        hamDistRand = 0
-#        for i in range(self.n):
-#            if randSol.bit[i] != optBit[i]:
-#                hamDistRand = hamDistRand + 1
-#        print 'Random Solution\n', self.func(randSol.bit), hamDistRand
-#        return {'nEvals': 0, 'sol': self.func(sol), 'bit': hamDist, 'init': self.func(randSol.bit), 'update': hamDistRand}
-
     def genHyperWalVote(self):
         """
         using the voting strategy where only best hyperplane have the chance to vote
         selecting hyperplane template on the basis of nonzero Walsh coefficients
         """
         self.transWal()
-
-#        bit,fit = tl.compFit(self)
-#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-#        optBit = a[0][0]
-#        optFit = a[0][1]
-#        print 'opti\n',optBit, optFit
-
-        #for i in range(len(a)): 
-#        for i in range(10): 
-#            print '%s\t%.3f' %(a[i][0],a[i][1])
 
         # initialize sumFitA 
         self.sumFitA = []
@@ -466,23 +434,6 @@ class NKLandscape:
                             #self.sumFitA[j].zero = self.sumFitA[j].zero + schFitArrSort[k].fit
                             self.sumFitA[j].zero = self.sumFitA[j].zero + 1
 
-
-#        rep = 10
-#        for i in range(rep):
-#            sol = self.genSolProp(self.sumFitA)
-#            hamDist = 0
-#            # compute the hamming distance
-#            for i in range(self.n):
-#                if sol[i] != optBit[i]:
-#                    hamDist = hamDist + 1
-#            print 'Hyper solution\n', sol, self.compFit(sol), hamDist
-#
-#        randSol = self.initIndiv(self.n)
-#        hamDistRand = 0
-#        for i in range(self.n):
-#            if randSol.bit[i] != optBit[i]:
-#                hamDistRand = hamDistRand + 1
-#        print 'Random Solution\n', self.compFit(randSol.bit), hamDistRand
 
     def composeFullStr(self, i, j, interBits, n):
         """ return the integer representation of Full String """
@@ -571,8 +522,23 @@ class NKLandscape:
                     elif sub[j] not in self.interBit[sub[k]]:
                         self.interBit[sub[k]].append(sub[j])
 
-#        for i in self.interBit.keys():
-#            print i, self.interBit[i]
+    def initInter(self):
+        self.Inter = dict()
+        for i in range(len(self.WA)):
+#            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.bit))) * self.WA[i].w
+#            self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
+#            comb = self.genComb(len(self.WA[i].arr))
+
+            for j in self.WA[i].arr:
+#                self.sumArr[j] = self.sumArr[j] + W
+                if len(self.WA[i].arr)>1: # for at least order Walsh terms
+                    if j not in self.Inter: # the entry of i doesn't exist yet
+                        self.Inter[j] = Struct(arr=Set(), WI=Set())
+
+                    for k in self.WA[i].arr:
+                        if k != j:
+                            self.Inter[j].arr.add(k)
+                    self.Inter[j].WI.add(i)
 
 class Struct:
     def __init__(self, **kwds):

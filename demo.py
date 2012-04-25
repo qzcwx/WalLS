@@ -195,7 +195,7 @@ else:
         model = nkq.NKQLandcape(opt.n, opt.k, opt.q, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-I'+str(opt.inst)+'-Q'+str(opt.q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext':
+    if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'beamWalWalkNext':
         start = os.times()[0]
         # Walsh analysis
         w = model.WalshCofLinearLinklist()
@@ -233,7 +233,7 @@ else:
 
 #    for i in zip(bit,fit):
 #        print i[0],'%.3f' %(i[1])
-        
+
 #    print 'bit',bit
 #    print 'fit',fit
 #    print 'mean',np.mean(fit)
