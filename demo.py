@@ -83,6 +83,14 @@ parser.add_argument('-r',
         default=0,
         type=int,
         )
+parser.add_argument('-w', 
+        action="store", 
+        help="Width of Beam",
+        dest="w",
+        default=0,
+        type=int,
+        )
+
 
 opt = parser.parse_args()
 
@@ -159,9 +167,9 @@ if opt.probName == 'SAT':
         if opt.algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, opt.fitName, minimize = False))
         elif opt.algoName == 'LS':
-            res.append(algo.run(opt.fitName, minimize = False, restart = False))
+            res.append(algo.run(opt.fitName, minimize = False, restart = False, beamWidth=w))
         elif opt.algoName == 'rLS':
-            res.append(algo.run(opt.fitName, minimize = False, restart = True))
+            res.append(algo.run(opt.fitName, minimize = False, restart = True, beamWidth=w))
         elif opt.algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, opt.fitName, minimize = False))
         tAll[i] = os.times()[0] - start
@@ -195,7 +203,7 @@ else:
         model = nkq.NKQLandcape(opt.n, opt.k, opt.q, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-I'+str(opt.inst)+'-Q'+str(opt.q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext':
+    if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
         start = os.times()[0]
         # Walsh analysis
         w = model.WalshCofLinearLinklist()
