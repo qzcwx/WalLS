@@ -114,7 +114,7 @@ random.seed(opt.rseed)
 #if opt.probName != 'SAT':
 #    k = int(tl.getArgv())
 
-#maxFit = 1 * n
+#maxFit = 1 * opt.n
 maxFit = 100 * opt.n
 #maxFit = 0
 runs = 1
@@ -195,7 +195,7 @@ else:
         model = nkq.NKQLandcape(opt.n, opt.k, opt.q, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-I'+str(opt.inst)+'-Q'+str(opt.q))
         #model = nkq.NKQLandcape(n, k, q)
 
-    if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'beamWalWalkNext':
+    if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext':
         start = os.times()[0]
         # Walsh analysis
         w = model.WalshCofLinearLinklist()
@@ -290,6 +290,7 @@ else:
         else:
             print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
     f.close()
+    print nameOfF
 
     """ store trace to files """
     if opt.probName == 'NKQ':
@@ -314,5 +315,4 @@ else:
         print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
     f.close()
 
-    print nameOfF, 'Finish'
     print
