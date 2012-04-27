@@ -1419,7 +1419,6 @@ class LocalSearch:
         BEAM next descent local search running on S, 
         where beamWidth is the number of beams
         """
-
         self.fitEval = 0
         start = os.times()[0]
         self.model.transWal()
@@ -1457,12 +1456,9 @@ class LocalSearch:
                 if improveN == False:
                     initC = initC + 1
                     if restart == True:
-                        print self.oldpop[i].fit
-
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
 
-                        print 'bsf', self.bsf.fit
 
                         pertT = pertT + os.times()[0] - start
 
@@ -1535,12 +1531,9 @@ class LocalSearch:
                 if improveN == False:
                     initC = initC + 1
                     if restart == True:
-                        print self.oldpop[i].fit
-
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
 
-                        print 'bsf', self.bsf.fit
 
                         pertT = pertT + os.times()[0] - start
 
@@ -1615,11 +1608,8 @@ class LocalSearch:
                 if improveN == False:
                     initC = initC + 1
                     if restart == True:
-                        print 'oldpop', self.oldpop[i].fit, self.oldpop[i].fitG
-
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
-                        print 'bsf', self.bsf.fit, self.bsf.fitG
 
                         pertT = pertT + os.times()[0] - start
 
@@ -1698,11 +1688,8 @@ class LocalSearch:
                 if improveN == False:
                     initC = initC + 1
                     if restart == True:
-                        print 'oldpop', self.oldpop[i].fit, self.oldpop[i].fitG
-
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
-                        print 'bsf', self.bsf.fit, self.bsf.fitG
 
                         pertT = pertT + os.times()[0] - start
 

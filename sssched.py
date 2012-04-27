@@ -13,7 +13,7 @@ import random
 from threading import Thread
 from optparse import OptionParser
 
-idleThres = 20
+idleThres = 40
 
 #
 # Machines use to run the tasks
@@ -46,8 +46,12 @@ class Machine:
     return False
 
   def free(self):
+    print 'ssh '+self.name+' \"mpstat 1 2 | tail -1 | awk \'{ print \$NF }\' \"'
     p = subprocess.Popen('ssh '+self.name+' \"mpstat 1 2 | tail -1 | awk \'{ print \$NF }\' \"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
-    idle =float(p.stdout.read()) 
+    out = p.stdout.read()
+    err = p.stderr.read()
+    print 'stderr', err 
+    idle =float(out) 
     print self.name,'idle', idle
 
     if idle > idleThres:
@@ -111,7 +115,7 @@ class Manager(Thread):
   def run(self):
     while len(self.taskToPerform) > 0:
       machine = random.choice(self.machinesList)
-      print machine.name
+      print machine.name, len(self.taskToPerform), 'jobs left'
       if machine.isDead:
           print 'machine is dead'
           machine.test()
@@ -120,7 +124,8 @@ class Manager(Thread):
             if len(self.taskToPerform) > 0:
               task = self.taskToPerform.pop()
               machine.run(task)
-      #time.sleep(1.0)
+      time.sleep(1.0)
+    print 'All jobs submitted'
 
 
 #
@@ -212,5 +217,4 @@ def main():
 
 if __name__ == "__main__":
   main()
-  print 'All jobs done!!!'
   sys.exit()

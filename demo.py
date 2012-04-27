@@ -124,8 +124,9 @@ random.seed(opt.rseed)
 
 #maxFit = 1 * opt.n
 maxFit = 100 * opt.n
-#maxFit = 0
-runs = 1
+
+runs = 30
+#runs = 1
 
 crossoverR = 0.8 # typically in (0.6, 0.9)
 mutationR = 1.0/float(opt.n) # typically between 1/popSize and 1/dim
@@ -167,9 +168,9 @@ if opt.probName == 'SAT':
         if opt.algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, opt.fitName, minimize = False))
         elif opt.algoName == 'LS':
-            res.append(algo.run(opt.fitName, minimize = False, restart = False, beamWidth=w))
+            res.append(algo.run(opt.fitName, minimize = False, restart = False, beamWidth=opt.w))
         elif opt.algoName == 'rLS':
-            res.append(algo.run(opt.fitName, minimize = False, restart = True, beamWidth=w))
+            res.append(algo.run(opt.fitName, minimize = False, restart = True, beamWidth=opt.w))
         elif opt.algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit, popSize, n, D, DR, M, opt.fitName, minimize = False))
         tAll[i] = os.times()[0] - start
@@ -264,9 +265,9 @@ else:
         if opt.algoName.find('GA') != -1:
             res.append(algo.run(crossoverR, mutationR, opt.fitName))
         elif opt.algoName == 'LS':
-            res.append(algo.run(opt.fitName, minimize = True, restart = False,compM = opt.compMeth ))
+            res.append(algo.run(opt.fitName, minimize = True, restart = False,compM = opt.compMeth, beamWidth=opt.w ))
         elif opt.algoName == 'rLS':
-            res.append(algo.run(opt.fitName, minimize = True, restart = True,compM = opt.compMeth))
+            res.append(algo.run(opt.fitName, minimize = True, restart = True,compM = opt.compMeth, beamWidth=opt.w))
         elif opt.algoName.find('CHC') != -1:
             res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
         tAll[i] = os.times()[0] - start
@@ -282,9 +283,9 @@ else:
 
     """ store results to files """
     if opt.probName == 'NKQ':
-        nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
+        nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
     elif opt.probName == 'NK':
-        nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+        nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
 
 #    """ print the mean over multiple runs """
 #    r = np.zeros(runs)
@@ -302,9 +303,9 @@ else:
 
     """ store trace to files """
     if opt.probName == 'NKQ':
-        nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
+        nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
     elif opt.probName == 'NK':
-        nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+        nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
     f = open(nameOfF, 'w')
     for i in range(runs):
           print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
@@ -313,9 +314,9 @@ else:
 
     """ store runtime to files """
     if opt.probName == 'NKQ':
-        nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
+        nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
     elif opt.probName == 'NK':
-        nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+        nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
 
     f = open(nameOfF, 'w')
     print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
