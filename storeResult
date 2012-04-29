@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ "$1" ]; then
+	echo "The target directory is $1"
+
+	targetDir="../result-SumSat/$1"
+	mkdir ${targetDir}
+	
+	mkdir "${targetDir}/result"
+	mv result/* "${targetDir}/result"
+
+	mkdir "${targetDir}/runtime"
+	mv runtime/* "${targetDir}/runtime"
+
+	mkdir "${targetDir}/trace"
+	mv trace/* "${targetDir}/trace"
+fi
