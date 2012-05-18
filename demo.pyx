@@ -1,3 +1,4 @@
+# -*- python -*-
 import nkLandscape as nk
 import nkqLandscape as nkq
 import WalshAnalysis as wal
@@ -126,7 +127,7 @@ cpdef main():
     #if opt.probName != 'SAT':
     #    k = int(tl.getArgv())
 
-    #maxFit = 1 * opt.n
+    #maxFit = 0
     maxFit = 100 * opt.n
 
     #runs = 30
@@ -272,6 +273,7 @@ cpdef main():
                 res.append(algo.run(opt.fitName, minimize = True, restart = False,compM = opt.compMeth, beamWidth=opt.w ))
             elif opt.algoName == 'rLS':
                 res.append(algo.run(opt.fitName, minimize = True, restart = True,compM = opt.compMeth, beamWidth=opt.w))
+                print 'end of run'
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = os.times()[0] - start
@@ -285,6 +287,7 @@ cpdef main():
     #    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
     #    plt.show()
 
+        print 'store result'
         """ store results to files """
         if opt.probName == 'NKQ':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
@@ -305,6 +308,7 @@ cpdef main():
         f.close()
         print nameOfF
 
+        print 'store trace'
         """ store trace to files """
         if opt.probName == 'NKQ':
             nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
@@ -315,7 +319,7 @@ cpdef main():
               print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
         f.close()
 
-
+        print 'store trace'
         """ store runtime to files """
         if opt.probName == 'NKQ':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'

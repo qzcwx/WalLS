@@ -55,7 +55,7 @@ ext_module7 = Extension(
     ["individual.pyx"],
 #    extra_compile_args=['-fopenmp'],
 #    extra_link_args=['-fopenmp'],
-#    language="c++",
+    language="c++",
 )
 
 setup(
