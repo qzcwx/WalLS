@@ -287,7 +287,6 @@ cpdef main():
     #    plt.plot([i.fitEval for i in trace],[i.fitG for i in trace],'.-')
     #    plt.show()
 
-        print 'store result'
         """ store results to files """
         if opt.probName == 'NKQ':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
@@ -308,7 +307,6 @@ cpdef main():
         f.close()
         print nameOfF
 
-        print 'store trace'
         """ store trace to files """
         if opt.probName == 'NKQ':
             nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
@@ -319,7 +317,6 @@ cpdef main():
               print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
         f.close()
 
-        print 'store trace'
         """ store runtime to files """
         if opt.probName == 'NKQ':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'

@@ -1464,7 +1464,6 @@ cdef class LocalSearch:
         initT = os.times()[0] - start
 
         while self.fitEval < self.MaxFit:
-            print self.fitEval
             for i in xrange(len(self.oldpop)):
                 start = os.times()[0]
                 improveN, bestI = self.oldpop[i].nextDesc()
@@ -1481,15 +1480,10 @@ cdef class LocalSearch:
                         start = os.times()[0]
                         for j in diff:
                             #                            self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
-                            print 'begin sumArr'
                             self.oldpop[i].updateSumArr(j)
-                            print 'begin update'
                             self.oldpop[i].update(j)
-                            print 'begin updateWAS'
                             self.oldpop[i].updateWAS(j)
-                            print 'begin updatePertImprS'
                             self.oldpop[i].updatePertImprS(j, minimize)
-                            print 'end'
                         updatePertT = updatePertT + os.times()[0] - start
 
                         self.fitEval = self.fitEval + len(diff)
@@ -1498,15 +1492,10 @@ cdef class LocalSearch:
                 else : # improveN is TRUE 
                     start = os.times()[0]
                     #                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
-                    print 'begin sumArr'
                     self.oldpop[i].updateSumArr(bestI)
-                    print 'begin update'
                     self.oldpop[i].update(bestI)
-                    print 'begin updateWAS'
                     self.oldpop[i].updateWAS(bestI)
-                    print 'begin sumArrImprS'
                     self.oldpop[i].updateImprS(bestI, minimize)
-                    print 'end'
                     self.fitEval = self.fitEval + 1
                     updateT = updateT + os.times()[0] - start
                     updateC = updateC + 1
@@ -1515,7 +1504,6 @@ cdef class LocalSearch:
                     ##     self.oldpop[i].bit[bestI] = '0'
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
-        print 'return'
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamFitSwalk(self,fitName, minimize, restart, beamWidth):
