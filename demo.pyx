@@ -147,7 +147,6 @@ cpdef main():
 
     if opt.probName == 'SAT':
         """ with SAT, we are forced to set n to 100 """
-
         """ 
         TODO : 
             need to perform multiple runs for each instance 
@@ -273,7 +272,6 @@ cpdef main():
                 res.append(algo.run(opt.fitName, minimize = True, restart = False,compM = opt.compMeth, beamWidth=opt.w ))
             elif opt.algoName == 'rLS':
                 res.append(algo.run(opt.fitName, minimize = True, restart = True,compM = opt.compMeth, beamWidth=opt.w))
-                print 'end of run'
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = os.times()[0] - start

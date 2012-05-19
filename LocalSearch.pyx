@@ -1448,12 +1448,12 @@ cdef class LocalSearch:
 
         # self.bsf is a single individual recording the best-so-far solution
         #self.bsf = copy.deepcopy(self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
-        self.bsf = self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)]
+        self.bsf = individual.Individual(oldIndiv=self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
+        #print self.bsf.fit
         self.model.WA = [] # release memory
 
         initC = 1
         updateC = 0
-
         descT = 0
         pertT = 0
         updatePertT = 0
@@ -1474,6 +1474,7 @@ cdef class LocalSearch:
                     if restart == True:
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
+         #               print 'walk',self.bsf.fit, self.fitEval
 
                         pertT = pertT + os.times()[0] - start
 
@@ -1497,6 +1498,7 @@ cdef class LocalSearch:
                     self.oldpop[i].updateWAS(bestI)
                     self.oldpop[i].updateImprS(bestI, minimize)
                     self.fitEval = self.fitEval + 1
+          #          print 'decs', self.bsf.fit, self.fitEval 
                     updateT = updateT + os.times()[0] - start
                     updateC = updateC + 1
                     self.oldpop[i].flip(bestI)
@@ -1797,25 +1799,34 @@ cdef class LocalSearch:
             if evaluate == True:
                 self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
 
-
     def walk(self, fitName, minimize, evaluate, length, oldindiv):
         # update the bsf solution
         if fitName == 'fit' and minimize == True :
             if self.bsf.fit > oldindiv.fit:
-                self.bsf = copy.deepcopy(oldindiv)
+                self.bsf = individual.Individual(oldIndiv = oldindiv)
+#                self.bsf = copy.deepcopy(oldindiv)
+#               self.bsf = oldindiv
         elif fitName == 'fit' and minimize == False :
             if self.bsf.fit < oldindiv.fit:
-                self.bsf = copy.deepcopy(oldindiv)
+                self.bsf = individual.Individual(oldIndiv = oldindiv)
+                #self.bsf = copy.deepcopy(oldindiv)
+#                self.bsf = oldindiv
         elif minimize == True :
             if self.bsf.fitG > oldindiv.fitG:
-                self.bsf = copy.deepcopy(oldindiv)
+                self.bsf = individual.Individual(oldIndiv = oldindiv)
+#                self.bsf = copy.deepcopy(oldindiv)
+ #               self.bsf = oldindiv
         elif minimize == False :
             if self.bsf.fitG < oldindiv.fitG:
-                self.bsf = copy.deepcopy(oldindiv)
+                self.bsf = individual.Individual(oldIndiv = oldindiv)
+#                self.bsf = copy.deepcopy(oldindiv)
+                #self.bsf = oldindiv
 
         flipBits = random.sample(xrange(self.dim), length)
         for i in flipBits:
+#            print 'before',oldindiv.bit[i]
             oldindiv.flip(i)
+#            print 'after',oldindiv.bit[i]           
             ## if oldindiv.bit[i] == '1':
             ##     oldindiv.bit[i] = '0'
             ## else:

@@ -49,20 +49,24 @@ cdef class Individual:
     cdef object func
     cdef object model
     cdef int MaxFit
-    cdef int dim
     cdef double threshold
     cdef int fitEval
     cdef ComArr** lookup
     cdef public double fit
     cdef public char* bit
     cdef double* sumArr
+    cdef public int dim
 
-    def __init__( self, n, neigh=False ):
+    def __init__( self, n=0, neigh=False, oldIndiv=False ):
         self.bit = NULL
         self.fit = 0
         self.dim = n 
         if neigh == True:
             self.fitG = 0
+        if oldIndiv != False:
+            self.fit = oldIndiv.fit
+            self.bit = oldIndiv.bit
+            self.dim = oldIndiv.dim
         self.threshold = 1e-15
 
     def init(self):
