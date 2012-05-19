@@ -130,8 +130,8 @@ cpdef main():
     #maxFit = 0
     maxFit = 100 * opt.n
 
-    #runs = 30
-    runs = 1
+    runs = 30
+    #runs = 1
 
     crossoverR = 0.8 # typically in (0.6, 0.9)
     mutationR = 1.0/float(opt.n) # typically between 1/popSize and 1/dim
