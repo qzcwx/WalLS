@@ -33,8 +33,8 @@ def writeScript(p,a,f,i,s,c,n,k,q,w,chunkSize, track):
         scriptNo = random.randint(0,len(track)-1)    
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
-        #fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python demo.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
-        fileName.write('cd ~/workspace/SumSat; nice -n 19 python run.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
+#        fileName.write('cd ~/workspace/SumSat; nice -n 19 python run.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -95,9 +95,9 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    kRange = [4]
-    #nRange = [50,100,200,500,1000,2000]
-    nRange = [100]
+    kRange = [2,4]
+    nRange = [50,100,200,500,1000,2000]
+    #nRange = [100]
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
@@ -106,7 +106,7 @@ if __name__== "__main__":
     temp = [5*a for a in range(1,11)]
     temp.insert(0,1)
     wRange = temp  # [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    wRange = [1, 5]
+    #wRange = [1, 5]
 
     random.seed(rseed)
 

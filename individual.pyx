@@ -732,6 +732,55 @@ cdef class Individual:
             self.bit[i]='1'
         else:
             self.bit[i]='0'
+            
+    cpdef destructor(self,fitName):
+        """ free memory to avoid memory leaks """
+        cdef int i,j
+        free(self.bit)
+        
+        free(self.sumArr)
+
+        for i in xrange(self.dim):
+            free(self.C[i])
+        free(self.C)
+
+        for i in xrange(len(self.model.WA)):
+            free(self.WAS[i].arr)
+            free(self.WAS+i)
+        free(self.WAS)
+
+        for i in xrange(self.dim):
+            free(self.lookup[i])
+        free(self.lookup)
+
+        for i in xrange(len(self.model.WA)):
+            for j in self.model.WA[i].arr:
+                if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
+                    if self.Inter[j] != NULL:
+                        free(self.Inter[j][0].arr)
+                        free(self.Inter[j][0].WI)
+                        free(self.Inter[j])
+                        self.Inter[j] = NULL
+        free(self.Inter)
+
+        for i in xrange(self.dim):
+            for j in xrange(self.infectBit[i][0].size()):
+                #del self.infectBit[i][0][j].arr
+                free( self.infectBit[i][0][j].arr )
+                free( self.infectBit[i][0][j] )
+            #del self.infectBit[i]
+            free( self.infectBit[i] )
+        free(self.infectBit)
+
+        if fitName == 'mean':
+            """ release extra memory for performing local search using mean """
+            free(self.Z)
+            free(self.SC)
+            for i in xrange(self.dim):
+                free(self.orderC[i])
+            free(self.orderC)
+            
+
     ## def genMeanBest(self,minimize):
     ##     """
     ##     generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)

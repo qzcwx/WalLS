@@ -128,7 +128,7 @@ cpdef main():
     #    k = int(tl.getArgv())
 
     #maxFit = 0
-    maxFit = 100 * opt.n
+    maxFit = 1000 * opt.n
 
     runs = 30
     #runs = 1

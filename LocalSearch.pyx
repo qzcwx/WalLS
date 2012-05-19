@@ -1505,7 +1505,9 @@ cdef class LocalSearch:
                     ## if self.oldpop[i].bit[bestI] == '1':
                     ##     self.oldpop[i].bit[bestI] = '0'
                     ## else:
-                    ##     self.oldpop[i].bit[bestI] = '1'
+                    ##     self.oldpop[i].bit[bestI] =
+        for i in xrange(len(self.oldpop)):
+            self.oldpop[i].destructor(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamFitSwalk(self,fitName, minimize, restart, beamWidth):
@@ -1585,6 +1587,8 @@ cdef class LocalSearch:
                     ##     self.oldpop[i].bit[bestI] = '0'
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
+        for i in xrange(len(self.oldpop)):
+            self.oldpop[i].destructor(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamMeanSCwalkNext(self,fitName, minimize, restart, beamWidth):
@@ -1668,6 +1672,8 @@ cdef class LocalSearch:
                     ##     self.oldpop[i].bit[bestI] = '0'
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
+        for i in xrange(len(self.oldpop)):
+            self.oldpop[i].destructor(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit,'fitG': self.bsf.fitG, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamMeanSCwalk(self,fitName, minimize, restart, beamWidth):
@@ -1751,6 +1757,8 @@ cdef class LocalSearch:
                     ##     self.oldpop[i].bit[bestI] = '0'
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
+        for i in xrange(len(self.oldpop)):
+            self.oldpop[i].destructor(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit,'fitG': self.bsf.fitG, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
         ## self.fitEval = 0
