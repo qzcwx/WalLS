@@ -53,6 +53,7 @@ cdef class Individual:
     cdef int fitEval
     cdef ComArr** lookup
     cdef public double fit
+    cdef public double fitG
     cdef public char* bit
     cdef double* sumArr
     cdef public int dim
@@ -67,6 +68,7 @@ cdef class Individual:
             self.fit = oldIndiv.fit
             self.bit = oldIndiv.bit
             self.dim = oldIndiv.dim
+            self.fitG = oldIndiv.fitG
         self.threshold = 1e-15
 
     def init(self):
@@ -361,6 +363,7 @@ cdef class Individual:
                     self.Z[ii] = self.Z[ii]  - 2* self.orderC[p][ii]
                     self.orderC[p][ii] = - self.orderC[p][ii]
                 self.SC[ii] = self.sumArr[ii] - 2/float(self.dim) * self.Z[ii]
+                inc(it)
 
         # update the rest of elements in C matrix
         if self.infectBit[p].size() != 0:
@@ -377,7 +380,7 @@ cdef class Individual:
                 for k in xrange(comb.size):
                     k0 = arr[int(comb.arr[k][0])]
                     k1 = arr[int(comb.arr[k][1])]
-                    self.orderC[k0][k1] = self.orderC[k0][k1] - 2 * (arr.size()+ 1)* self.WAS[i.WI].w
+                    self.orderC[k0][k1] = self.orderC[k0][k1] - 2 * (arr.size()+ 1)* self.WAS[I.WI].w
 
     def updateImprSC(self, p, minimize):
         self.improveA.remove(p)
@@ -846,6 +849,9 @@ cdef class Individual:
 
     cpdef updateSumArr(self, I):
         self.fit = self.fit - 2*self.sumArr[I]
+
+    cpdef compFitG(self):
+        self.fitG = self.fit - 2/ float(self.dim) * (sumC(self.sumArr, self.dim))
         
     cdef ComArr* genComb(self,int N) nogil:
         """ 
