@@ -1513,26 +1513,26 @@ cdef class LocalSearch:
         BEAM steepest descent local search running on S, 
         where beamWidth is the number of beams
         """
-
         self.fitEval = 0
         start = os.times()[0]
         self.model.transWal()
         self.model.initInter()
         self.oldpop = []
         for i in xrange(beamWidth):
-            self.oldpop.append(individual.Individual(n=self.dim)) 
+            self.oldpop.append(individual.Individual(n=self.dim))
             self.oldpop[i].init()
             self.oldpop[i] = self.evalPop(self.oldpop[i])
             self.oldpop[i].initWal(self.model)
             self.oldpop[i].genImproveS(minimize)
 
         # self.bsf is a single individual recording the best-so-far solution
-        self.bsf = copy.deepcopy(self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
+        #self.bsf = copy.deepcopy(self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
+        self.bsf = individual.Individual(oldIndiv=self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
+        #print self.bsf.fit
         self.model.WA = [] # release memory
 
         initC = 1
         updateC = 0
-
         descT = 0
         pertT = 0
         updatePertT = 0
@@ -1547,19 +1547,20 @@ cdef class LocalSearch:
                 start = os.times()[0]
                 improveN, bestI = self.oldpop[i].steepFitDesc(minimize)
                 descT = descT + os.times()[0] - start
-                
+
                 if improveN == False:
                     initC = initC + 1
                     if restart == True:
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
-
+         #               print 'walk',self.bsf.fit, self.fitEval
 
                         pertT = pertT + os.times()[0] - start
 
                         start = os.times()[0]
                         for j in diff:
-                            self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
+                            #                            self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
+                            self.oldpop[i].updateSumArr(j)
                             self.oldpop[i].update(j)
                             self.oldpop[i].updateWAS(j)
                             self.oldpop[i].updatePertImprS(j, minimize)
@@ -1570,17 +1571,20 @@ cdef class LocalSearch:
                         return { 'nEvals': self.fitEval, 'sol': self.oldpop[i].fit, 'bit':self.oldpop[i].bit}
                 else : # improveN is TRUE 
                     start = os.times()[0]
-                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
+                    #                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
+                    self.oldpop[i].updateSumArr(bestI)
                     self.oldpop[i].update(bestI)
                     self.oldpop[i].updateWAS(bestI)
                     self.oldpop[i].updateImprS(bestI, minimize)
                     self.fitEval = self.fitEval + 1
+          #          print 'decs', self.bsf.fit, self.fitEval 
                     updateT = updateT + os.times()[0] - start
                     updateC = updateC + 1
-                    if self.oldpop[i].bit[bestI] == '1':
-                        self.oldpop[i].bit[bestI] = '0'
-                    else:
-                        self.oldpop[i].bit[bestI] = '1'
+                    self.oldpop[i].flip(bestI)
+                    ## if self.oldpop[i].bit[bestI] == '1':
+                    ##     self.oldpop[i].bit[bestI] = '0'
+                    ## else:
+                    ##     self.oldpop[i].bit[bestI] = '1'
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamMeanSCwalkNext(self,fitName, minimize, restart, beamWidth):
@@ -1588,7 +1592,6 @@ cdef class LocalSearch:
         BEAM next descent local search running on SC, 
         where beamWidth is the number of beams
         """
-        print 'BeamMeanSCwalkNext'
         self.fitEval = 0
         start = os.times()[0]
         self.model.transWal()
@@ -1603,12 +1606,8 @@ cdef class LocalSearch:
             self.oldpop[i].compFitG()
             self.oldpop[i].genImproveSC(minimize)
 
-#        print 'init'
-        # self.bsf is a single individual recording the best-so-far solution
-        #self.bsf = copy.deepcopy(self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
         self.bsf = individual.Individual(oldIndiv=self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
         self.model.WA = [] # release memory
-#        print 'bsf'
         
         initC = 1
         updateC = 0
@@ -1676,7 +1675,6 @@ cdef class LocalSearch:
         BEAM steepest descent local search running on SC, 
         where beamWidth is the number of beams
         """
-
         self.fitEval = 0
         start = os.times()[0]
         self.model.transWal()
@@ -1688,13 +1686,12 @@ cdef class LocalSearch:
             self.oldpop[i] = self.evalPop(self.oldpop[i])
             self.oldpop[i].initWal(self.model)
             self.oldpop[i].initSC()
-            self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (sum(self.oldpop[i].sumArr))
+            self.oldpop[i].compFitG()
             self.oldpop[i].genImproveSC(minimize)
 
-        # self.bsf is a single individual recording the best-so-far solution
-        self.bsf = copy.deepcopy(self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
+        self.bsf = individual.Individual(oldIndiv=self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
         self.model.WA = [] # release memory
-
+        
         initC = 1
         updateC = 0
 
@@ -1718,26 +1715,30 @@ cdef class LocalSearch:
                     if restart == True:
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
-
+#                        print self.bsf.fit, self.bsf.fitG, self.fitEval
                         pertT = pertT + os.times()[0] - start
 
                         start = os.times()[0]
                         for j in diff:
-                            self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
-                            self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
+                            #                      self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
+                            #                     self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
+                            self.oldpop[i].updateSumArr(j)
+                            self.oldpop[i].compFitG()
                             self.oldpop[i].update(j)
                             self.oldpop[i].updateSC(j)
                             self.oldpop[i].updateWAS(j)
                             self.oldpop[i].updatePertImprSC(j, minimize)
                         updatePertT = updatePertT + os.times()[0] - start
-
                         self.fitEval = self.fitEval + len(diff)
                     else:
                         return { 'nEvals': self.fitEval, 'sol': self.oldpop[i].fit, 'fitG': self.oldpop[i].fitG, 'bit':self.oldpop[i].bit}
                 else : # improveN is TRUE 
                     start = os.times()[0]
-                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
-                    self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
+#                    print 'bestI', bestI
+#                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
+                    self.oldpop[i].updateSumArr(bestI)
+#                    self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
+                    self.oldpop[i].compFitG()
                     self.oldpop[i].update(bestI)
                     self.oldpop[i].updateSC(bestI)
                     self.oldpop[i].updateWAS(bestI)
@@ -1745,11 +1746,86 @@ cdef class LocalSearch:
                     self.fitEval = self.fitEval + 1
                     updateT = updateT + os.times()[0] - start
                     updateC = updateC + 1
-                    if self.oldpop[i].bit[bestI] == '1':
-                        self.oldpop[i].bit[bestI] = '0'
-                    else:
-                        self.oldpop[i].bit[bestI] = '1'
+                    self.oldpop[i].flip(bestI)
+                    ## if self.oldpop[i].bit[bestI] == '1':
+                    ##     self.oldpop[i].bit[bestI] = '0'
+                    ## else:
+                    ##     self.oldpop[i].bit[bestI] = '1'
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit,'fitG': self.bsf.fitG, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
+
+        ## self.fitEval = 0
+        ## start = os.times()[0]
+        ## self.model.transWal()
+        ## self.model.initInter()
+        ## self.oldpop = []
+        ## for i in xrange(beamWidth):
+        ##     self.oldpop.append(individual.Individual(n=self.dim, neigh=True)) 
+        ##     self.oldpop[i].init()
+        ##     self.oldpop[i] = self.evalPop(self.oldpop[i])
+        ##     self.oldpop[i].initWal(self.model)
+        ##     self.oldpop[i].initSC()
+        ##     self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (sum(self.oldpop[i].sumArr))
+        ##     self.oldpop[i].genImproveSC(minimize)
+
+        ## # self.bsf is a single individual recording the best-so-far solution
+        ## self.bsf = copy.deepcopy(self.oldpop[self.bestIndiv(self.oldpop, minimize, fitName)])
+        ## self.model.WA = [] # release memory
+
+        ## initC = 1
+        ## updateC = 0
+
+        ## descT = 0
+        ## pertT = 0
+        ## updatePertT = 0
+        ## updateT = 0
+        ## self.fitEval = 0
+        ## walkLen = 10
+
+        ## initT = os.times()[0] - start
+
+        ## while self.fitEval < self.MaxFit:
+        ##     for i in xrange(len(self.oldpop)):
+        ##         start = os.times()[0]
+        ##         improveN, bestI = self.oldpop[i].steepMeanDesc(minimize)
+        ##         descT = descT + os.times()[0] - start
+                
+        ##         if improveN == False:
+        ##             initC = initC + 1
+        ##             if restart == True:
+        ##                 start = os.times()[0]
+        ##                 diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
+
+        ##                 pertT = pertT + os.times()[0] - start
+
+        ##                 start = os.times()[0]
+        ##                 for j in diff:
+        ##                     self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
+        ##                     self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
+        ##                     self.oldpop[i].update(j)
+        ##                     self.oldpop[i].updateSC(j)
+        ##                     self.oldpop[i].updateWAS(j)
+        ##                     self.oldpop[i].updatePertImprSC(j, minimize)
+        ##                 updatePertT = updatePertT + os.times()[0] - start
+
+        ##                 self.fitEval = self.fitEval + len(diff)
+        ##             else:
+        ##                 return { 'nEvals': self.fitEval, 'sol': self.oldpop[i].fit, 'fitG': self.oldpop[i].fitG, 'bit':self.oldpop[i].bit}
+        ##         else : # improveN is TRUE 
+        ##             start = os.times()[0]
+        ##             self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
+        ##             self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
+        ##             self.oldpop[i].update(bestI)
+        ##             self.oldpop[i].updateSC(bestI)
+        ##             self.oldpop[i].updateWAS(bestI)
+        ##             self.oldpop[i].updateImprSC(bestI, minimize)
+        ##             self.fitEval = self.fitEval + 1
+        ##             updateT = updateT + os.times()[0] - start
+        ##             updateC = updateC + 1
+        ##             if self.oldpop[i].bit[bestI] == '1':
+        ##                 self.oldpop[i].bit[bestI] = '0'
+        ##             else:
+        ##                 self.oldpop[i].bit[bestI] = '1'
+        ## return {'nEvals': self.fitEval, 'sol': self.bsf.fit,'fitG': self.bsf.fitG, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def diffBits(self, a, b):
         diff = []
