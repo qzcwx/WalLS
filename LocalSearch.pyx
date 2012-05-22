@@ -601,7 +601,7 @@ cdef class LocalSearch:
 
 ##     def runFitS2walk(self,fitName, minimize, restart):
 ##         """ 
-##         steepest descent local search running on S
+##         steepest descent local search ;running on S
 ##         """
 ##         self.fitEval = 0
 ##         start = os.times()[0]
@@ -1468,13 +1468,16 @@ cdef class LocalSearch:
                 start = os.times()[0]
                 improveN, bestI = self.oldpop[i].nextDesc()
                 descT = descT + os.times()[0] - start
+#                print 'bestI', bestI
+#                print 'improveA', self.oldpop[i].improveA
+
 
                 if improveN == False:
                     initC = initC + 1
                     if restart == True:
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
-         #               print 'walk',self.bsf.fit, self.fitEval
+#                        print 'walk',self.bsf.fit, self.fitEval
 
                         pertT = pertT + os.times()[0] - start
 
@@ -1498,7 +1501,7 @@ cdef class LocalSearch:
                     self.oldpop[i].updateWAS(bestI)
                     self.oldpop[i].updateImprS(bestI, minimize)
                     self.fitEval = self.fitEval + 1
-          #          print 'decs', self.bsf.fit, self.fitEval 
+#                    print 'decs', self.bsf.fit, self.fitEval 
                     updateT = updateT + os.times()[0] - start
                     updateC = updateC + 1
                     self.oldpop[i].flip(bestI)
@@ -1636,7 +1639,6 @@ cdef class LocalSearch:
                     if restart == True:
                         start = os.times()[0]
                         diff, self.oldpop[i] = self.walk(fitName, minimize, False, walkLen, self.oldpop[i])
-#                        print self.bsf.fit, self.bsf.fitG, self.fitEval
                         pertT = pertT + os.times()[0] - start
 
                         start = os.times()[0]
@@ -1655,10 +1657,7 @@ cdef class LocalSearch:
                         return { 'nEvals': self.fitEval, 'sol': self.oldpop[i].fit, 'fitG': self.oldpop[i].fitG, 'bit':self.oldpop[i].bit}
                 else : # improveN is TRUE 
                     start = os.times()[0]
-#                    print 'bestI', bestI
-#                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
                     self.oldpop[i].updateSumArr(bestI)
-#                    self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
                     self.oldpop[i].compFitG()
                     self.oldpop[i].update(bestI)
                     self.oldpop[i].updateSC(bestI)

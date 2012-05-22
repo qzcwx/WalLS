@@ -2,18 +2,13 @@
 import sys
 import os
 import time
-import types
-import optparse
-import threading
-import time
-import resource
 import subprocess
 import random
 
 from threading import Thread
 from optparse import OptionParser
 
-idleThres = 40
+idleThres = 90
 
 #
 # Machines use to run the tasks

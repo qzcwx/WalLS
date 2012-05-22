@@ -45,7 +45,7 @@ cdef class Individual:
     cdef double* Z
     cdef double** C
     cdef double** orderC
-    cdef list improveA
+    cdef public list improveA
     cdef object func
     cdef object model
     cdef int MaxFit
@@ -293,9 +293,11 @@ cdef class Individual:
     def updateImprS(self, p, minimize):
         self.improveA.remove(p)
         if p in self.model.Inter:
-            for i in self.model.Inter[p].arr: 
-                if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
-                #if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
+            for i in self.model.Inter[p].arr:
+                """ equal moves """
+                #if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
+                """ NOT equal moves """
+                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
@@ -303,16 +305,20 @@ cdef class Individual:
 
     def updatePertImprS(self, p, minimize):
         if p in self.model.Inter:
-            for i in self.model.Inter[p].arr : 
-                if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
-                #if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
+            for i in self.model.Inter[p].arr :
+                """ equal moves """
+                #if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
+                """ NOT equal moves """
+                if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
-        
-        # (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p]< - self.threshold ):
-        if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
+                    
+        """ equal move """
+        #if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
+        """ NOT equal move """
+        if (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p] < - self.threshold ): 
             if p not in self.improveA:
                 self.improveA.append(p)
         elif p in self.improveA:
@@ -386,8 +392,10 @@ cdef class Individual:
         self.improveA.remove(p)
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr:
-                # if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
-                if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
+                """ equal move """
+                #if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
+                """ NOT equal move """
+                if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
@@ -396,14 +404,19 @@ cdef class Individual:
     def updatePertImprSC(self, p, minimize):
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr:
-                # if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
-                if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
+                """ equal move """
+                #if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
+                """ NOT equal move """
+                if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
+                
                     if i not in self.improveA:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
-        #if (minimize == True and self.SC[p] > self.threshold) or (minimize == False and self.SC[p] < - self.threshold):
-        if (minimize == True and self.SC[p] > - self.threshold) or (minimize == False and self.SC[p] < self.threshold):
+        """ equal move """
+        #if (minimize == True and self.SC[p] > - self.threshold) or (minimize == False and self.SC[p] < self.threshold):
+        """ not equal move """
+        if (minimize == True and self.SC[p] > self.threshold) or (minimize == False and self.SC[p] < - self.threshold):
             if p not in self.improveA:
                 self.improveA.append(p)
         elif p in self.improveA:
@@ -647,6 +660,9 @@ cdef class Individual:
 
         # randomly pick an improving move, which takes only constant time 
         bestI = random.choice(self.improveA)
+        
+        # for i in range(self.dim):
+        #     print self.sumArr[i]
                    
         return True, bestI
 

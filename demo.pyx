@@ -127,7 +127,7 @@ cpdef main():
     #if opt.probName != 'SAT':
     #    k = int(tl.getArgv())
 
-    #maxFit = 0
+    #maxFit = 1000
     maxFit = 1000 * opt.n
 
     runs = 30
@@ -264,7 +264,6 @@ cpdef main():
 
         tAll = np.zeros(runs)
         for i in range(runs):
-    #        print 'run', i, ':opt.probName', opt.probName, 'algoName', algoName, 'opt.fitName', opt.fitName, 'I', inst, 'n', n, 'k', k 
             start = os.times()[0]
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))
@@ -275,7 +274,7 @@ cpdef main():
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = os.times()[0] - start
-
+            
     #    trace = res[0]['trace']
     #    for i in trace:
     ##        print 'Eval', i.fitEval, 'fit', i.fit
