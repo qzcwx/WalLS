@@ -60,8 +60,14 @@ ext_module7 = Extension(
     language="c++",
 )
 
+ext_module8 = Extension(
+    "LocalOptima",
+    ["LocalOptima.pyx"],
+    language="c++",
+)
+
 setup(
     name = 'Hello world app',
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [ext_module1, ext_module2, ext_module3, ext_module4, ext_module5, ext_module6, ext_module7],
+    ext_modules = [ext_module1, ext_module2, ext_module3, ext_module4, ext_module5, ext_module6, ext_module7, ext_module8],
 )

@@ -5,7 +5,6 @@ import random
 import copy
 
 # import for Cython
-from cpython cimport bool
 cimport cython
 from cython.parallel import prange, parallel, threadid
 from libcpp.vector cimport vector

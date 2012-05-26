@@ -22,7 +22,6 @@ from operator import itemgetter
 import individual 
 
 # import for Cython
-from cpython cimport bool
 cimport cython
 from cython.parallel import prange, parallel, threadid
 from libcpp.vector cimport vector

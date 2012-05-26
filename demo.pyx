@@ -21,8 +21,7 @@ import sys
 import batch
 import argparse
 
-#def main(argv):
-cpdef main():
+def main():
     """ command line options """
     # Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [overwrite] [I] [PopSize] [N] [K] [Q]
     parser = argparse.ArgumentParser(description='Walsh Local Search')
@@ -115,8 +114,8 @@ cpdef main():
     #maxFit = 1000
     maxFit = 1000 * opt.n
 
-    runs = 30
-    #runs = 1
+    #runs = 30
+    runs = 0
 
     crossoverR = 0.8 # typically in (0.6, 0.9)
     mutationR = 1.0/float(opt.n) # typically between 1/popSize and 1/dim
@@ -217,28 +216,30 @@ cpdef main():
             elif opt.probName == 'NK':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
 
-            f = open(nameOfF, 'w')
-            print >>f,"%g\t%g" % (walTime,hyperTime) 
-            f.close()
 
-    #    bit,fit = tl.compFit(model)
-    #    a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
-    #    print 'opti\n', a[0][0], a[0][1]
-    #    print
+        f = open(nameOfF, 'w')
+        print >>f,"%g\t%g" % (walTime,hyperTime) 
+        f.close()
 
-    #    for i in a:
-    #        print i[0], '%.2f' %(i[1])
 
-    #    for i in zip(bit,fit):
-    #        print i[0],'%.3f' %(i[1])
+        bit,fit = tl.compFit(model)
+        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+        # print 'opti\n', a[0][0], a[0][1]
+        # print
 
-    #    print 'bit',bit
-    #    print 'fit',fit
-    #    print 'mean',np.mean(fit)
-    #    print 'w', w
+        # for i in a:
+        #     print i[0], '%.2f' %(i[1])
 
-    #    numOpt = lo.localOpt(bit, fit)
-    #    print numOpt
+        # for i in zip(bit,fit):
+        #     print i[0],'%.3f' %(i[1])
+
+        # print 'bit',bit
+        # print 'fit',fit
+        # print 'mean',np.mean(fit)
+        # print 'w', w
+
+        numOpt = lo.localOpt(bit, fit)
+        print numOpt
 
         if opt.algoName.find('LS') != -1:
             algo = ls.LocalSearch(model, maxFit, opt.n)
