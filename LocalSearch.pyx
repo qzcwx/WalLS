@@ -42,6 +42,7 @@ cdef class LocalSearch:
     cdef int fitEval
     cdef list oldpop
     cdef object bsf
+    cdef object oldindiv
 
     def __init__(self, model, MaxFit, dim):
         self.func = model.compFit
@@ -106,7 +107,6 @@ cdef class LocalSearch:
                 return self.hyperSearchFit(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.hyperSearchMean(fitName, minimize, restart)
-
 
     def checkHyperRank(self):
         """
@@ -457,7 +457,7 @@ cdef class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
         self.model.initInter()
-        self.bsf = copy.deepcopy(self.oldindiv)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
 
@@ -487,7 +487,8 @@ cdef class LocalSearch:
 
                     start = os.times()[0]
                     for i in diff:
-                        self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
+                        self.oldindiv.updateSumArr(i)
+#                        self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
@@ -498,17 +499,19 @@ cdef class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 start = os.times()[0]
-                self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
+                self.oldindiv.updateSumArr(bestI)                
+#                self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprS(bestI, minimize)
                 self.fitEval = self.fitEval + 1
                 updateT = updateT + os.times()[0] - start
                 updateC = updateC + 1
-                if self.oldindiv.bit[bestI] == '1':
-                    self.oldindiv.bit[bestI] = '0'
-                else:
-                    self.oldindiv.bit[bestI] = '1'
+                self.oldindiv.flip(bestI)
+                # if self.oldindiv.bit[bestI] == '1':
+                #     self.oldindiv.bit[bestI] = '0'
+                # else:
+                #     self.oldindiv.bit[bestI] = '1'
 
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
@@ -2234,15 +2237,12 @@ cdef class LocalSearch:
             else :
                 print 'Unknown fitName', fitName
                 sys.exit(-1)
-
             if i==0: # first element, initialization
                 best = val
                 I = 0
-
             if (minimize == True and val < best) or (minimize == False and val > best): 
                 best = val
                 I = i
-
         return I
     
     def printPop(self, pop, fitName):

@@ -112,21 +112,6 @@ cpdef main():
 
     random.seed(opt.rseed)
 
-    #opt.compMeth = tl.getArgv() # bf(brute force) / wal (walsh analysis)
-    #opt.probName = tl.getArgv()
-    #algoName = tl.getArgv()
-    #opt.fitName = tl.getArgv() # fit/mean/std
-
-    #if opt.compMeth == 'wal' and opt.fitName != 'mean':
-    #    print 'ERROR: Walsh analysis can only be applied to compute mean'
-    #    sys.exit()
-
-    #inst = int(tl.getArgv())
-    #s = tl.getArgv() # get the setting for population size
-    #n = int(tl.getArgv())
-    #if opt.probName != 'SAT':
-    #    k = int(tl.getArgv())
-
     #maxFit = 1000
     maxFit = 1000 * opt.n
 
@@ -208,7 +193,7 @@ cpdef main():
             model = nkq.NKQLandcape(opt.n, opt.k, opt.q, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-I'+str(opt.inst)+'-Q'+str(opt.q))
             #model = nkq.NKQLandcape(n, k, q)
 
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth=='plateauSize':
             start = os.times()[0]
             # Walsh analysis
             w = model.WalshCofLinearLinklist()

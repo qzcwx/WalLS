@@ -5,6 +5,7 @@ from Cython.Distutils import build_ext
 ext_module1 = Extension(
     "demo",
     ["demo.pyx"],
+    extra_compile_args=['-pipe'],
 #    extra_compile_args=['-fopenmp'],
 #    extra_link_args=['-fopenmp'],
 #    language="c++",
@@ -15,6 +16,7 @@ ext_module2 = Extension(
     ["LocalSearch.pyx"],
 #    extra_compile_args=['-fopenmp'],
 #    extra_link_args=['-fopenmp'],
+    extra_compile_args=['-pipe'],    
     language="c++",
 )
 
