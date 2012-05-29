@@ -5,7 +5,6 @@ Generates 10 instances for each of the following configuraion (10 combinations)
 """
 import nkLandscape as nk
 import nkqLandscape as nkq
-import pdb
 import random as random
 
 
@@ -16,10 +15,11 @@ prob = 'NKQ'
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
-random.seed(rseed)
+
 for n in [2000,5000]:
     for k in [2,4]:
-        for i in range(numOfInstances):
+        for i in range(numOfInstances):  
+            random.seed(rseed)          
             if prob == 'NK':
                 # NK landscapes:
                 model = nk.NKLandscape(n,k)
