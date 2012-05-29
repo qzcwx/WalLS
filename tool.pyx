@@ -4,6 +4,7 @@ import random
 import numpy as np
 import math
 import sys
+import nkLandscape as nk
 
 argvCount = 1
 
@@ -30,12 +31,31 @@ def globalOpt(model):
                 bestBit = bit
     return bestFit, bestBit
 
-def compFit(model):
+cpdef compFit(model):
+    cdef int n
     n = model.getN()
     fit = np.zeros(math.pow(2,n))
     bitStr = genSeqBits(n)
-    for i in range(int(math.pow(2,n))):
+    for i in xrange(int(math.pow(2,n))):
        fit[i] = model.compFit(bitStr[i])
+    return bitStr, fit
+
+cpdef compMean(model):
+    cdef int n
+    n = model.getN()
+    fit = np.zeros(math.pow(2,n))
+    bitStr = genSeqBits(n)
+    for i in xrange(int(math.pow(2,n))):
+        bit = bitStr[i]
+        fitN = np.zeros(n)
+        for j in xrange(n):
+            # flip the jth bit in bit-string
+            if bit[j] == '1':
+                neighStr = bit[0:j] + '0' + bit[j+1:]
+            else:
+                neighStr = bit[0:j] + '1' + bit[j+1:]
+            fitN[j] = model.compFit(neighStr)
+        fit[i] = np.mean(fitN)
     return bitStr, fit
 
 #def plotDistNKQ():
@@ -262,7 +282,7 @@ def listMerge(l1, l2):
 #plotDistMaxK()
 #plotFitRank()
 
-def genSeqBits(n):
+cpdef genSeqBits(n):
     bitStr = []
     for i in range(int(math.pow(2,n))):
        bit = bin(i)

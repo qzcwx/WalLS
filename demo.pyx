@@ -221,8 +221,11 @@ def main():
         print >>f,"%g\t%g" % (walTime,hyperTime) 
         f.close()
 
-
-        bit,fit = tl.compFit(model)
+        if opt.fitName == 'fit':
+            bit,fit = tl.compFit(model)
+        elif opt.fitName == 'mean':
+            bit, fit = tl.compMean(model)
+        
         a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
         # print 'opti\n', a[0][0], a[0][1]
         # print
@@ -238,8 +241,10 @@ def main():
         # print 'mean',np.mean(fit)
         # print 'w', w
 
-        numOpt = lo.localOpt(bit, fit)
-        print numOpt
+        # numOpt = lo.localOpt(bit, fit)
+        # print numOpt
+
+        print lo.plateauCount(bit, fit, opt)
 
         if opt.algoName.find('LS') != -1:
             algo = ls.LocalSearch(model, maxFit, opt.n)
