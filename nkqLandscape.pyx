@@ -6,10 +6,11 @@ import math
 import pdb
 
 class NKQLandcape(nk.NKLandscape):
-    def __init__(self, inN, inK, inQ, fileName = None):
+    def __init__(self, inN, inK, inQ, inT=-1, fileName = None):
         self.q = inQ
         self.n = inN
         self.k = inK
+        self.t = inT
 
 #        self.genNeigh()
 #        self.genFunc()
@@ -18,7 +19,10 @@ class NKQLandcape(nk.NKLandscape):
 
         nk.NKLandscape.__init__(self, inN, inK, fileName)
         if fileName == None:
-            self.genFuncQ()
+            if self.t == -1:
+                self.genFuncQ()
+            else:
+                self.genFuncQT()
         else:
             self.readFile(fileName)
         self.Kbits = tl.genSeqBits(self.k+1)
@@ -29,4 +33,16 @@ class NKQLandcape(nk.NKLandscape):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
                 oneFunc.append(np.random.randint(self.q))
+            self.func.append(oneFunc)
+
+    def genFuncQT(self):
+        self.func = []
+        for i in range(self.n):
+            oneFunc = []
+            tAss = random.sample(range(int(math.pow(2,self.k+1))),self.t)
+            for j in range(int(math.pow(2,self.k+1))):
+                if j in tAss:
+                    oneFunc.append(1)
+                else:
+                    oneFunc.append(0)
             self.func.append(oneFunc)

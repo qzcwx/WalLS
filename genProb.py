@@ -8,18 +8,19 @@ import nkqLandscape as nkq
 import random as random
 
 
-numOfInstances = 1
+numOfInstances = 10
 rseed = 0
+t = 7
 prob = 'NKQ'
 
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
 
-for n in [2000,5000]:
-    for k in [2,4]:
+for n in [15]:
+    for k in [2]:
         for i in range(numOfInstances):  
-            random.seed(rseed)          
+            random.seed(rseed+i)          
             if prob == 'NK':
                 # NK landscapes:
                 model = nk.NKLandscape(n,k)
@@ -28,5 +29,5 @@ for n in [2000,5000]:
                 # NKq landscapes:
                 model = nk.NKLandscape(n,k)
                 for q in [2]:
-                    model = nkq.NKQLandcape(n, k, q)
-                    model.exportToFile(prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(i)+'-Q'+str(q))
+                    model = nkq.NKQLandcape(n, k, q, t)
+                    model.exportToFile(prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(i)+'-Q'+str(q)+'-T'+str(t))

@@ -94,7 +94,7 @@ cpdef plateauCount(bitStr, f, opt):
 cdef void writeToFile(vector[set[int]] plat,object fit, object opt):
     cdef str dirPrefix = 'plateau/'
     if opt.probName == 'NKQ':
-        nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'.txt'
+        nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(opt.t)+'.txt'
     elif opt.probName == 'NK':
         nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
 
