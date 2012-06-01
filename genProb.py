@@ -11,13 +11,14 @@ import random as random
 numOfInstances = 10
 rseed = 0
 t = 7
+
 prob = 'NKQ'
 
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
 
-for n in [15]:
+for n in [4]:
     for k in [2]:
         for i in range(numOfInstances):  
             random.seed(rseed+i)          

@@ -224,7 +224,6 @@ def main():
             elif opt.probName == 'NK':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
 
-
         f = open(nameOfF, 'w')
         print >>f,"%g\t%g" % (walTime,hyperTime) 
         f.close()
@@ -238,8 +237,10 @@ def main():
         # print 'opti\n', a[0][0], a[0][1]
         # print
 
-        # for i in a:
-        #     print i[0], '%.2f' %(i[1])
+        # c = 0
+        # for i in (zip(bit,fit)):
+        #     print c,'\t', i[0], '%.2f' %(i[1])
+        #     c = c + 1
 
         # for i in zip(bit,fit):
         #     print i[0],'%.3f' %(i[1])

@@ -55,7 +55,7 @@ cpdef plateauCount(bitStr, f, opt):
     cdef int i, bitStrLen = len(bitStr), solIndex, n
     cdef vector[int] mark
     cdef vector[set[int]] platSet
-    cdef nonplat
+    # cdef nonplat
     n = len(bitStr[0])
 
     """ initialize all markers to true """
@@ -65,7 +65,7 @@ cpdef plateauCount(bitStr, f, opt):
     while mark.empty() == False :
         # randomly pick a solution
         solIndex = mark[random.randint(0,mark.size())]
-        nonplat = True
+        # nonplat = True
         # consider all neighs of solIndex 
         for i in xrange(n):
             weigh = <int> pow(2, i)
@@ -75,18 +75,22 @@ cpdef plateauCount(bitStr, f, opt):
             else :
                 # the bit sitting at position i is 0, set it to 1
                 neigh = solIndex + weigh
-            # print 'solIndex', solIndex, 'neigh', neigh, 'mark.size', mark.size() 
+#            print 'solIndex', solIndex, 'neigh', neigh
             if f[solIndex] == f[neigh]:
-                if nonplat==True:
-                    remove(mark, solIndex)
-                    nonplat = False
+                # if nonplat==True:
+                #     remove(mark, solIndex)
+                #     nonplat = False
                 # both solIndex and neigh have been inspected
-                remove(mark, neigh)
+#                remove(mark, neigh)
+
                 # merge two set of plateaus relative to solIndex and neigh,
                 # if not exists yet, create a plateau containing two points
                 merge(platSet, solIndex, neigh)
-        if nonplat == True:
-            remove(mark, solIndex)
+ #               print 'merge'
+#            for i in xrange(platSet.size()):
+  #              print "%g\t%g" %(platSet[i].size(), f[deref(platSet[i].begin())])
+
+        remove(mark, solIndex)
 
     writeToFile(platSet, f, opt)
     return platSet.size()
@@ -106,7 +110,7 @@ cdef void writeToFile(vector[set[int]] plat,object fit, object opt):
     
 cdef void merge(vector[set[int]] &platSet, int e1, int e2):
     """ merge two set containing e1 and e2, respectively """
-    cdef int i, set1, set2
+    cdef int i, set1=-1, set2=-1
     cdef bool s1Exist=False, s2Exist=False
     cdef set[int].iterator it
     cdef vector[set[int]].iterator vit
@@ -126,7 +130,9 @@ cdef void merge(vector[set[int]] &platSet, int e1, int e2):
             s2Exist = True
             break
 
-    if s1Exist & s2Exist == True:
+#    print s1Exist, s2Exist
+    
+    if s1Exist & s2Exist == True and (set1 != set2):
         # both e1 and e2 are contained in some sets
         # merge them to the first one, and delete the second one
         it = platSet[set2].begin()
@@ -147,7 +153,7 @@ cdef void merge(vector[set[int]] &platSet, int e1, int e2):
     elif s1Exist == False and s2Exist == True:
         # e1 is a newly discovered plateau, add it to s2
         platSet[set2].insert(e1)
-    else: # both points have not existed in set list, create a new set containing both points and append the created to vectorx
+    elif set1 == -1 and set2 == -1: # both points have not existed in set list, create a new set containing both points and append the created to vectorx
         tempS.insert(e1)
         tempS.insert(e2)
         platSet.push_back(tempS)
