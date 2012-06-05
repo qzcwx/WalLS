@@ -1,4 +1,3 @@
-# -*- python -*-
 import nkLandscape as nk
 import nkqLandscape as nkq
 import WalshAnalysis as wal
@@ -253,7 +252,7 @@ def main():
         # numOpt = lo.localOpt(bit, fit)
         # print numOpt
 
-        print lo.plateauCount(bit, fit, opt)
+        lo.plateauCount(bit, fit, opt)
 
         if opt.algoName.find('LS') != -1:
             algo = ls.LocalSearch(model, maxFit, opt.n)

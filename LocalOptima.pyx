@@ -51,11 +51,10 @@ cpdef int localOpt(bitStr, f):
     return numLocalOpt
 
 cpdef plateauCount(bitStr, f, opt):
-    """ count the number plateau using BFS """
+    """ count the number plateau by Enumeration """
     cdef int i, bitStrLen = len(bitStr), solIndex, n
     cdef vector[int] mark
-    cdef vector[set[int]] platSet
-    # cdef nonplat
+    cdef vector[set[int]] platSet, exitSet
     n = len(bitStr[0])
 
     """ initialize all markers to true """
@@ -75,7 +74,7 @@ cpdef plateauCount(bitStr, f, opt):
             else :
                 # the bit sitting at position i is 0, set it to 1
                 neigh = solIndex + weigh
-#            print 'solIndex', solIndex, 'neigh', neigh
+               # print 'solIndex', solIndex, 'neigh', neigh
             if f[solIndex] == f[neigh]:
                 # if nonplat==True:
                 #     remove(mark, solIndex)
@@ -87,15 +86,75 @@ cpdef plateauCount(bitStr, f, opt):
                 # if not exists yet, create a plateau containing two points
                 merge(platSet, solIndex, neigh)
  #               print 'merge'
-#            for i in xrange(platSet.size()):
-  #              print "%g\t%g" %(platSet[i].size(), f[deref(platSet[i].begin())])
-
+            
         remove(mark, solIndex)
+    # for i in xrange(platSet.size()):
+    #      print "%g\t%g" %(platSet[i].size(), f[deref(platSet[i].begin())])
 
-    writeToFile(platSet, f, opt)
-    return platSet.size()
+    # print 'exitConut'
+    exitSet=exitCount(platSet, f, n)
+    writeToFile(platSet, exitSet, f, opt)
 
-cdef void writeToFile(vector[set[int]] plat,object fit, object opt):
+    
+
+cdef vector[set[int]] exitCount(vector[set[int]] plat, object f, int n):
+    """ count the number of exists out of all plateaus
+
+    exist are those plateaus that have an improving neighborhoods,
+    think about improving move as the the one with higher fitness,
+    just to be consistent with MaxSAT problem
+    """
+    # make a copy of platSet
+    cdef vector[set[int]] exitSet
+    cdef int i, weigh, solIndex, neigh
+    cdef set[int].iterator it
+    cdef set[int] tempS
+    cdef bool impr
+    
+    for i in xrange(plat.size()):
+        it = plat[i].begin()
+        tempS.clear()
+        while it != plat[i].end():
+            tempS.insert(deref(it))
+            inc(it)
+        exitSet.push_back(tempS)
+
+    # for i in xrange(exitSet.size()):
+    #     print "%g\t%g" %(exitSet[i].size(), f[deref(exitSet[i].
+
+    # check the neighborhood for every points in the plateauos
+    for i in xrange(exitSet.size()):
+        it = exitSet[i].begin()
+        while it != exitSet[i].end():
+            solIndex = deref(it)
+    #        print 'sol', solIndex
+            impr = False
+            for j in xrange(n):
+                weigh = <int> pow(2,j)
+                if solIndex & weigh != 0:
+                    # the bit sitting at position i is 1, set it to 0
+                    neigh = solIndex - weigh
+                else :
+                    # the bit sitting at position i is 0, set it to 1
+                    neigh = solIndex + weigh
+   #             print 'neigh', neigh
+                if f[solIndex] < f[neigh]:
+                    impr = True
+  #                  print 'impr', neigh
+                    break
+            if impr == False:
+ #               print 'erase', solIndex
+                exitSet[i].erase(it)
+            inc(it)
+#            print
+
+    return exitSet
+  
+    # for i in xrange(exitSet.size()):
+    #     print "%g\t%g" %(exitSet[i].size(), f[deref(exitSet[i].begin())])
+          
+
+cdef void writeToFile(vector[set[int]] plat, vector[set[int]] exitSet, object fit, object opt):
     cdef str dirPrefix = 'plateau/'
     if opt.probName == 'NKQ':
         nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(opt.t)+'.txt'
@@ -103,9 +162,9 @@ cdef void writeToFile(vector[set[int]] plat,object fit, object opt):
         nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
 
     f = open(nameOfF, 'w')
-    print >>f, "Plateau Size\tFitness"
+    print >>f, "PlateauSize\tLocalOptimaSize\tExitSize\tFitness"
     for i in xrange(plat.size()):
-        print >>f, "%g\t%g" %(plat[i].size(), fit[deref(plat[i].begin())])
+        print >>f, "%g\t%g\t%g\t%g" %(plat[i].size(), plat[i].size()-exitSet[i].size(), exitSet[i].size(), fit[deref(plat[i].begin())])
     f.close()
     
 cdef void merge(vector[set[int]] &platSet, int e1, int e2):
