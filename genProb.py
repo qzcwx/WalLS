@@ -8,27 +8,36 @@ import nkqLandscape as nkq
 import random as random
 
 
-numOfInstances = 10
+iRange = range(10)
 rseed = 0
-t = 7
+
+#nRange = [4]
+nRange = [15]
+kRange = [2]
+cRange = [15, 65, 120]
+
+#cRange = [4,17,32]
+tRange = [4,5,6,7]
+qRange = [2]
+
 
 prob = 'NKQ'
 
 prefixNK = './benchmark/NK/'
 prefixNKQ = './benchmark/NKQ/'
 
-
-for n in [4]:
-    for k in [2]:
-        for i in range(numOfInstances):  
-            random.seed(rseed+i)          
-            if prob == 'NK':
-                # NK landscapes:
-                model = nk.NKLandscape(n,k)
-                model.exportToFile(prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-I'+str(i))
-            elif prob == 'NKQ':
-                # NKq landscapes:
-                model = nk.NKLandscape(n,k)
-                for q in [2]:
-                    model = nkq.NKQLandcape(n, k, q, t)
-                    model.exportToFile(prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-I'+str(i)+'-Q'+str(q)+'-T'+str(t))
+for n in nRange:
+    for k in kRange:
+        for c in cRange:
+            for t in tRange:
+                for i in iRange:
+                    random.seed(rseed+i)
+                    model = nk.NKLandscape(n,k,c)
+                    if prob == 'NK':
+                        # NK landscapes:
+                        model.exportToFile(prefixNK+'NK-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-I'+str(i))
+                    elif prob == 'NKQ':
+                        # NKq landscapes:
+                        for q in qRange:
+                            model = nkq.NKQLandcape(n, k, c, q, t)
+                            model.exportToFile(prefixNKQ+'NKQ-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-I'+str(i)+'-Q'+str(q)+'-T'+str(t))

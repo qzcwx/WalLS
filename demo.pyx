@@ -27,77 +27,83 @@ def main():
     #print argv
     #parser.parse_args(argv)
 
-    parser.add_argument('-c', 
-            action="store", 
-            help="Computational Method",
-            dest="compMeth",
-            )
+    parser.add_argument('-m', 
+                        action="store", 
+                        help="Computational Method",
+                        dest="compMeth",
+                        )
     parser.add_argument('-p', 
-            action="store", 
-            help="Problem",
-            dest="probName", 
-            )
+                        action="store", 
+                        help="Problem",
+                        dest="probName", 
+                        )
     parser.add_argument('-a', 
-            action="store", 
-            help="Algorithm",
-            dest="algoName",
-            )
+                        action="store", 
+                        help="Algorithm",
+                        dest="algoName",
+                        )
     parser.add_argument('-f', 
-            action="store", 
-            help="Evaluation Function",
-            dest="fitName",
-            )
+                        action="store", 
+                        help="Evaluation Function",
+                        dest="fitName",
+                        )
     parser.add_argument('-i', 
-            action="store", 
-            help="Instance ID",
-            dest="inst",
-            type=int,
-            )
+                        action="store", 
+                        help="Instance ID",
+                        dest="inst",
+                        type=int,
+                        )
     parser.add_argument('-s', 
-            action="store", 
-            help="Population size",
-            dest="popSize",
-            default=1,
-            type=int,
-            )
+                        action="store", 
+                        help="Population size",
+                        dest="popSize",
+                        default=1,
+                        type=int,
+                        )
     parser.add_argument('-n', 
-            action="store", 
-            help="Dimension",
-            dest="n",
-            type=int,
-            )
+                        action="store", 
+                        help="Dimension",
+                        dest="n",
+                        type=int,
+                        )
     parser.add_argument('-k', 
-            action="store", 
-            help="K",
-            dest="k",
-            type=int,
-            )
+                        action="store", 
+                        help="K",
+                        dest="k",
+                        type=int,
+                        )
     parser.add_argument('-q', 
-            action="store", 
-            help="Q",
-            dest="q",
-            default=0,
-            type=int,
-            )
+                        action="store", 
+                        help="Q",
+                        dest="q",
+                        default=0,
+                        type=int,
+                        )
     parser.add_argument('-r', 
-            action="store", 
-            help="Random Seed",
-            dest="rseed",
-            default=0,
-            type=int,
-            )
+                        action="store", 
+                        help="Random Seed",
+                        dest="rseed",
+                        default=0,
+                        type=int,
+                        )
     parser.add_argument('-w', 
-            action="store", 
-            help="Width of Beam",
-            dest="w",
-            default=0,
-            type=int,
-            )
+                        action="store", 
+                        help="Width of Beam",
+                        dest="w",
+                        default=0,
+                        type=int,
+                        )
     parser.add_argument('-t',
                         action="store",
                         help="number of true assignment in one subfunction",
                         dest="t",
                         default=-1,
+                        type=int,
+                        )
+    parser.add_argument('-c',
+                        action="store",
+                        help="number of subfunctions",
+                        dest="c",
                         type=int,
                         )
 
@@ -131,7 +137,6 @@ def main():
     DR = 0.35
     M = 1
 
-    #print 'opt.probName', opt.probName, 'inst', inst, 'n', n, 'k', k 
 
     if opt.algoName.find('LS') != -1:
         popSize = 1
@@ -171,7 +176,7 @@ def main():
             tAll[i] = os.times()[0] - start
 
         if opt.probName == 'SAT':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'.txt'
         f = open(nameOfF, 'w')
         for i in range(len(res)):
             if opt.fitName != 'fit':
@@ -182,7 +187,7 @@ def main():
 
         """ store runtime to files """
         if opt.probName == 'SAT':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'.txt'
 
         f = open(nameOfF, 'w')
         for i in range(runs):
@@ -193,10 +198,10 @@ def main():
         res = []
 
         if opt.probName == 'NK':
-            model = nk.NKLandscape(opt.n,opt.k,prefixNK+'NK-N'+str(opt.n)+'-K'+str(opt.k)+'-I'+str(opt.inst))
+            model = nk.NKLandscape(opt.n,opt.k,opt.c,prefixNK+'NK-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
             #model = nk.NKLandscape(n,k)
         elif opt.probName == 'NKQ':
-            model = nkq.NKQLandcape(opt.n, opt.k, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
+            model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
             #model = nkq.NKQLandcape(n, k, q)
 
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth=='plateauSize':
@@ -219,9 +224,9 @@ def main():
 
             """ store runtime to files """
             if opt.probName == 'NKQ':
-                nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+                nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
             elif opt.probName == 'NK':
-                nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+                nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
 
         f = open(nameOfF, 'w')
         print >>f,"%g\t%g" % (walTime,hyperTime) 
@@ -236,10 +241,10 @@ def main():
         # print 'opti\n', a[0][0], a[0][1]
         # print
 
-        # c = 0
-        # for i in (zip(bit,fit)):
-        #     print c,'\t', i[0], '%.2f' %(i[1])
-        #     c = c + 1
+        c = 0
+        for i in (zip(bit,fit)):
+            print c,'\t', i[0], '%.2f' %(i[1])
+            c = c + 1
 
         # for i in zip(bit,fit):
         #     print i[0],'%.3f' %(i[1])
@@ -285,9 +290,9 @@ def main():
 
         """ store results to files """
         if opt.probName == 'NKQ':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
         elif opt.probName == 'NK':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
 
     #    """ print the mean over multiple runs """
     #    r = np.zeros(runs)
@@ -305,9 +310,9 @@ def main():
 
         """ store trace to files """
         if opt.probName == 'NKQ':
-            nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+            nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
         elif opt.probName == 'NK':
-            nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+            nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
         f = open(nameOfF, 'w')
         for i in range(runs):
               print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
@@ -315,9 +320,9 @@ def main():
 
         """ store runtime to files """
         if opt.probName == 'NKQ':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
         elif opt.probName == 'NK':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
 
         f = open(nameOfF, 'w')
         print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"

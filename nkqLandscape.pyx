@@ -6,10 +6,12 @@ import math
 import pdb
 
 class NKQLandcape(nk.NKLandscape):
-    def __init__(self, inN, inK, inQ, inT=-1, fileName = None):
-        self.q = inQ
+    def __init__(self, inN, inK, inC, inQ, inT=-1, fileName = None):
+        
         self.n = inN
         self.k = inK
+        self.c = inC
+        self.q = inQ
         self.t = inT
 
 #        self.genNeigh()
@@ -17,7 +19,7 @@ class NKQLandcape(nk.NKLandscape):
 #        self.genFuncQ()
 #        self.exportToFile(fileName)
 
-        nk.NKLandscape.__init__(self, inN, inK, fileName)
+        nk.NKLandscape.__init__(self, inN, inK, inC, fileName)
         if fileName == None:
             if self.t == -1:
                 self.genFuncQ()
@@ -29,7 +31,7 @@ class NKQLandcape(nk.NKLandscape):
 
     def genFuncQ(self):
         self.func = []
-        for i in range(self.n):
+        for i in range(self.c):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
                 oneFunc.append(np.random.randint(self.q))
@@ -37,7 +39,7 @@ class NKQLandcape(nk.NKLandscape):
 
     def genFuncQT(self):
         self.func = []
-        for i in range(self.n):
+        for i in range(self.c):
             oneFunc = []
             tAss = random.sample(range(int(math.pow(2,self.k+1))),self.t)
             for j in range(int(math.pow(2,self.k+1))):

@@ -13,9 +13,10 @@ import pdb
 
 class NKLandscape:
     """ NK-landscape class """
-    def __init__(self,inN,inK, fileName = None):
+    def __init__(self,inN, inK, inC, fileName = None):
         self.n = inN
         self.k = inK
+        self.c = inC
 
         # for run experiments
         if fileName == None:
@@ -24,71 +25,68 @@ class NKLandscape:
         else:
             self.readFile(fileName)
 
-#        # for generating benchmarks
-#        self.genNeigh()
-#        self.genFunc()
-#        self.exportToFile(fileName)
-#
         self.Kbits = tl.genSeqBits(self.k+1)
 
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
-        for i in range(self.n): 
+        for i in range(self.c): 
             for j in range(len(self.neighs[i])):
                 print >>f, self.neighs[i][j], '\t',
             print >>f
-        for i in range(self.n): 
+        for i in range(self.c): 
             for j in range(len(self.func[i])):
                 print >>f, self.func[i][j], '\t',
             print >>f
 
     def readFile(self, fName):
-        self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.n, autostrip=True, usecols = range(self.k)).tolist()
+        self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.c, autostrip=True, usecols = range(self.k+1)).tolist()
         self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.n, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
-        
-    """ generate neighborhood """
+
     def genNeigh(self):
+        """ generate neighborhood of K+1 randomly picked positions out of N ones """
         self.neighs = []
-        for i in range(self.n):
-            oneNeigh = random.sample(range(self.n), self.k)
-            while i in oneNeigh:
-                oneNeigh = random.sample(range(self.n), self.k)
+        for i in range(self.c):
+            oneNeigh = random.sample(range(self.n), self.k+1)
             self.neighs.append(oneNeigh)
+            
     def getNeigh(self):
         return self.neighs
 
-    """ generate function value """
     def genFunc(self):
+        """ generate function value """
         self.func = []
-        for i in range(self.n):
+        for i in range(self.c):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
                 oneFunc.append(random.random())
             self.func.append(oneFunc)
+            
     def getFunc(self):
         return self.func
+    
     def getN(self):
         return self.n
+    
     def genK(self):
         return self.k
 
     """ compute the fitness value"""
-    def compFit(self, bitStr): 
+    def compFit(self, bitStr):
+        print bitStr
         sum = 0
-        for i in range(self.n):
+        for i in range(self.c):
             """ compose interacting bits """
-            if len(self.neighs) > 0:
-                interBit = self.neighs[i][:]
-            else:
-                interBit = []
-            interBit.append(i)
+            interBit = self.neighs[i][:]
             interBit.sort()
             """ extract corresponding bits """
             bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
-            """ sum up the sub-function values """ 
+            """ sum up the sub-function values """
+            print self.func[i][int(interStr,2)]
             sum = sum + self.func[i][int(interStr,2)]
-        return sum/float(self.n)
+        print sum/float(self.c) 
+        print
+        return sum/float(self.c)
 
     def WalCof(self):
         """ compute the Walsh coefficients """
@@ -138,18 +136,14 @@ class NKLandscape:
     def WalshCofLinearLinklist(self):
         """ compute the Walsh Coefficients in a liner time with linear space """
         subW = [] # subW is a N * 2^K matrix
-        for i in range(self.n):
+        for i in range(self.c):
             """ Compute coefficients for each sub-functions """
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
         """ use dict to represent all non-zero Walsh Coefficients"""
         w = dict()
-        for i in range(self.n): # i: index of sub-function
-            if len(self.neighs)!=0:
-                interBits = self.neighs[i][:]
-            else:
-                interBits = []
-            interBits.append(i)
+        for i in range(self.c): # i: index of sub-function
+            interBits = self.neighs[i][:]
             interBits.sort()
             for j in range(int(math.pow(2, self.k+1))): # j: index of substrings
                 indexW = self.composeFullBitStr(i, j, interBits, self.n)
@@ -157,6 +151,7 @@ class NKLandscape:
                     w[indexW] = w[indexW] + subW[i][j]
                 else:
                     w[indexW] = subW[i][j]
+                    
         for k in w.keys():
             w[k] = w[k]/float(self.n)
         self.w = w
@@ -464,7 +459,7 @@ class NKLandscape:
             subStr = '0'*(self.k+1-len(subStr)) + subStr
         indexSubOneBit = self.indexOneBit(subStr)
         iStr = ['0']*n
-        for k in range(len(indexSubOneBit)):
+        for k in xrange(len(indexSubOneBit)):
             iStr[int(interBits[indexSubOneBit[k]])] = subStr[indexSubOneBit[k]]
         iStr = ''.join(iStr)
         return iStr
@@ -507,7 +502,7 @@ class NKLandscape:
         """
         self.interBit = dict()
 
-        for i in range(self.n):
+        for i in range(self.c):
             sub = self.neighs[i][:]
             sub.append(i)
             for j in range(len(sub)):
