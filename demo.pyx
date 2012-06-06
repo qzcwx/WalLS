@@ -293,7 +293,7 @@ def main():
         if opt.probName == 'NKQ':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
         elif opt.probName == 'NK':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
 
     #    """ print the mean over multiple runs """
     #    r = np.zeros(runs)
