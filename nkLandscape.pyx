@@ -40,7 +40,7 @@ class NKLandscape:
 
     def readFile(self, fName):
         self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.c, autostrip=True, usecols = range(self.k+1)).tolist()
-        self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.n, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
+        self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
 
     def genNeigh(self):
         """ generate neighborhood of K+1 randomly picked positions out of N ones """
@@ -72,7 +72,7 @@ class NKLandscape:
 
     """ compute the fitness value"""
     def compFit(self, bitStr):
-        print bitStr
+ #       print bitStr
         sum = 0
         for i in range(self.c):
             """ compose interacting bits """
@@ -82,10 +82,10 @@ class NKLandscape:
             bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
             """ sum up the sub-function values """
-            print self.func[i][int(interStr,2)]
+#            print self.func[i][int(interStr,2)]
             sum = sum + self.func[i][int(interStr,2)]
-        print sum/float(self.c) 
-        print
+        # print sum/float(self.c) 
+        # print
         return sum/float(self.c)
 
     def WalCof(self):

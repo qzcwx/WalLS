@@ -11,7 +11,7 @@ cpdef int localOpt(bitStr, f):
     cdef int i, j, solIndex, neigh, bitStrLen = len(bitStr), weigh, n, numLocalOpt
     cdef vector[int] loMark
     cdef bool localOpt
-    
+
     n = len(bitStr[0])
     numLocalOpt = 0
 
@@ -54,6 +54,7 @@ cpdef plateauCount(bitStr, f, opt):
     """ count the number plateau by Enumeration """
     cdef int i, bitStrLen = len(bitStr), solIndex, n
     cdef vector[int] mark
+#    cdef set[int] realLocOpt
     cdef vector[set[int]] platSet, exitSet
     n = len(bitStr[0])
 
@@ -76,7 +77,7 @@ cpdef plateauCount(bitStr, f, opt):
                 neigh = solIndex + weigh
                # print 'solIndex', solIndex, 'neigh', neigh
             if f[solIndex] == f[neigh]:
-                # if nonplat==True:
+                # if nonplat == True:
                 #     remove(mark, solIndex)
                 #     nonplat = False
                 # both solIndex and neigh have been inspected
@@ -84,7 +85,7 @@ cpdef plateauCount(bitStr, f, opt):
 
                 # merge two set of plateaus relative to solIndex and neigh,
                 # if not exists yet, create a plateau containing two points
-                merge(platSet, solIndex, neigh)
+                merge(platSet, solIndex, neigh) 
  #               print 'merge'
             
         remove(mark, solIndex)
@@ -92,10 +93,9 @@ cpdef plateauCount(bitStr, f, opt):
     #      print "%g\t%g" %(platSet[i].size(), f[deref(platSet[i].begin())])
 
     # print 'exitConut'
-    exitSet=exitCount(platSet, f, n)
-    writeToFile(platSet, exitSet, f, opt)
+    exitSet = exitCount(platSet, f, n)
 
-    
+    writeToFile(platSet, exitSet, realLocalOptimaCount(platSet, f, n, bitStrLen), f, opt)
 
 cdef vector[set[int]] exitCount(vector[set[int]] plat, object f, int n):
     """ count the number of exists out of all plateaus
@@ -152,20 +152,82 @@ cdef vector[set[int]] exitCount(vector[set[int]] plat, object f, int n):
   
     # for i in xrange(exitSet.size()):
     #     print "%g\t%g" %(exitSet[i].size(), f[deref(exitSet[i].begin())])
-          
 
-cdef void writeToFile(vector[set[int]] plat, vector[set[int]] exitSet, object fit, object opt):
-    cdef str dirPrefix = 'plateau/'
-    if opt.probName == 'NKQ':
-        nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(opt.t)+'.txt'
+cdef set[int] realLocalOptimaCount(vector[set[int]] plat, object f, int n, int bitStrLen):
+    """ count the number of real optima, those points that have no equal moves nor improving
+
+    one can guarantee that non of real optima will be on plateau, thus we only need to consider
+    the rest of elements other than those on the plateau
+    """
+    cdef set[int] mark                    # possible real local optima that are not on plateau
+    cdef int i, c=0, solIndex
+    cdef set[int].iterator it
+
+    for i in xrange( bitStrLen ):
+        mark.insert(i)
+    
+    for i in xrange(plat.size()):
+        it  = plat[i].begin()
+        while it != plat[i].end():
+            c = c + 1
+            mark.erase(mark.find(deref(it)))
+            inc(it)
+
+    it = mark.begin()
+    while it != mark.end():
+        solIndex = deref(it)
+        for j in xrange(n):
+            weigh = <int> pow(2,j)
+            if solIndex & weigh != 0:
+                # the bit sitting at position i is 1, set it to 0
+                neigh = solIndex - weigh
+            else :
+                # the bit sitting at position i is 0, set it to 1
+                neigh = solIndex + weigh
+   #             print 'neigh', neigh
+                if f[solIndex] < f[neigh]: # find an improving move, no longer a potential real local optima
+                    mark.erase(it)
+                    break
+        inc(it)
+
+    
+cdef void writeToFile(vector[set[int]] plat, vector[set[int]] exitSet, set[int] realLocOpt, object fit, object opt):
+    cdef str dirPrefix = 'plateau/', realLocOptPrefix = 'plateau/realLocOpt-'
+    cdef set[int].iterator it
+    
+    # if opt.probName == 'NKQ':
+    #     nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(opt.t)+'.txt'
+    # elif opt.probName == 'NK':
+    #     nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+
+    # store the plateau info to files
+    if opt.probName == 'NKQ':           
+        nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(opt.t)+'.txt'
     elif opt.probName == 'NK':
-        nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-C'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-K'+str(opt.k)+'.txt'
+        nameOfF = dirPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
 
     f = open(nameOfF, 'w')
     print >>f, "PlateauSize\tLocalOptimaSize\tExitSize\tFitness"
     for i in xrange(plat.size()):
         print >>f, "%g\t%g\t%g\t%g" %(plat[i].size(), plat[i].size()-exitSet[i].size(), exitSet[i].size(), fit[deref(plat[i].begin())])
     f.close()
+
+    # store the real local optima to files
+    if opt.probName == 'NKQ':
+        nameOfF = realLocOptPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(opt.t)+'.txt'
+    elif opt.probName == 'NK':
+        nameOfF = realLocOptPrefix+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
+        
+    f = open(nameOfF, 'w')
+    print >>f, "Fitness"
+    it = realLocOpt.begin()
+    while it != realLocOpt.end():
+        print >>f, f[deref(it)]
+        inc(it)
+    f.close()
+    
+
+    
     
 cdef void merge(vector[set[int]] &platSet, int e1, int e2):
     """ merge two set containing e1 and e2, respectively """

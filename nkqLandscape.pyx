@@ -7,7 +7,6 @@ import pdb
 
 class NKQLandcape(nk.NKLandscape):
     def __init__(self, inN, inK, inC, inQ, inT=-1, fileName = None):
-        
         self.n = inN
         self.k = inK
         self.c = inC
