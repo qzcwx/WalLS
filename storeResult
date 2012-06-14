@@ -17,4 +17,7 @@ if [ "$1" ]; then
 	
 	mkdir "${targetDir}/plateau"
 	mv plateau/* "${targetDir}/plateau"
+
+	mkdir "${targetDir}/walshtime"
+	mv walshtime/* "${targetDir}/walshtime"
 fi

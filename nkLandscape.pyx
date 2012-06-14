@@ -72,7 +72,7 @@ class NKLandscape:
 
     """ compute the fitness value"""
     def compFit(self, bitStr):
- #       print bitStr
+        #       print bitStr
         sum = 0
         for i in range(self.c):
             """ compose interacting bits """
@@ -82,11 +82,12 @@ class NKLandscape:
             bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
             """ sum up the sub-function values """
-#            print self.func[i][int(interStr,2)]
+            #            print self.func[i][int(interStr,2)]
             sum = sum + self.func[i][int(interStr,2)]
         # print sum/float(self.c) 
         # print
-        return sum/float(self.c)
+        # return sum/float(self.c)
+        return sum
 
     def WalCof(self):
         """ compute the Walsh coefficients """
@@ -182,7 +183,7 @@ class NKLandscape:
 #        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
 #        optBit = a[0][0]
 #        optFit = a[0][1]
-#        print 'opti\n',optBit, optFit
+#        print 'opti\n',optBit, optFitee
 
         #for i in range(len(a)): 
 #        for i in range(10): 

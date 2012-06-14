@@ -222,7 +222,7 @@ cdef void writeToFile(vector[set[int]] plat, vector[set[int]] exitSet, set[int] 
     print >>f, "Fitness"
     it = realLocOpt.begin()
     while it != realLocOpt.end():
-        print >>f, fit[deref(it)]
+        print >>f, '%d' %(fit[deref(it)])
         inc(it)
     f.close()
         
