@@ -22,7 +22,7 @@ def resultExist(probName,algoName,fitName,inst,s,w,m,n,k,q,t,c):
     return os.path.isfile(nameOfF)
 
 nRange = [15]
-kRange = [2,4]
+kRange = [2]
 tRange = [4,5,6,7]
 cRange = [15, 65, 120]
 iRange = range(1)

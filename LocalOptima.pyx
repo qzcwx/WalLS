@@ -54,7 +54,7 @@ cpdef plateauCount(bitStr, f, opt):
     """ count the number plateau by Enumeration """
     cdef int i, bitStrLen = len(bitStr), solIndex, n
     cdef vector[int] mark
-#    cdef set[int] realLocOpt
+    # cdef set[int] realLocOpt
     cdef vector[set[int]] platSet, exitSet
     n = len(bitStr[0])
 
@@ -94,7 +94,7 @@ cpdef plateauCount(bitStr, f, opt):
 
     # print 'exitConut'
     exitSet = exitCount(platSet, f, n)
-
+        
     writeToFile(platSet, exitSet, realLocalOptimaCount(platSet, f, n, bitStrLen), f, opt)
 
 cdef vector[set[int]] exitCount(vector[set[int]] plat, object f, int n):
@@ -189,8 +189,8 @@ cdef set[int] realLocalOptimaCount(vector[set[int]] plat, object f, int n, int b
                     mark.erase(it)
                     break
         inc(it)
+    return mark
 
-    
 cdef void writeToFile(vector[set[int]] plat, vector[set[int]] exitSet, set[int] realLocOpt, object fit, object opt):
     cdef str dirPrefix = 'plateau/', realLocOptPrefix = 'plateau/realLocOpt-'
     cdef set[int].iterator it
@@ -222,13 +222,10 @@ cdef void writeToFile(vector[set[int]] plat, vector[set[int]] exitSet, set[int] 
     print >>f, "Fitness"
     it = realLocOpt.begin()
     while it != realLocOpt.end():
-        print >>f, f[deref(it)]
+        print >>f, fit[deref(it)]
         inc(it)
     f.close()
-    
-
-    
-    
+        
 cdef void merge(vector[set[int]] &platSet, int e1, int e2):
     """ merge two set containing e1 and e2, respectively """
     cdef int i, set1=-1, set2=-1
