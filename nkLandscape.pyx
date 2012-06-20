@@ -73,7 +73,7 @@ class NKLandscape:
     """ compute the fitness value"""
     def compFit(self, bitStr):
         #       print bitStr
-        sum = 0
+        cdef int sum = 0, i
         for i in range(self.c):
             """ compose interacting bits """
             interBit = self.neighs[i][:]
@@ -87,6 +87,8 @@ class NKLandscape:
         # print sum/float(self.c) 
         # print
         # return sum/float(self.c)
+        # print('sum')
+        # print(sum)
         return sum
 
     def WalCof(self):
@@ -153,8 +155,9 @@ class NKLandscape:
                 else:
                     w[indexW] = subW[i][j]
                     
-        for k in w.keys():
-            w[k] = w[k]/float(self.n)
+        # for k in w.keys():
+        #     w[k] = w[k]/float(self.n)
+            
         self.w = w
         return w
 

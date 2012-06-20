@@ -12,13 +12,11 @@ from libcpp.set cimport set
 from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref, preincrement as inc
 
+
+
 class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
-
-cdef class Indiv:
-    cdef public char* bit
-    cdef public double fit
 
 ctypedef struct InfBit:
     vector[int]* arr
@@ -914,6 +912,11 @@ cdef class Individual:
     cpdef updateSumArr(self, I):
         self.fit = self.fit - 2*self.sumArr[I]
 
+    cpdef printSumArr(self):
+        for i in range(self.dim):
+            print self.sumArr[i]
+        print 
+    
     cpdef compFitG(self):
         self.fitG = self.fit - 2/ float(self.dim) * (sumC(self.sumArr, self.dim))
         

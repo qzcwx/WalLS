@@ -11,10 +11,10 @@ class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w):
+def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w,m,t):
     """ check whether the results have been produced or not """
     if probName == 'NKQ':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+c+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-Q'+str(q)+'.txt'
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-M'+m+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-Q'+str(q)+'-T'+str(t)+'.txt'
     elif probName == 'NK':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+c+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'.txt'
 
@@ -22,19 +22,18 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w):
         print nameOfF, 'exists!!!'
     return os.path.isfile(nameOfF)
 
-def countJobs(p,a,f,i,s,c,n,k,q,w,count):
-    if resultExist(p,a,f,i,s,c,n,k,q,w) == False:
+def countJobs(p,a,f,i,s,c,n,k,q,w,m,t,count):
+    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t) == False:
         return count + 1
     else:
         return count
 
-def writeScript(p,a,f,i,s,c,n,k,q,w,chunkSize, track):
-    if resultExist(p,a,f,i,s,c,n,k,q,w) == False:
+def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track):
+    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t) == False:
         scriptNo = random.randint(0,len(track)-1)    
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
-#        fileName.write('cd ~/workspace/SumSat; nice -n 19 python run.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
-        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+c+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t'+str(t)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -94,19 +93,25 @@ if __name__== "__main__":
     #numOfInstance = 1
     rseed = 0
     overWrite = 0
+    
+    nRange = [1000]
+    kRange = [2]
+    cRange = [1000, 3000, 4260, 6000, 7500, 9000]
+    tRange = [4,5,6,7]
 
-    kRange = [2,4]
-    nRange = [50,100,200,500,1000,2000]
     #nRange = [100]
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit','mean']
-    cRange = ['BeamWalkNext','BeamWalk']
-    pRange = ['NK', 'NKQ']
-    temp = [5*a for a in range(1,11)]
-    temp.insert(0,1)
-    wRange = temp  # [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    mRange = ['walWalk']
+    
+    pRange = ['NKQ']
+    
+    # temp = [5*a for a in range(1,11)]
+    # temp.insert(0,1)
+    # wRange = temp  # [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     #wRange = [1, 5]
+    wRange = [1]
 
     random.seed(rseed)
 
@@ -115,58 +120,66 @@ if __name__== "__main__":
         for n in nRange :
             for i in iRange :
                 for a in aRange :
-                    for f in fRange :
-                        for c in cRange :
-                                for p in pRange :
-                                    if p == 'NKQ':
-                                        for q in [2]:
+                    for m in mRange:
+                        for f in fRange :
+                            for t in tRange:
+                                for c in cRange :
+                                    for p in pRange :
+                                        if p == 'NKQ':
+                                            for q in [2]:
+                                                if a == 'LS' or a == 'rLS':
+                                                    for w in wRange :
+                                                        s = 1
+                                                        count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,count)
+                                                else: # if the algorithm is population-based, for GA and CHC
+                                                    for s in [30]:
+                                                        count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,count)
+                                        elif p == 'NK': # for NK problem
+                                            q = 0
                                             if a == 'LS' or a == 'rLS':
                                                 for w in wRange :
                                                     s = 1
-                                                    count =  countJobs(p,a,f,i,s,c,n,k,q,w,count)
+                                                    count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,count)
                                             else: # if the algorithm is population-based, for GA and CHC
                                                 for s in [30]:
-                                                    count = countJobs(p,a,f,i,s,c,n,k,q,1,count)
-                                    elif p == 'NK': # for NK problem
-                                        q = 0
-                                        if a == 'LS' or a == 'rLS':
-                                            for w in wRange :
-                                                s = 1
-                                                count = countJobs(p,a,f,i,s,c,n,k,q,w,count)
-                                        else: # if the algorithm is population-based, for GA and CHC
-                                            for s in [30]:
-                                                count = countJobs(p,a,f,i,s,c,n,k,q,1,count)
+                                                    count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,count)
+
     totalJobs = count
 
     # clean up
     os.system('rm run-* SumSat-*')
     track = writeHeader(totalJobs, chunkSize)
     numOfscript = len(track)
+
+    
     for k in kRange:
         for n in nRange :
             for i in iRange :
                 for a in aRange :
-                    for f in fRange :
-                        for c in cRange :
-                            for p in pRange :
-                                if p == 'NKQ':
-                                    for q in [2]:
-                                        if a == 'LS' or a == 'rLS':
-                                            for w in wRange :
-                                                s = 1
-                                                writeScript(p,a,f,i,s,c,n,k,q,w,chunkSize, track)
-                                        else: # if the algorithm is population-based, for GA and CHC
-                                            for s in [30]:
-                                                writeScript(p,a,f,i,s,c,n,k,q,1,chunkSize, track)
-                                elif p == 'NK': # for NK problem
-                                    q = 0
-                                    if a == 'LS' or a == 'rLS':
-                                        for w in wRange :
-                                            s = 1
-                                            writeScript(p,a,f,i,s,c,n,k,q,w,chunkSize, track)
-                                    else: # if the algorithm is population-based, for GA and CHC
-                                        for s in [30]:
-                                            writeScript(p,a,f,i,s,c,n,k,q,1,chunkSize, track)
+                    for m in mRange:
+                        for f in fRange :
+                            for t in tRange:
+                                for c in cRange :
+                                    for p in pRange :
+                                        if p == 'NKQ':
+                                            for q in [2]:
+                                                if a == 'LS' or a == 'rLS':
+                                                    for w in wRange :
+                                                        s = 1
+                                                        writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track)
+                                                else: # if the algorithm is population-based, for GA and CHC
+                                                    for s in [30]:
+                                                        writeScript(p,a,f,i,s,c,n,k,q,1,m,t,chunkSize, track)
+                                        elif p == 'NK': # for NK problem
+                                            q = 0
+                                            if a == 'LS' or a == 'rLS':
+                                                for w in wRange :
+                                                    s = 1
+                                                    writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track)
+                                            else: # if the algorithm is population-based, for GA and CHC
+                                                for s in [30]:
+                                                    writeScript(p,a,f,i,s,c,n,k,q,1,m,t,chunkSize, track)
+                                            
     writeFooter(totalJobs, chunkSize)
 
     # for MAXSAT problem

@@ -29,6 +29,10 @@ from libcpp.set cimport set
 from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref, preincrement as inc
 
+cdef extern from "string.h":
+    char *strcpy(char *dest, char *src)
+
+
 class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
@@ -42,6 +46,7 @@ cdef class LocalSearch:
     cdef list oldpop
     cdef object bsf
     cdef object oldindiv
+    cdef object tempIndiv
 
     def __init__(self, model, MaxFit, dim):
         self.func = model.compFit
@@ -459,7 +464,9 @@ cdef class LocalSearch:
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
-
+        # print 'bsf', self.bsf.fit
+        # self.oldindiv.printSumArr()
+        
         initC = 1
         updateC = 0
 
@@ -483,23 +490,26 @@ cdef class LocalSearch:
                     start = os.times()[0]
                     diff, self.oldindiv = self.walk(fitName, minimize,False, walkLen, self.oldindiv)
                     pertT = pertT + os.times()[0] - start
-
+                    
                     start = os.times()[0]
                     for i in diff:
                         self.oldindiv.updateSumArr(i)
-#                        self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
+                        #                        self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
+                        # self.oldindiv.printSumArr()
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
                     updatePertT = updatePertT + os.times()[0] - start
-
+                    
+                    # print 'bsf', self.bsf.fit
                     self.fitEval = self.fitEval + len(diff)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 start = os.times()[0]
-                self.oldindiv.updateSumArr(bestI)                
-#                self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
+                # self.oldindiv.printSumArr()
+                self.oldindiv.updateSumArr(bestI)
+                #                self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprS(bestI, minimize)
@@ -507,11 +517,18 @@ cdef class LocalSearch:
                 updateT = updateT + os.times()[0] - start
                 updateC = updateC + 1
                 self.oldindiv.flip(bestI)
+                
+                # print 'indiv', self.oldindiv.fit
+                # self.tempIndiv = self.evalPop(self.oldindiv)
+                # print 'real fit', self.tempIndiv.fit
+                # print
+                
                 # if self.oldindiv.bit[bestI] == '1':
                 #     self.oldindiv.bit[bestI] = '0'
                 # else:
                 #     self.oldindiv.bit[bestI] = '1'
-
+                
+        self.oldindiv.destructor(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runFitSwalkNext(self,fitName, minimize, restart):
@@ -900,20 +917,27 @@ cdef class LocalSearch:
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
         self.fitEval = 0
+
+        # print('init start')
         
         start = os.times()[0]
         self.model.transWal()
+        self.model.initInter()
+
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.model.initInter()
         self.oldindiv.initWal(self.model)
         self.oldindiv.initSC()
-        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.oldindiv.sumArr))
+        self.oldindiv.compFitG()
         self.oldindiv.genImproveSC(minimize)
-        self.bsf = copy.deepcopy(self.oldindiv)
+        
+        # self.bsf = copy.deepcopy(self.oldindiv)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.model.WA = []
-
+        # print 'bsf', self.bsf.bit, self.bsf.fit, self.bsf.fitG
+        # print('init end')
+        
         initC = 0
         updateC = 0
 
@@ -939,37 +963,54 @@ cdef class LocalSearch:
                     pertT = pertT + os.times()[0] - start
 
                     start = os.times()[0]
+                    # print('walk begin')
                     for i in diff:
-                        self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i] 
-                        self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-
+                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i] 
+                        # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
+                        self.oldindiv.updateSumArr(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateSC(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprSC(i, minimize)
+                        self.oldindiv.compFitG()
+                        
+                    # print 'bsf', self.bsf.bit, self.bsf.fit, self.bsf.fitG
                     updatePertT = updatePertT + os.times()[0] - start
-
+                    # print('walk end')
                     self.fitEval = self.fitEval + len(diff)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
                 start = os.times()[0]
 
-                self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
-                self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-
+                # print('flip begin')
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
+                # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
+                self.oldindiv.updateSumArr(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateSC(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprSC(bestI, minimize)
                 self.fitEval = self.fitEval + 1
+                self.oldindiv.compFitG()
+                self.oldindiv.flip(bestI)
+                # print('flip end')
                 updateT = updateT + os.times()[0] - start
                 updateC = updateC + 1
-                if self.oldindiv.bit[bestI] == '1':
-                    self.oldindiv.bit[bestI] = '0'
-                else:
-                    self.oldindiv.bit[bestI] = '1'
 
+                # print 'indiv', self.oldindiv.bit, self.oldindiv.fit, self.oldindiv.fitG
+                # self.tempIndiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+                # print 'real fit', self.oldindiv.bit, self.tempIndiv.fit, self.tempIndiv.fitG
+                # print
+
+                # if self.oldindiv.bit[bestI] == '1':
+                #     self.oldindiv.bit[bestI] = '0'
+                # else:
+                #     self.oldindiv.bit[bestI] = '1'
+                
+        # print('dest begin')
+        self.oldindiv.destructor(fitName)
+        # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runMeanSCwalkNext(self,fitName, minimize, restart):
@@ -1946,13 +1987,16 @@ cdef class LocalSearch:
 
     def evalPopNeigh(self, indiv, fitName, minimize):
         """ evaluate the individual itself """
+        cdef char* neighStr
         indiv.fit = self.func(indiv.bit)
         self.fitEval = self.fitEval + 1
         """ evaluate all neighborhood """
         fitN = np.zeros(self.dim)
         for j in range(self.dim):
             # flip the jth bit in bit-string
-            neighStr = np.copy(indiv.bit)
+            # neighStr = np.copy(indiv.bit)
+            neighStr = indiv.bit
+            strcpy(neighStr, indiv.bit)
             if neighStr[j] == '1':
                 neighStr[j] = '0'
             else:
@@ -1964,7 +2008,8 @@ cdef class LocalSearch:
             indiv.fitG = np.mean(fitN) - np.std(fitN)
         elif minimize == False :
             indiv.fitG = np.mean(fitN) + np.std(fitN)
-        return copy.deepcopy(indiv)
+        return indiv
+        # return copy.deepcopy(indiv)
 
     def selectionFit(self, minimize):
         if minimize == True:

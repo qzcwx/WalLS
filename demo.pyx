@@ -90,7 +90,7 @@ def main():
                         action="store", 
                         help="Width of Beam",
                         dest="w",
-                        default=0,
+                        default=1,
                         type=int,
                         )
     parser.add_argument('-t',
@@ -122,11 +122,11 @@ def main():
 
     random.seed(opt.rseed)
 
-    #maxFit = 1000
+    # maxFit = 100
     maxFit = 1000 * opt.n
 
-    #runs = 30
-    runs = 0
+    runs = 30
+    # runs = 1
 
     t = opt.t
     
@@ -204,7 +204,7 @@ def main():
             model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
             #model = nkq.NKQLandcape(n, k, q)
 
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth=='plateauSize':
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
             start = os.times()[0]
             # Walsh analysis
             w = model.WalshCofLinearLinklist()
@@ -228,16 +228,23 @@ def main():
             elif opt.probName == 'NK':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
 
-        f = open(nameOfF, 'w')
-        print >>f,"%g\t%g" % (walTime,hyperTime) 
-        f.close()
+            f = open(nameOfF, 'w')
+            print >>f,"%g\t%g" % (walTime,hyperTime) 
+            f.close()
 
-        if opt.fitName == 'fit':
-            bit,fit = tl.compFit(model)
-        elif opt.fitName == 'mean':
-            bit, fit = tl.compMean(model)
+        # if opt.fitName == 'fit':
+        #     bit,fit = tl.compFit(model)
+        # elif opt.fitName == 'mean':
+        #     bit, fit = tl.compMean(model)
+
+        # bitF,fitF = tl.compFit(model)
+        # bitA,fitA = tl.compMean(model)
+        # for i in zip(bitF,fitF, bitA, fitA):
+        #     print i[0],'%g\t%g' %(i[1],i[3])
+
         
-        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+                
+        # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
         # print 'opti\n', a[0][0], a[0][1]
         # print
         
@@ -258,7 +265,7 @@ def main():
         # numOpt = lo.localOpt(bit, fit)
         # print numOpt
 
-        lo.plateauCount(bit, fit, opt)
+        # lo.plateauCount(bit, fit, opt)
 
         if opt.algoName.find('LS') != -1:
             algo = ls.LocalSearch(model, maxFit, opt.n)
@@ -273,9 +280,9 @@ def main():
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))
             elif opt.algoName == 'LS':
-                res.append(algo.run(opt.fitName, minimize = True, restart = False,compM = opt.compMeth, beamWidth=opt.w ))
+                res.append(algo.run(opt.fitName, minimize = False, restart = False,compM = opt.compMeth, beamWidth=opt.w ))
             elif opt.algoName == 'rLS':
-                res.append(algo.run(opt.fitName, minimize = True, restart = True,compM = opt.compMeth, beamWidth=opt.w))
+                res.append(algo.run(opt.fitName, minimize = False, restart = True,compM = opt.compMeth, beamWidth=opt.w))
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = os.times()[0] - start
