@@ -123,7 +123,7 @@ def main():
     random.seed(opt.rseed)
 
     # maxFit = 100
-    maxFit = 1000 * opt.n
+    maxFit = 100 * opt.n
 
     runs = 30
     # runs = 1
