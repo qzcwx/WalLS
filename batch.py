@@ -49,6 +49,10 @@ def writeHeader(numOfjobs, chunkSize):
         fileName = open(fName, 'w')
         print >>fileName, '#!/bin/sh'
         fileName.close()
+
+def initTrack(numOfjobs, chunkSize):
+    numOfScript = int(math.ceil(numOfjobs/float(chunkSize)))
+
     # initialize tracking table
     track = []
     for i in range(numOfScript):
@@ -150,7 +154,8 @@ if __name__== "__main__":
 
     # clean up
     os.system('rm run-* SumSat-*')
-    track = writeHeader(totalJobs, chunkSize)
+    # writeHeader(totalJobs, chunkSize)
+    track = initTrack(totalJobs, chunkSize)
     numOfscript = len(track)
 
     
@@ -182,7 +187,7 @@ if __name__== "__main__":
                                                 for s in [30]:
                                                     writeScript(p,a,f,i,s,c,n,k,q,1,m,t,chunkSize, track)
                                             
-    writeFooter(totalJobs, chunkSize)
+    # writeFooter(totalJobs, chunkSize)
 
     # for MAXSAT problem
     #instances = random.sample(range(1,1001), numOfInstance)

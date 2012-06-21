@@ -477,6 +477,8 @@ cdef class LocalSearch:
         self.fitEval = 0
         walkLen = 10
 
+        traceFit = []
+
         initT = os.times()[0] - start
 
         while self.fitEval < self.MaxFit:
@@ -490,6 +492,9 @@ cdef class LocalSearch:
                     start = os.times()[0]
                     diff, self.oldindiv = self.walk(fitName, minimize,False, walkLen, self.oldindiv)
                     pertT = pertT + os.times()[0] - start
+
+                    traceFit.append(self.bsf.fit)
+                    
                     
                     start = os.times()[0]
                     for i in diff:
@@ -529,7 +534,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
                 
         self.oldindiv.destructor(fitName)
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceFit':traceFit}
 
     def runFitSwalkNext(self,fitName, minimize, restart):
         """ 
@@ -948,6 +953,9 @@ cdef class LocalSearch:
         self.fitEval = 0
         walkLen = 10
 
+        traceFit = []
+        traceFitG = []
+
         initT = os.times()[0] - start
         while self.fitEval < self.MaxFit:
             start = os.times()[0]
@@ -961,6 +969,9 @@ cdef class LocalSearch:
                     start = os.times()[0]
                     diff, self.oldindiv = self.walk(fitName, minimize, False, walkLen, self.oldindiv)
                     pertT = pertT + os.times()[0] - start
+
+                    traceFit.append(self.bsf.fit)
+                    traceFitG.append(self.bsf.fitG)
 
                     start = os.times()[0]
                     # print('walk begin')
@@ -1011,7 +1022,7 @@ cdef class LocalSearch:
         # print('dest begin')
         self.oldindiv.destructor(fitName)
         # print('dest end')
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
     def runMeanSCwalkNext(self,fitName, minimize, restart):
         """ 

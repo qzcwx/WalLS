@@ -123,7 +123,7 @@ def main():
     random.seed(opt.rseed)
 
     # maxFit = 100
-    maxFit = 100 * opt.n
+    maxFit = 1000 * opt.n
 
     runs = 30
     # runs = 1
@@ -316,7 +316,7 @@ def main():
         f.close()
         print nameOfF
 
-        """ store trace to files """
+        """ store trace to files: 1. the number of descent steps """
         if opt.probName == 'NKQ':
             nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
         elif opt.probName == 'NK':
@@ -325,6 +325,22 @@ def main():
         for i in range(runs):
               print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
         f.close()
+
+        """ store trace to files: 1. the number of descent steps """
+        for i in range(runs):
+            if opt.probName == 'NKQ':
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'.txt'
+            elif opt.probName == 'NK':
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'.txt'
+            f = open(nameOfF, 'w')
+            if (opt.fitName == 'fit'):
+                for j in zip(res[i]['traceFit']):
+                    print >>f,"%g" % (j[0])
+            else :
+                for j in zip(res[i]['traceFit'],res[i]['traceFitG']):
+                    print >>f,"%g\t%g" % (j[0], j[1])
+            f.close()
+        
 
         """ store runtime to files """
         if opt.probName == 'NKQ':
