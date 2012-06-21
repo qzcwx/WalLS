@@ -477,6 +477,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         walkLen = 10
 
+        traceEval = []
         traceFit = []
 
         initT = os.times()[0] - start
@@ -493,8 +494,6 @@ cdef class LocalSearch:
                     diff, self.oldindiv = self.walk(fitName, minimize,False, walkLen, self.oldindiv)
                     pertT = pertT + os.times()[0] - start
 
-                    traceFit.append(self.bsf.fit)
-                    
                     
                     start = os.times()[0]
                     for i in diff:
@@ -508,6 +507,9 @@ cdef class LocalSearch:
                     
                     # print 'bsf', self.bsf.fit
                     self.fitEval = self.fitEval + len(diff)
+                    
+                    traceEval.append(self.fitEval)
+                    traceFit.append(self.bsf.fit)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
@@ -534,7 +536,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
                 
         self.oldindiv.destructor(fitName)
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceFit':traceFit}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
     def runFitSwalkNext(self,fitName, minimize, restart):
         """ 
@@ -953,6 +955,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         walkLen = 10
 
+        traceEval = []
         traceFit = []
         traceFitG = []
 
@@ -970,8 +973,6 @@ cdef class LocalSearch:
                     diff, self.oldindiv = self.walk(fitName, minimize, False, walkLen, self.oldindiv)
                     pertT = pertT + os.times()[0] - start
 
-                    traceFit.append(self.bsf.fit)
-                    traceFitG.append(self.bsf.fitG)
 
                     start = os.times()[0]
                     # print('walk begin')
@@ -989,6 +990,10 @@ cdef class LocalSearch:
                     updatePertT = updatePertT + os.times()[0] - start
                     # print('walk end')
                     self.fitEval = self.fitEval + len(diff)
+
+                    traceEval.append(self.fitEval)
+                    traceFit.append(self.bsf.fit)
+                    traceFitG.append(self.bsf.fitG)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE 
@@ -1022,7 +1027,7 @@ cdef class LocalSearch:
         # print('dest begin')
         self.oldindiv.destructor(fitName)
         # print('dest end')
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceFit':traceFit, 'traceFitG':traceFitG}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
     def runMeanSCwalkNext(self,fitName, minimize, restart):
         """ 

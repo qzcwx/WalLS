@@ -334,11 +334,11 @@ def main():
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'.txt'
             f = open(nameOfF, 'w')
             if (opt.fitName == 'fit'):
-                for j in zip(res[i]['traceFit']):
-                    print >>f,"%g" % (j[0])
-            else :
-                for j in zip(res[i]['traceFit'],res[i]['traceFitG']):
+                for j in zip(res[i]['traceEval'], res[i]['traceFit']):
                     print >>f,"%g\t%g" % (j[0], j[1])
+            else :
+                for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
+                    print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
             f.close()
         
 
