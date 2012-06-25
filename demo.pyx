@@ -106,13 +106,23 @@ def main():
                         dest="c",
                         type=int,
                         )
+    parser.add_argument('-v',
+                        action="store",
+                        help="CV ratio",
+                        dest="v",
+                        type=float,
+                        default=0,
+                        )
+
 
     opt = parser.parse_args()
 
+    if opt.v != 0:
+        opt.c = int(opt.v*opt.n)
+    
     #tl.checkParam(sys.argv)
     opt.s = opt.popSize
 
-    #rseed = 0
     nameOfDir = './result/'
     runtimeDir = './runtime/'
     waltimeDir = './walshtime/'

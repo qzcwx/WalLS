@@ -43,6 +43,7 @@ cdef class Individual:
     cdef double** C
     cdef double** orderC
     cdef public list improveA
+    cdef public list improveSC
     cdef object func
     cdef object model
     cdef int MaxFit
@@ -288,7 +289,8 @@ cdef class Individual:
 
 
     def updateImprS(self, p, minimize):
-        self.improveA.remove(p)
+        if p in self.improveA:
+            self.improveA.remove(p)
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr:
                 """ equal moves """
@@ -386,17 +388,18 @@ cdef class Individual:
                     self.orderC[k0][k1] = self.orderC[k0][k1] - 2 * (arr.size()+ 1)* self.WAS[I.WI].w
 
     def updateImprSC(self, p, minimize):
-        self.improveA.remove(p)
+        if p in self.improveSC:
+            self.improveSC.remove(p)
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr:
                 """ equal move """
                 #if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
                 """ NOT equal move """
                 if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
-                    if i not in self.improveA:
-                        self.improveA.append(i)
-                elif i in self.improveA:
-                    self.improveA.remove(i)
+                    if i not in self.improveSC:
+                        self.improveSC.append(i)
+                elif i in self.improveSC:
+                    self.improveSC.remove(i)
 
     def updatePertImprSC(self, p, minimize):
         if p in self.model.Inter:
@@ -406,18 +409,18 @@ cdef class Individual:
                 """ NOT equal move """
                 if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
                 
-                    if i not in self.improveA:
-                        self.improveA.append(i)
-                elif i in self.improveA:
-                    self.improveA.remove(i)
+                    if i not in self.improveSC:
+                        self.improveSC.append(i)
+                elif i in self.improveSC:
+                    self.improveSC.remove(i)
         """ equal move """
         #if (minimize == True and self.SC[p] > - self.threshold) or (minimize == False and self.SC[p] < self.threshold):
         """ not equal move """
         if (minimize == True and self.SC[p] > self.threshold) or (minimize == False and self.SC[p] < - self.threshold):
-            if p not in self.improveA:
-                self.improveA.append(p)
-        elif p in self.improveA:
-            self.improveA.remove(p)
+            if p not in self.improveSC:
+                self.improveSC.append(p)
+        elif p in self.improveSC:
+            self.improveSC.remove(p)
 
     def genImproveS(self,minimize):
         """
@@ -610,14 +613,14 @@ cdef class Individual:
         return True, bestI
 
     def steepMeanDesc(self, minimize):
-        if not self.improveA:
+        if not self.improveSC:
             return False, None
 
-        random.shuffle(self.improveA)
+        random.shuffle(self.improveSC)
 
         # find the best value
-        for i in self.improveA:
-            if i == self.improveA[0]:
+        for i in self.improveSC:
+            if i == self.improveSC[0]:
                 best = self.SC[i]
                 bestI = i
             # elif ( best<self.SC[i] - self.threshold and minimize == True ) or ( best>self.SC[i] + self.threshold and minimize == False ): # seek for max S
@@ -734,11 +737,11 @@ cdef class Individual:
         generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
         """
         # check improving move 
-        self.improveA = []
+        self.improveSC = []
         for i in range(self.dim):
             # if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]< - self.threshold):
             if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
-                self.improveA.append(i)
+                self.improveSC.append(i)
 
     cpdef flip(self, i):
         if self.bit[i]=='0':

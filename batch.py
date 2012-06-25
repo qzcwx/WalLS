@@ -98,18 +98,19 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
     
-    nRange = [500]
+    nRange = [500, 1000]
     # nRange = [1000]
     kRange = [2]
     # cRange = [1000, 3000, 4260, 6000, 7500, 9000]
-    cRange = [500, 1500, 2130, 3000, 3750, 4500]
-
+    # cRange = [500, 1500, 2130, 3000, 3750, 4500]
+    vRange = [1, 3, 4.26, 6, 7.5, 9]
+    
     tRange = [4,5,6,7]
 
     #nRange = [100]
     iRange = [0]
     aRange = ['rLS']
-    fRange = ['fit','mean']
+    fRange = ['switch']
     mRange = ['walWalk']
     
     pRange = ['NKQ']
@@ -130,7 +131,9 @@ if __name__== "__main__":
                     for m in mRange:
                         for f in fRange :
                             for t in tRange:
-                                for c in cRange :
+                                # for c in cRange :
+                                for v in vRange:
+                                    c = int(n*v)
                                     for p in pRange :
                                         if p == 'NKQ':
                                             for q in [2]:
@@ -167,7 +170,9 @@ if __name__== "__main__":
                     for m in mRange:
                         for f in fRange :
                             for t in tRange:
-                                for c in cRange :
+                                # for c in cRange :
+                                for v in vRange:
+                                    c = int(n*v)
                                     for p in pRange :
                                         if p == 'NKQ':
                                             for q in [2]:
