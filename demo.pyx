@@ -333,7 +333,7 @@ def main():
             nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
         f = open(nameOfF, 'w')
         for i in range(runs):
-              print >>f,"%g\t%g" % (res[i]['initC'], res[i]['updateC'])
+              print >>f,"%g\t%g\t%g" % (res[i]['platC'], res[i]['restC'], res[i]['updateC'])
         f.close()
 
         """ store trace to files: 1. the number of descent steps """

@@ -65,8 +65,10 @@ cdef class LocalSearch:
                 return self.runFitSwalk(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCwalk(fitName, minimize, restart)
-            elif fitName == 'switch':
-                return self.runSwitchSCwalk('mean', minimize, restart)
+            elif fitName == 'switchF':
+                return self.runSwitchFwalk('mean', minimize, restart)
+            elif fitName == 'switchAvg':
+                return self.runSwitchAvgwalk('mean', minimize, restart)
         elif compM == 'walWalkNext':
             if fitName == 'fit':
                 return self.runFitSwalkNext(fitName, minimize, restart)
@@ -1031,7 +1033,7 @@ cdef class LocalSearch:
         # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
-    def runSwitchSCwalk(self,fitName, minimize, restart):
+    def runSwitchFwalk(self,fitName, minimize, restart):
         """ 
         steepest descent local search with respect to mean of neighs by Walsh Analysis
         """
@@ -1056,8 +1058,9 @@ cdef class LocalSearch:
         # print 'bsf', self.bsf.bit, self.bsf.fit, self.bsf.fitG
         # print('init end')
         
-        initC = 0
-        updateC = 0
+        platC = 0                       # hit a plateau in the original space
+        restC = 0                       # issue a restart when both of method fail
+        updateC = 0                     # the number ascent steep taken by LS
 
         descT = 0
         pertT = 0
@@ -1077,11 +1080,10 @@ cdef class LocalSearch:
             descT = descT + os.times()[0] - start
 
             if improveN == False:
+                platC = platC + 1
                 improveMeanN, bestI = self.oldindiv.steepMeanDesc(minimize)
-                # if improveMeanN==True:
-                #     print improveMeanN
             if improveN==False and improveMeanN == False:
-                initC = initC + 1
+                restC = restC + 1
                 if restart == True:
 
                     start = os.times()[0]
@@ -1144,7 +1146,124 @@ cdef class LocalSearch:
         # print('dest begin')
         self.oldindiv.destructor(fitName)
         # print('dest end')
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
+
+    def runSwitchAvgwalk(self,fitName, minimize, restart):
+        """ 
+        steepest descent local search with respect to mean of neighs by Walsh Analysis
+        """
+        self.fitEval = 0
+        
+        start = os.times()[0]
+        self.model.transWal()
+        self.model.initInter()
+
+        self.oldindiv = individual.Individual(n=self.dim,neigh=True)
+        self.oldindiv.init()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.initWal(self.model)
+        self.oldindiv.initSC()
+        self.oldindiv.compFitG()
+        self.oldindiv.genImproveS(minimize)
+        self.oldindiv.genImproveSC(minimize)
+        
+        # self.bsf = copy.deepcopy(self.oldindiv)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        self.model.WA = []
+        # print 'bsf', self.bsf.bit, self.bsf.fit, self.bsf.fitG
+        # print('init end')
+        
+        platC = 0                       # hit a plateau in the original space
+        restC = 0                       # issue a restart when both of method fail
+        updateC = 0                     # the number ascent steep taken by LS
+
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+        walkLen = 10
+
+        traceEval = []
+        traceFit = []
+        traceFitG = []
+
+        initT = os.times()[0] - start
+        while self.fitEval < self.MaxFit:
+            start = os.times()[0]
+            improveMeanN, bestI = self.oldindiv.steepMeanDesc(minimize)
+
+            descT = descT + os.times()[0] - start
+
+            if improveMeanN == False:
+                # if improveMeanN==True:
+                platC = platC + 1
+                improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+                #     print improveMeanN
+            if  improveMeanN == False and improveN==False:
+                restC = restC + 1
+                if restart == True:
+
+                    start = os.times()[0]
+                    diff, self.oldindiv = self.walk(fitName, minimize, False, walkLen, self.oldindiv)
+                    pertT = pertT + os.times()[0] - start
+
+                    start = os.times()[0]
+                    # print('walk begin')
+                    for i in diff:
+                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i] 
+                        # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
+                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.update(i)
+                        self.oldindiv.updateSC(i)
+                        self.oldindiv.updateWAS(i)
+                        self.oldindiv.updatePertImprS(i, minimize)
+                        self.oldindiv.updatePertImprSC(i, minimize)
+                        self.oldindiv.compFitG()
+                        
+                    # print 'bsf', self.bsf.bit, self.bsf.fit, self.bsf.fitG
+                    updatePertT = updatePertT + os.times()[0] - start
+                    # print('walk end')
+                    self.fitEval = self.fitEval + len(diff)
+
+                    traceEval.append(self.fitEval)
+                    traceFit.append(self.bsf.fit)
+                    traceFitG.append(self.bsf.fitG)
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'fitG': self.oldindiv.fitG, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE 
+                start = os.times()[0]
+
+                # print('flip begin')
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI] 
+                # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
+                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.update(bestI)
+                self.oldindiv.updateSC(bestI)
+                self.oldindiv.updateWAS(bestI)
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.oldindiv.updateImprSC(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.compFitG()
+                self.oldindiv.flip(bestI)
+                # print('flip end')
+                updateT = updateT + os.times()[0] - start
+                updateC = updateC + 1
+
+                # print 'indiv', self.oldindiv.bit, self.oldindiv.fit, self.oldindiv.fitG
+                # self.tempIndiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+                # print 'real fit', self.oldindiv.bit, self.tempIndiv.fit, self.tempIndiv.fitG
+                # print
+
+                # if self.oldindiv.bit[bestI] == '1':
+                #     self.oldindiv.bit[bestI] = '0'
+                # else:
+                #     self.oldindiv.bit[bestI] = '1'
+                
+        # print('dest begin')
+        self.oldindiv.destructor(fitName)
+        # print('dest end')
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
 
     def runMeanSCwalkNext(self,fitName, minimize, restart):
