@@ -1153,9 +1153,6 @@ cdef class LocalSearch:
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
     def runCombFwalk(self,fitName, minimize, restart):
-        """ 
-        steepest descent local search with respect to mean of neighs by Walsh Analysis
-        """
         self.fitEval = 0
         
         start = os.times()[0]
@@ -1407,11 +1404,7 @@ cdef class LocalSearch:
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
     def runCombAvgwalk(self,fitName, minimize, restart):
-        """ 
-        steepest descent local search with respect to mean of neighs by Walsh Analysis
-        """
         self.fitEval = 0
-        
         start = os.times()[0]
         self.model.transWal()
         self.model.initInter()
@@ -1425,11 +1418,8 @@ cdef class LocalSearch:
         self.oldindiv.genImproveS(minimize)
         self.oldindiv.genImproveSC(minimize)
         
-        # self.bsf = copy.deepcopy(self.oldindiv)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.model.WA = []
-        # print 'bsf', self.bsf.bit, self.bsf.fit, self.bsf.fitG
-        # print('init end')
         
         platC = 0                       # hit a plateau in the original space
         restC = 0                       # issue a restart when both of method fail
@@ -1442,6 +1432,9 @@ cdef class LocalSearch:
         self.fitEval = 0
         walkLen = 10
 
+        useF = False
+        switch = False
+
         traceEval = []
         traceFit = []
         traceFitG = []
@@ -1449,22 +1442,42 @@ cdef class LocalSearch:
         initT = os.times()[0] - start
         while self.fitEval < self.MaxFit:
             start = os.times()[0]
-            improveMeanN, bestI = self.oldindiv.steepMeanDesc(minimize)
-
+            if useF == True:
+                improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            else:
+                improveN, bestI = self.oldindiv.steepMeanDesc(minimize)
+            switch=False
+            # print 'improveN', improveN
+            # print 'useF', useF
+            # print 'switch', switch
+            # print
             descT = descT + os.times()[0] - start
 
-            if improveMeanN == False:
-                # if improveMeanN==True:
+            if improveN == False:
                 platC = platC + 1
-                improveN, bestI = self.oldindiv.steepFitDesc(minimize)
-                #     print improveMeanN
-            if  improveMeanN == False and improveN==False:
+                useF = not useF
+                if useF == True:
+                    improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+                else:
+                    improveN, bestI = self.oldindiv.steepMeanDesc(minimize)
+
+                switch = True
+                # print 'platC', platC
+                # print 'improveN', improveN
+                # print 'switch', switch
+                # print
+
+            if improveN==False and switch==True:
                 restC = restC + 1
+                # print 'restC', restC
+                # print 'useF', useF
+                
                 if restart == True:
 
                     start = os.times()[0]
                     diff, self.oldindiv = self.walk(fitName, minimize, False, walkLen, self.oldindiv)
                     pertT = pertT + os.times()[0] - start
+
 
                     start = os.times()[0]
                     # print('walk begin')
