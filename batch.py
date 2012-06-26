@@ -110,7 +110,7 @@ if __name__== "__main__":
     #nRange = [100]
     iRange = [0]
     aRange = ['rLS']
-    fRange = ['switchF', 'switchAvg']
+    fRange = ['combF']
     mRange = ['walWalk']
     
     pRange = ['NKQ']
