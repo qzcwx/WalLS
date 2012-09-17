@@ -3,7 +3,6 @@ import nkqLandscape as nkq
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
-#import matplotlib.pyplot as plt
 import LocalOptima as lo
 import CHC as chc
 import MAXSAT as mx
@@ -24,8 +23,6 @@ def main():
     """ command line options """
     # Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [overwrite] [I] [PopSize] [N] [K] [Q]
     parser = argparse.ArgumentParser(description='Walsh Local Search')
-    #print argv
-    #parser.parse_args(argv)
 
     parser.add_argument('-m', 
                         action="store", 
@@ -132,7 +129,7 @@ def main():
 
     random.seed(opt.rseed)
 
-    maxFit = 1000 * opt.n
+    maxFit = opt.n
     runs = 30
 
     # runs = 1

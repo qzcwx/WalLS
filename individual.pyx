@@ -13,6 +13,10 @@ from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref, preincrement as inc
 
 
+class orderSum:
+    def __init_(self, k=0):
+        self.totalSum = 0
+        self.subSum = np.zeros(k)
 
 class Struct:
     def __init__(self, **kwds):
@@ -59,7 +63,7 @@ cdef class Individual:
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         self.bit = NULL
         self.fit = 0
-        self.dim = n 
+        self.dim = n
         if neigh == True:
             self.fitG = 0
         if oldIndiv != False:
@@ -77,7 +81,7 @@ cdef class Individual:
 
         cdef int i,j,k
         cdef double W
-        cdef InTer* inter 
+        cdef InTer* inter
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
@@ -86,12 +90,12 @@ cdef class Individual:
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
-            
+
         self.infectBit = < vector[InfBit*]** > malloc(sizeof(void *) * self.dim)
         for i in xrange(self.dim):
             vectPtr = new vector[InfBit*]()
             self.infectBit[i] = vectPtr
-            
+
         self.C = <double **>malloc(sizeof(double *) * self.dim)
         for i in xrange(self.dim) :
             self.C[i] = <double *> malloc(sizeof(double) * self.dim)
@@ -107,10 +111,10 @@ cdef class Individual:
         for i in xrange(self.dim):
             self.Inter[i] = NULL
 
-            
+
         for i in xrange(len(self.model.WA)):
             W = int(math.pow(-1, binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w
-            
+
             was = <Was *>malloc(sizeof(Was))
             was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
             for j in xrange(len(self.model.WA[i].arr)):
@@ -150,6 +154,17 @@ cdef class Individual:
                 j0 = self.model.WA[i].arr[comb.arr[l][0]]
                 j1 = self.model.WA[i].arr[comb.arr[l][1]]
                 self.C[j0][j1] = self.C[j0][j1] + W
+
+
+    def checkWalshSum(self):
+        """
+        compute the sum of Walsh terms grouped by the order (1 to k)
+
+        * compute the sum of order seperately for each possible bit-flip (k*n)
+        """
+        self.walSumArr = [orderSum(self.model.k) for i in range(self.dim)]
+        
+
 
     def initSC(self):
         # compute the SC array
@@ -239,7 +254,7 @@ cdef class Individual:
 
     cpdef update(self,int p):
         """
-        By keeping track of coincidence matrix, 
+        By keeping track of coincidence matrix,
         Cij stands for S_i(y_j) = S_i(x) - C_ij
         partially update the Sum Array and self.WAS, given the bit which is changed
         """
@@ -313,11 +328,11 @@ cdef class Individual:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
-                    
+
         """ equal move """
         #if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
         """ NOT equal move """
-        if (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p] < - self.threshold ): 
+        if (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p] < - self.threshold ):
             if p not in self.improveA:
                 self.improveA.append(p)
         elif p in self.improveA:
@@ -326,12 +341,12 @@ cdef class Individual:
     def updateFake(self, p):
         """
         The fake version, the updates are made to the mirror data structures
-        By keeping track of coincidence matrix, 
+        By keeping track of coincidence matrix,
         Cij stands for S_i(y_j) = S_i(x) - C_ij
         partially update the Sum Array and self.WAS, given the bit which is changed
         """
         self.sumArrFake[p] = - self.sumArrFake[p]
-        
+
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr:
                 if i < p:
@@ -352,10 +367,10 @@ cdef class Individual:
         cdef vector[int] arr
         cdef InfBit I
         cdef ComArr* comb
-        
+
         self.SC[p] = - self.SC[p]
         self.Z[p] = - self.Z[p]
-        
+
         #update Z array
         if self.Inter[p]!=NULL:
             it = self.Inter[p].arr.begin()
@@ -408,7 +423,7 @@ cdef class Individual:
                 #if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
                 """ NOT equal move """
                 if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i] < - self.threshold):
-                
+
                     if i not in self.improveSC:
                         self.improveSC.append(i)
                 elif i in self.improveSC:
@@ -431,7 +446,7 @@ cdef class Individual:
         for i in range(self.dim):
             # if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold):
             if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):
-                self.improveA.append(i) 
+                self.improveA.append(i)
 
 ##     def genFitNext(self,minimize):
 ##         """
@@ -443,15 +458,15 @@ cdef class Individual:
 ##         for i in range(self.dim):
 ##             #if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i] < - self.threshold):
 ##             if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):
-##                 self.improveA.append(i) 
+##                 self.improveA.append(i)
 ##                 improve = True
 
 ##         if improve == False:
 ##             return False, None
 
-##         # randomly pick an improving move, which takes only constant time 
+##         # randomly pick an improving move, which takes only constant time
 ##         bestI = random.choice(self.improveA)
-                    
+
 ##         return True, bestI
 
 ##     def genFitBest2(self,minimize):
@@ -470,7 +485,7 @@ cdef class Individual:
 ##         for i in range(self.dim):
 ##             #if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i] < -self.threshold):
 ##             if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
-##                 self.improveA.append(i) 
+##                 self.improveA.append(i)
 ##                 neighImprove.append(Struct(index =[i], val = self.sumArr[i])) # add dist 1 neigh into consideration as well
 ##                 improve = True
 
@@ -494,7 +509,7 @@ cdef class Individual:
 
 ## #        for i in neighImprove:
 ## #            print i.index, i.val
-               
+
 ##         if improve == False:
 ##             #return False, None, self.dim*self.dim
 ##             return False, None, self.dim
@@ -523,7 +538,7 @@ cdef class Individual:
 ##         if type(bestI) is int:
 ##             # make a consistent interface
 ##             bestI = [bestI]
-                    
+
 ##         #return True, bestI, self.dim*self.dim
 ##         return True, bestI, self.dim
 
@@ -537,7 +552,7 @@ cdef class Individual:
 ##         self.Buffer = []
 ##         for i in range(self.dim):
 ##             if (minimize == True and self.sumArr[i] > 0) or (minimize == False and self.sumArr[i]<0):
-##                 self.Buffer.append(i) 
+##                 self.Buffer.append(i)
 ##                 improve = True
 
 ##         if improve == False:
@@ -572,7 +587,7 @@ cdef class Individual:
     ##     self.improveA.remove(p)
 
     ##     if p in self.Inter:
-    ##         for i in self.Inter[p].arr: 
+    ##         for i in self.Inter[p].arr:
     ##             # if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i] < - self.threshold ):
     ##             if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
     ##                 if i not in self.improveA:
@@ -589,10 +604,10 @@ cdef class Individual:
     ##         if i == self.improveA[0]:
     ##             best = self.sumArr[i]
     ##             bestI = i
-    ##         elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False): 
+    ##         elif (best<self.sumArr[i] and minimize == True) or (best>self.sumArr[i] and minimize == False):
     ##             best = self.sumArr[i]
     ##             bestI = i
-                    
+
     ##     return True, bestI
 
     def steepFitDesc(self, minimize):
@@ -605,11 +620,11 @@ cdef class Individual:
             if i == self.improveA[0]:
                 best = self.sumArr[i]
                 bestI = i
-            #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False): 
-            elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False): 
+            #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+            elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
                 best = self.sumArr[i]
                 bestI = i
-                    
+
         return True, bestI
 
     def steepMeanDesc(self, minimize):
@@ -635,7 +650,7 @@ cdef class Individual:
     ##     """
     ##     self.improveA.remove(p)
     ##     if p in self.Inter:
-    ##         for i in self.Inter[p].arr: 
+    ##         for i in self.Inter[p].arr:
     ##             #if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
     ##             if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
     ##                 if i not in self.improveA:
@@ -646,9 +661,9 @@ cdef class Individual:
     ##     if not self.improveA:
     ##         return False, None, evalCount
 
-    ##     # randomly pick an improving move, which takes only constant time 
+    ##     # randomly pick an improving move, which takes only constant time
     ##     bestI = random.choice(self.improveA)
-                   
+
     ##     return True, bestI, evalCount
 
     def nextDesc(self):
@@ -658,26 +673,26 @@ cdef class Individual:
         if not self.improveA:
             return False, None
 
-        # randomly pick an improving move, which takes only constant time 
+        # randomly pick an improving move, which takes only constant time
         bestI = random.choice(self.improveA)
-        
+
         # for i in range(self.dim):
         #     print self.sumArr[i]
-                   
+
         return True, bestI
 
 ##     def updateFitBest2(self, P, minimize):
-##         """ 
+##         """
 ##         generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness), by performing partial updates
 ##         """
 ##         neighImprove = []
 ##         evalCount = 0
-        
+
 ##         for p in P:
 ##             if p in self.improveA:
 ##                 self.improveA.remove(p)
 ##             if p in self.Inter:
-##                 for i in self.Inter[p].arr: 
+##                 for i in self.Inter[p].arr:
 ##                     evalCount = evalCount + 1
 ##                     # if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]<-self.threshold):
 ##                     if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold):
@@ -703,10 +718,10 @@ cdef class Individual:
 
 ## #        for i in range(len(neighImprove)):
 ## #            print neighImprove[i].index, neighImprove[i].val
-        
+
 ##         if not neighImprove:
 ##             #return False, None, evalCount + self.dim * (self.dim-1)
-##             return False, None, evalCount 
+##             return False, None, evalCount
 
 ##         for i in range(len(neighImprove)):
 ##             if i == 0:
@@ -730,13 +745,13 @@ cdef class Individual:
 ##             bestI = [bestI]
 
 ##         #return True, bestI, evalCount + self.dim * (self.dim-1)
-##         return True, bestI, evalCount 
+##         return True, bestI, evalCount
 
     def genImproveSC(self,minimize):
         """
         generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
         """
-        # check improving move 
+        # check improving move
         self.improveSC = []
         for i in range(self.dim):
             # if (minimize == True and self.SC[i] > self.threshold) or (minimize == False and self.SC[i]< - self.threshold):
@@ -748,12 +763,12 @@ cdef class Individual:
             self.bit[i]='1'
         else:
             self.bit[i]='0'
-            
+
     cpdef destructor(self,fitName):
         """ free memory to avoid memory leaks """
         cdef int i,j
         free(self.bit)
-        
+
         free(self.sumArr)
 
         for i in xrange(self.dim):
@@ -795,13 +810,13 @@ cdef class Individual:
             for i in xrange(self.dim):
                 free(self.orderC[i])
             free(self.orderC)
-            
+
 
     ## def genMeanBest(self,minimize):
     ##     """
     ##     generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
     ##     """
-    ##     # check improving move 
+    ##     # check improving move
     ##     improve = False
     ##     self.improveA = []
     ##     for i in range(self.dim):
@@ -830,7 +845,7 @@ cdef class Individual:
     ##     """
     ##     generate the index of next improving neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)
     ##     """
-    ##     # check improving move 
+    ##     # check improving move
     ##     improve = False
     ##     self.improveA = []
     ##     for i in range(self.dim):
@@ -869,7 +884,7 @@ cdef class Individual:
     ##         elif (best<self.SC[i] + self.threshold and minimize == True) or (best>self.SC[i] - self.threshold and minimize == False): # seek for max S
     ##             best = self.SC[i]
     ##             bestI = i
-                    
+
     ##     return True, bestI
 
     ## def updateMeanNext(self, p, minimize):
@@ -906,7 +921,7 @@ cdef class Individual:
             if random.random()<0.5:
                 randBitStr[j] = '0'
             else:
-                randBitStr[j] = '1' 
+                randBitStr[j] = '1'
 
             randBitStr[dim] = '\0'
 
@@ -918,13 +933,13 @@ cdef class Individual:
     cpdef printSumArr(self):
         for i in range(self.dim):
             print self.sumArr[i]
-        print 
-    
+        print
+
     cpdef compFitG(self):
         self.fitG = self.fit - 2/ float(self.dim) * (sumC(self.sumArr, self.dim))
-        
+
     cdef ComArr* genComb(self,int N) nogil:
-        """ 
+        """
         Generate C_N^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
         """
         cdef int c, j, i, counter

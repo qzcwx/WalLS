@@ -98,19 +98,19 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
     
-    nRange = [500, 1000]
+    nRange = [1000]
     # nRange = [1000]
-    kRange = [2]
+    kRange = [1]
     # cRange = [1000, 3000, 4260, 6000, 7500, 9000]
     # cRange = [500, 1500, 2130, 3000, 3750, 4500]
     vRange = [1, 3, 4.26, 6, 7.5, 9]
     
-    tRange = [4,5,6,7]
+    tRange = [3]
 
     #nRange = [100]
     iRange = [0]
     aRange = ['rLS']
-    fRange = ['combAvg']
+    fRange = ['fit','mean','combF']
     mRange = ['walWalk']
     
     pRange = ['NKQ']
