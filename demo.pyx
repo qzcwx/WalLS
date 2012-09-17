@@ -24,67 +24,67 @@ def main():
     # Usage: python demo.py [ComputeMethod] [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [overwrite] [I] [PopSize] [N] [K] [Q]
     parser = argparse.ArgumentParser(description='Walsh Local Search')
 
-    parser.add_argument('-m', 
-                        action="store", 
+    parser.add_argument('-m',
+                        action="store",
                         help="Computational Method",
                         dest="compMeth",
                         )
-    parser.add_argument('-p', 
-                        action="store", 
+    parser.add_argument('-p',
+                        action="store",
                         help="Problem",
-                        dest="probName", 
+                        dest="probName",
                         )
-    parser.add_argument('-a', 
-                        action="store", 
+    parser.add_argument('-a',
+                        action="store",
                         help="Algorithm",
                         dest="algoName",
                         )
-    parser.add_argument('-f', 
-                        action="store", 
+    parser.add_argument('-f',
+                        action="store",
                         help="Evaluation Function",
                         dest="fitName",
                         )
-    parser.add_argument('-i', 
-                        action="store", 
+    parser.add_argument('-i',
+                        action="store",
                         help="Instance ID",
                         dest="inst",
                         type=int,
                         )
-    parser.add_argument('-s', 
-                        action="store", 
+    parser.add_argument('-s',
+                        action="store",
                         help="Population size",
                         dest="popSize",
                         default=1,
                         type=int,
                         )
-    parser.add_argument('-n', 
-                        action="store", 
+    parser.add_argument('-n',
+                        action="store",
                         help="Dimension",
                         dest="n",
                         type=int,
                         )
-    parser.add_argument('-k', 
-                        action="store", 
+    parser.add_argument('-k',
+                        action="store",
                         help="K",
                         dest="k",
                         type=int,
                         )
-    parser.add_argument('-q', 
-                        action="store", 
+    parser.add_argument('-q',
+                        action="store",
                         help="Q",
                         dest="q",
                         default=0,
                         type=int,
                         )
-    parser.add_argument('-r', 
-                        action="store", 
+    parser.add_argument('-r',
+                        action="store",
                         help="Random Seed",
                         dest="rseed",
                         default=0,
                         type=int,
                         )
-    parser.add_argument('-w', 
-                        action="store", 
+    parser.add_argument('-w',
+                        action="store",
                         help="Width of Beam",
                         dest="w",
                         default=1,
@@ -116,7 +116,7 @@ def main():
 
     if opt.v != 0:
         opt.c = int(opt.v*opt.n)
-    
+
     #tl.checkParam(sys.argv)
     opt.s = opt.popSize
 
@@ -137,10 +137,10 @@ def main():
 
 
     t = opt.t
-    
+
     crossoverR = 0.8 # typically in (0.6, 0.9)
     mutationR = 1.0/float(opt.n) # typically between 1/popSize and 1/dim
-    # for CHC 
+    # for CHC
     D = opt.n/4.0
     DR = 0.35
     M = 1
@@ -151,9 +151,9 @@ def main():
 
     if opt.probName == 'SAT':
         """ with SAT, we are forced to set n to 100 """
-        """ 
-        TODO : 
-            need to perform multiple runs for each instance 
+        """
+        TODO :
+            need to perform multiple runs for each instance
         """
 
         model = mx.MAXSAT()
@@ -237,7 +237,7 @@ def main():
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
 
             f = open(nameOfF, 'w')
-            print >>f,"%g\t%g" % (walTime,hyperTime) 
+            print >>f,"%g\t%g" % (walTime,hyperTime)
             f.close()
 
         # if opt.fitName == 'fit':
@@ -250,12 +250,12 @@ def main():
         # for i in zip(bitF,fitF, bitA, fitA):
         #     print i[0],'%g\t%g' %(i[1],i[3])
 
-        
-                
-        # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+
+
+        # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])
         # print 'opti\n', a[0][0], a[0][1]
         # print
-        
+
         # c = 0
         # for i in (zip(bit,fit)):
         #     print c,'\t', i[0], '%.2f' %(i[1])
@@ -294,7 +294,7 @@ def main():
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = os.times()[0] - start
-            
+
     #    trace = res[0]['trace']
     #    for i in trace:
     ##        print 'Eval', i.fitEval, 'fit', i.fit
@@ -348,7 +348,7 @@ def main():
                 for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                     print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
             f.close()
-        
+
 
         """ store runtime to files """
         if opt.probName == 'NKQ':
@@ -357,9 +357,16 @@ def main():
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
 
         f = open(nameOfF, 'w')
-        print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
-        for i in range(runs):
-            print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
-        f.close()
-
+        if opt.compMeth != 'bf':
+            # tracking for walsh-based approach
+            print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
+            for i in range(runs):
+                print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
+                f.close()
+        else:
+            # for the brute force approach
+            print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
+            for i in range(runs):
+                print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
+                f.close()
         print

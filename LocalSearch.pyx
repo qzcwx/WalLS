@@ -46,6 +46,7 @@ cdef class LocalSearch:
     cdef object bsf
     cdef object oldindiv
     cdef object tempIndiv
+    cdef object indiv
 
     def __init__(self, model, MaxFit, dim):
         self.func = model.compFit
@@ -333,10 +334,10 @@ cdef class LocalSearch:
         """
         steepest descent local search running on S
         """
+
         self.fitEval = 0
         start = os.times()[0]
         self.model.transWal()
-
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
@@ -1790,21 +1791,39 @@ cdef class LocalSearch:
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
     def runFit(self, minimize,restart):
-        self.oldindiv = self.initIndiv(self.dim)
+        """
+        brute force approach for running BILS
+        """
+        # print 'init'
+        # self.oldindiv = self.initIndiv(self.dim)
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
         self.fitEval = 0
+        # print 'init'
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.bsf = copy.deepcopy(self.oldindiv)
-        self.indiv = copy.deepcopy(self.oldindiv)
+        # print 'init'
+        # self.bsf = copy.deepcopy(self.oldindiv)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        # print 'init'
+        # self.indiv = copy.deepcopy(self.oldindiv)
+        # self.indiv = individual.Individual(oldIndiv=self.oldindiv)
+        # print 'init'
 #        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit)]
+
         while self.fitEval < self.MaxFit:
-            neighs = self.neighbors()
+            # neighs = self.neighbors()
             improveN = False
             #print
-            #print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
-            for i in neighs:
-                self.indiv.bit = np.copy(i)
+            # print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
+            for i in xrange(self.dim):
+                self.indiv = individual.Individual(oldIndiv=self.oldindiv)
+                self.indiv.flip(i)
                 self.indiv = self.evalPop(self.indiv)
-                #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
+
+            # for i in neighs:
+            #     self.indiv.bit = np.copy(i)
+            #     self.indiv = self.evalPop(self.indiv)
+            #     #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
                 if  self.selectionFit(minimize) == True:
                     improveN = True
 
@@ -2358,16 +2377,16 @@ cdef class LocalSearch:
     def restart(self, fitName, minimize, evaluate):
         if fitName == 'fit' and minimize == True :
             if self.bsf.fit > self.oldindiv.fit:
-                self.bsf = copy.deepcopy(self.oldindiv)
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
         elif fitName == 'fit' and minimize == False :
             if self.bsf.fit < self.oldindiv.fit:
-                self.bsf = copy.deepcopy(self.oldindiv)
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
         elif minimize == True :
             if self.bsf.fitG > self.oldindiv.fitG:
-                self.bsf = copy.deepcopy(self.oldindiv)
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
         elif minimize == False :
             if self.bsf.fitG < self.oldindiv.fitG:
-                self.bsf = copy.deepcopy(self.oldindiv)
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
 
         if fitName == 'fit':
             self.oldindiv.init()
@@ -2439,6 +2458,9 @@ cdef class LocalSearch:
         return flipBits, oldindiv
 
     def neighbors(self):
+        """
+        obsolete
+        """
         neighs = []
         for j in range(self.dim):
             # flip the jth bit in bit-string
@@ -2451,9 +2473,14 @@ cdef class LocalSearch:
         return np.array(neighs)
 
     def evalPop(self, indiv):
+        # print 'evalPop'
+        # print self.func
+        # print indiv.bit
         indiv.fit = self.func(indiv.bit)
+        # print 'evalPop'
         self.fitEval = self.fitEval + 1
         #return copy.deepcopy(indiv)
+        # print 'evalPop'
         return indiv
 
     def evalPopNeigh(self, indiv, fitName, minimize):
@@ -2485,13 +2512,13 @@ cdef class LocalSearch:
     def selectionFit(self, minimize):
         if minimize == True:
             if self.oldindiv.fit > self.indiv.fit:
-                self.oldindiv = copy.deepcopy(self.indiv)
+                self.oldindiv = individual.Individual(oldIndiv=self.indiv)
                 return True
             else:
                 return False
         else: # for maximization
             if self.oldindiv.fit < self.indiv.fit:
-                self.oldindiv = copy.deepcopy(self.indiv)
+                self.oldindiv = individual.Individual(oldIndiv=self.indiv)
                 return True
             else:
                 return False
