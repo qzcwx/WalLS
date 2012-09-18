@@ -51,7 +51,7 @@ cdef class Individual:
     cdef object func
     cdef object model
     cdef int MaxFit
-    cdef double threshold
+    cdef public double threshold
     cdef int fitEval
     cdef ComArr** lookup
     cdef public double fit

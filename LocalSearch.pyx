@@ -55,6 +55,7 @@ cdef class LocalSearch:
         self.dim = dim
 
     cpdef run(self, fitName, minimize, restart, compM, beamWidth=1):
+        print 'minimize', minimize
         if compM == 'bf':
             if fitName =='fit':
                 return self.runFit(minimize,restart)
@@ -1793,7 +1794,9 @@ cdef class LocalSearch:
     def runFit(self, minimize,restart):
         """
         brute force approach for running BILS
+        TODO: randomly breaks ties
         """
+        cdef list improveA
         # print 'init'
         # self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = individual.Individual(n=self.dim)
@@ -1808,13 +1811,17 @@ cdef class LocalSearch:
         # self.indiv = copy.deepcopy(self.oldindiv)
         # self.indiv = individual.Individual(oldIndiv=self.oldindiv)
         # print 'init'
-#        self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit)]
+        # self.trace = [Struct(fitEval= self.fitEval,fit = self.oldindiv.fit)]
+        initC = 1
+        updateC = 0
 
         while self.fitEval < self.MaxFit:
             # neighs = self.neighbors()
             improveN = False
             #print
             # print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
+            improveA = []
+            bestFit = self.oldindiv.fit   # keep track of the best fitness so far
             for i in xrange(self.dim):
                 self.indiv = individual.Individual(oldIndiv=self.oldindiv)
                 self.indiv.flip(i)
@@ -1824,18 +1831,26 @@ cdef class LocalSearch:
             #     self.indiv.bit = np.copy(i)
             #     self.indiv = self.evalPop(self.indiv)
             #     #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
-                if  self.selectionFit(minimize) == True:
-                    improveN = True
+
+                if improveN == False:
+                    improveN, improveA, bestFit = self.selectionFit(minimize, improveA, bestFit)
+                    print len(improveA)
 
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit))
-            if improveN == False:
+            if improveN == False: # issue restart
+                initC = initC + 1
                 if restart == True:
                     self.restart('fit', minimize, True)
                 else:
                     #return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit,'trace':self.trace}
                     return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else: # randomly take an best-improvement move
+                updateC = updateC + 1
+                self.indiv = individual.Individual(oldIndiv = random.choice(improveA))
         #return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'trace':self.trace}
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'initC':initC, 'updateC':updateC}
+
 
 
     def runNeigh(self, fitName, minimize,restart):
@@ -2509,19 +2524,40 @@ cdef class LocalSearch:
         return indiv
         # return copy.deepcopy(indiv)
 
-    def selectionFit(self, minimize):
-        if minimize == True:
-            if self.oldindiv.fit > self.indiv.fit:
-                self.oldindiv = individual.Individual(oldIndiv=self.indiv)
-                return True
-            else:
-                return False
-        else: # for maximization
-            if self.oldindiv.fit < self.indiv.fit:
-                self.oldindiv = individual.Individual(oldIndiv=self.indiv)
-                return True
-            else:
-                return False
+    def selectionFit(self, minimize, improveA, bestFit):
+        threshold = self.indiv.threshold
+        if (minimize == True and bestFit > self.indiv.fit + threshold) or (minimize==False and bestFit < self.indiv.fit - threshold) :
+            bestFit = self.indiv.fit
+            improveA = [self.indiv]
+            return True, improveA, bestFit
+        elif (abs(bestFit - self.indiv.fit)<threshold):
+            improveA.append(self.indiv)
+            return False, improveA, bestFit
+        else:
+            return False, improveA, bestFit
+
+        # if minimize == True:
+        #     # if self.oldindiv.fit > self.indiv.fit:
+        #     if bestFit > self.indiv.fit + self.threshold:   # an improving move
+        #         bestFit = self.indiv.fit
+        #         improveA = [self.indiv]
+        #         # self.oldindiv = individual.Individual(oldIndiv=self.indiv)
+        #         return True
+        #     elif abs(bestFit - self.indiv.fit)<self.threshold:   # equal move
+        #         improveA.append(self.indiv)
+        #         return False
+        #     else:
+        #          return False
+        # else: # for maximization
+        #     # if self.oldindiv.fit < self.indiv.fit:
+        #     if bestFit < self.indiv.fit - self.threshold:   # an improving move
+        #         bestFit = self.indiv.fit
+        #         # self.oldindiv = individual.Individual(oldIndiv=self.indiv)
+        #         return True
+        #     else:
+        #         if abs(bestFit - self.indiv.fit)<self.threshold:   # equal move
+        #             improveA.append(self.indiv)
+        #         return False
 
     def selectionFitNeigh(self, minimize):
         if minimize == True :
