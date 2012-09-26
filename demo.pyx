@@ -127,9 +127,10 @@ def main():
     prefixNK = './benchmark/NK/'
     prefixNKQ = './benchmark/NKQ/'
 
+    print opt.rseed
     random.seed(opt.rseed)
 
-    maxFit = 2.5*opt.n
+    maxFit = 3*opt.n
     # runs = 30
 
     runs = 1

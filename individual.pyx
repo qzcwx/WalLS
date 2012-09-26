@@ -613,19 +613,25 @@ cdef class Individual:
     def steepFitDesc(self, minimize):
         if not self.improveA:
             return False, None
+        bestList = []
 
-        random.shuffle(self.improveA)
+        # random.shuffle(self.improveA)
 
         for i in self.improveA:
             if i == self.improveA[0]:
                 best = self.sumArr[i]
-                bestI = i
+                # bestI = i
             #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
             elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
                 best = self.sumArr[i]
-                bestI = i
+                # bestI = i
 
-        return True, bestI
+        for i in self.improveA:
+            if (abs(best - self.sumArr[i])<self.threshold):
+                bestList.append(i)
+        # bestList.sort()
+
+        return True, random.choice(bestList)
 
     def steepMeanDesc(self, minimize):
         if not self.improveSC:
