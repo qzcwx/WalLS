@@ -163,7 +163,7 @@ cdef class Individual:
         * compute the sum of order seperately for each possible bit-flip (k*n)
         """
         self.walSumArr = [orderSum(self.model.k) for i in range(self.dim)]
-        
+
 
 
     def initSC(self):
@@ -309,7 +309,7 @@ cdef class Individual:
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr:
                 """ equal moves """
-                #if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
+                # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
                 """ NOT equal moves """
                 if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
@@ -321,7 +321,7 @@ cdef class Individual:
         if p in self.model.Inter:
             for i in self.model.Inter[p].arr :
                 """ equal moves """
-                #if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
+                # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
                 """ NOT equal moves """
                 if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
@@ -444,8 +444,8 @@ cdef class Individual:
         # check improving move
         self.improveA = []
         for i in range(self.dim):
-            # if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold):
-            if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):
+            if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold):            # NOT equal moves
+            # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
                 self.improveA.append(i)
 
 ##     def genFitNext(self,minimize):

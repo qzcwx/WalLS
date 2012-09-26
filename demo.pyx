@@ -129,12 +129,11 @@ def main():
 
     random.seed(opt.rseed)
 
-    maxFit = opt.n
-    runs = 30
+    maxFit = 2.5*opt.n
+    # runs = 30
 
-    # runs = 1
-    # maxFit = 50
-
+    runs = 1
+    # maxFit = 1000
 
     t = opt.t
 
@@ -249,7 +248,9 @@ def main():
         # bitA,fitA = tl.compMean(model)
         # for i in zip(bitF,fitF, bitA, fitA):
         #     print i[0],'%g\t%g' %(i[1],i[3])
-
+        
+        # for i in zip(bitF,fitF):
+        #     print i[0],i[1]
 
 
         # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])
@@ -335,6 +336,16 @@ def main():
             for i in range(runs):
                 print >>f,"%g\t%g\t%g" % (res[i]['platC'], res[i]['restC'], res[i]['updateC'])
                 f.close()
+        else:
+            if opt.probName == 'NKQ':
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+            elif opt.probName == 'NK':
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
+            f = open(nameOfF, 'w')
+            print >>f,"initC\tupdateC\t"
+            for i in range(runs):
+                print >>f,"%g\t%g\t" % (res[i]['initC'], res[i]['updateC'])
+                f.close()
 
         if opt.compMeth != 'bf':
             """ store trace to files: the number of descent steps """
@@ -364,11 +375,12 @@ def main():
             print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
             for i in range(runs):
                 print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
-            f.close()
+
         else:
             # for the brute force approach
             print >>f,"All\t"
             for i in range(runs):
                 print >>f,"%0.2e" % (tAll[i])
-            f.close()
+
+        f.close()
         print
