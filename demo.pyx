@@ -16,7 +16,6 @@ import math
 import time
 import pdb
 import sys
-import batch
 import argparse
 
 def main():
@@ -139,9 +138,9 @@ def main():
     random.seed(opt.rseed)
 
     maxFit = opt.e*opt.n
-    # runs = 20
+    runs = 20
 
-    runs = 1
+    # runs = 1
     # maxFit = 1000
 
     t = opt.t
@@ -319,9 +318,9 @@ def main():
 
         """ store results to files """
         if opt.probName == 'NKQ':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
         elif opt.probName == 'NK':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
     #    """ print the mean over multiple runs """
     #    r = np.zeros(runs)
@@ -341,31 +340,31 @@ def main():
         if opt.compMeth != 'bf' and (opt.fitName == 'switchF' or opt.fitName == 'switchAvg' or opt.fitName == 'combF' or opt.fitName == 'combAvg'):
             """ store trace to files: 1. the number of descent steps """
             if opt.probName == 'NKQ':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
             elif opt.probName == 'NK':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
             f = open(nameOfF, 'w')
             for i in range(runs):
                 print >>f,"%g\t%g\t%g" % (res[i]['platC'], res[i]['restC'], res[i]['updateC'])
-                f.close()
+            f.close()
         else:
             if opt.probName == 'NKQ':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
             elif opt.probName == 'NK':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
             f = open(nameOfF, 'w')
             print >>f,"initC\tupdateC\t"
             for i in range(runs):
                 print >>f,"%g\t%g\t" % (res[i]['initC'], res[i]['updateC'])
-                f.close()
+            f.close()
 
         if opt.compMeth != 'bf':
             """ store trace to files: the number of descent steps """
             for i in range(runs):
                 if opt.probName == 'NKQ':
-                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'.txt'
+                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 elif opt.probName == 'NK':
-                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'.txt'
+                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 f = open(nameOfF, 'w')
                 if (opt.fitName == 'fit'):
                     for j in zip(res[i]['traceEval'], res[i]['traceFit']):
@@ -373,13 +372,13 @@ def main():
                 else :
                     for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                         print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
-                        f.close()
+                f.close()
 
         """ store runtime to files """
         if opt.probName == 'NKQ':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
         elif opt.probName == 'NK':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
         f = open(nameOfF, 'w')
         if opt.compMeth != 'bf':
@@ -390,9 +389,9 @@ def main():
 
         else:
             # for the brute force approach
-            print >>f,"All\t"
+            print >>f,"All\tupdate"
             for i in range(runs):
-                print >>f,"%0.2e" % (tAll[i])
+                print >>f,"%0.2e\t%0.2e" % (tAll[i], res[i]['updateT'])
 
         f.close()
         print

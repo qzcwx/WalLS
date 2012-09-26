@@ -745,7 +745,6 @@ cdef class LocalSearch:
         initC = 1
         updateC = 0
 
-
         # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
         # print 'init improve', self.oldindiv.improveA
 
@@ -758,7 +757,7 @@ cdef class LocalSearch:
 
         traceEval = []
         traceFit = []
-
+        
         initT = os.times()[0] - start
 
         while self.fitEval < self.MaxFit:
@@ -775,7 +774,7 @@ cdef class LocalSearch:
                     oldbit = self.oldindiv.bit
                     oldfit = self.oldindiv.fit
                     self.restart(fitName, minimize, False)
-                    print 'restart', 'bsf', self.bsf.fit, '\n'
+                    # print 'restart', 'bsf', self.bsf.fit, '\n'
 
                     pertT = pertT + os.times()[0] - start
 
@@ -783,13 +782,13 @@ cdef class LocalSearch:
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     self.oldindiv.fit = oldfit
                     for i in diff:
-                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
+                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
                         self.oldindiv.updateSumArr(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
-                    updatePertT = updatePertT + os.times()[0] - start
-                    # self.fitEval = self.fitEval + len(diff)
+                    updatePertT = updatePertT + os.times()[0] - start # TODO: need to count it in the next experiment
+                    # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
@@ -1800,7 +1799,6 @@ cdef class LocalSearch:
     def runFit(self, minimize,restart):
         """
         brute force approach for running BILS
-        TODO: randomly breaks ties
         """
         cdef list improveA
         # print 'init'
@@ -1818,7 +1816,12 @@ cdef class LocalSearch:
         updateC = 0
         # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
 
+        updateT = 0
+
+        start = os.times()[0]
+
         while self.fitEval < self.MaxFit:
+
             # print 'fitEval', self.fitEval
             # neighs = self.neighbors()
             #print
@@ -1844,24 +1847,28 @@ cdef class LocalSearch:
 
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit))
             if len(improveA)==0: # issue restart
+                updateT = updateT + os.times()[0] - start
                 initC = initC + 1
                 if restart == True:
                     self.restart('fit', minimize, True)
                     # print 'restart', 'bsf', self.bsf.fit, '\n'
                 else:
                     return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+                start = os.times()[0]
             else: # randomly take an best-improvement move
                 updateC = updateC + 1
                 # print 'improve'
                 bestI = random.choice(improveA)
-                print 'bestI', bestI, 'eval', self.fitEval
+                # print 'bestI', bestI, 'eval', self.fitEval
                 # print 'improveA', improveA
                 self.oldindiv.flip(bestI)
                 self.oldindiv = self.evalPop(self.oldindiv)
                 # print self.oldindiv.fit
                 self.fitEval = self.fitEval + 1
-        # print 'init', initC, 'update', updateC
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'initC':initC, 'updateC':updateC}
+
+        updateT = updateT + os.times()[0] - start
+
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'initC':initC, 'updateC':updateC,  'updateT':updateT}
 
 
 
