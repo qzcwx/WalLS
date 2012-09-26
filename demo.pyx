@@ -110,7 +110,15 @@ def main():
                         type=float,
                         default=0,
                         )
+    parser.add_argument('-e',
+                        action="store",
+                        help="factor for MaxFit",
+                        dest="e",
+                        type=int,
+                        default=1,
+                        )
 
+    
 
     opt = parser.parse_args()
 
@@ -127,11 +135,11 @@ def main():
     prefixNK = './benchmark/NK/'
     prefixNKQ = './benchmark/NKQ/'
 
-    print opt.rseed
+    # print opt.rseed
     random.seed(opt.rseed)
 
-    maxFit = 3*opt.n
-    # runs = 30
+    maxFit = opt.e*opt.n
+    # runs = 20
 
     runs = 1
     # maxFit = 1000
@@ -246,12 +254,15 @@ def main():
         #     bit, fit = tl.compMean(model)
 
         # bitF,fitF = tl.compFit(model)
+        # for i in zip(bitF,fitF):
+        #     print i[0],i[1]
+
+        
         # bitA,fitA = tl.compMean(model)
         # for i in zip(bitF,fitF, bitA, fitA):
         #     print i[0],'%g\t%g' %(i[1],i[3])
+
         
-        # for i in zip(bitF,fitF):
-        #     print i[0],i[1]
 
 
         # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])

@@ -29,11 +29,11 @@ class NKLandscape:
 
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
-        for i in range(self.c): 
+        for i in range(self.c):
             for j in range(len(self.neighs[i])):
                 print >>f, self.neighs[i][j], '\t',
             print >>f
-        for i in range(self.c): 
+        for i in range(self.c):
             for j in range(len(self.func[i])):
                 print >>f, self.func[i][j], '\t',
             print >>f
@@ -48,7 +48,7 @@ class NKLandscape:
         for i in range(self.c):
             oneNeigh = random.sample(range(self.n), self.k+1)
             self.neighs.append(oneNeigh)
-            
+
     def getNeigh(self):
         return self.neighs
 
@@ -60,20 +60,21 @@ class NKLandscape:
             for j in range(int(math.pow(2,self.k+1))):
                 oneFunc.append(random.random())
             self.func.append(oneFunc)
-            
+
     def getFunc(self):
         return self.func
-    
+
     def getN(self):
         return self.n
-    
+
     def genK(self):
         return self.k
 
     """ compute the fitness value"""
     def compFit(self, bitStr):
         #       print bitStr
-        cdef int sum = 0, i
+        cdef int  i
+        cdef float sum = 0.0
         for i in range(self.c):
             """ compose interacting bits """
             interBit = self.neighs[i][:]
@@ -84,11 +85,10 @@ class NKLandscape:
             """ sum up the sub-function values """
             #            print self.func[i][int(interStr,2)]
             sum = sum + self.func[i][int(interStr,2)]
-        # print sum/float(self.c) 
+        # print sum/float(self.c)
         # print
         # return sum/float(self.c)
         # print('sum')
-        # print(sum)
         return sum
 
     def WalCof(self):
@@ -154,14 +154,14 @@ class NKLandscape:
                     w[indexW] = w[indexW] + subW[i][j]
                 else:
                     w[indexW] = subW[i][j]
-                    
+
         # for k in w.keys():
         #     w[k] = w[k]/float(self.n)
-            
+
         self.w = w
         return w
 
-    """ 
+    """
     for Walsh Local Search
     """
     def transWal(self):
@@ -169,7 +169,7 @@ class NKLandscape:
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
         self.WA = [] # array representing Walsh terms
-        for k in self.w.keys(): 
+        for k in self.w.keys():
             if self.w[k] != 0:
                 a = []
                 for i in range(self.n):
@@ -183,21 +183,21 @@ class NKLandscape:
         """
         self.transWal()
 #        bit,fit = tl.compFit(self)
-#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])
 #        optBit = a[0][0]
 #        optFit = a[0][1]
 #        print 'opti\n',optBit, optFitee
 
-        #for i in range(len(a)): 
-#        for i in range(10): 
+        #for i in range(len(a)):
+#        for i in range(10):
 #            print '%s\t%.3f' %(a[i][0],a[i][1])
 
-        # initialize sumFitA 
+        # initialize sumFitA
         self.sumFitA = []
         evalSubFunc = []
         for i in range(self.n):
             self.sumFitA.append(Struct(one=0,zero=0))
-        
+
         for i in range(self.n):
             subBit = self.neighs[i][:]
             subBit.append(i)
@@ -235,7 +235,7 @@ class NKLandscape:
 
                     schFitArr.append(Struct(fit=schFit,arr=schTpl))
 #                    print subBit, j, schFit
-#                print 
+#                print
 
                 schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
 
@@ -279,23 +279,23 @@ class NKLandscape:
 #        print 'genHyperSqVote'
 #
 #        bit,fit = tl.compFit(self)
-#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1]) 
+#        a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])
 #        optBit = a[0][0]
 #        optFit = a[0][1]
 #        print 'opti\n',optBit, optFit
 #
-#        for i in range(len(a)): 
-##        for i in range(10): 
+#        for i in range(len(a)):
+##        for i in range(10):
 #            print '%s\t%.3f' %(a[i][0],a[i][1])
-        # initialize sumFitA 
-    
+        # initialize sumFitA
+
         self.sumFitA = []
         for i in range(self.n):
             self.sumFitA.append(Struct(one=0,zero=0))
 
 #        scan = 0
 #        reuse = 0
-        
+
         evalOuterFunc = []
         mergeFunc = []
         for i in range(self.n):
@@ -319,7 +319,7 @@ class NKLandscape:
                         evalInnerFunc.append(subBitIn)
                         subBitIn = tl.listMerge(subBitOut,subBitIn)
                         subBitIn.sort()
-                        
+
                         if subBitIn not in mergeFunc:
                             mergeFunc.append(subBitIn)
 #                            print '\t\tsubMerge', subBitIn
@@ -338,7 +338,7 @@ class NKLandscape:
                                     if j[k] == '1':
                                         schTpl.append(subBitIn[k])
 
-                                if init == False: 
+                                if init == False:
                                     # compute schema fitness from scan over all wal cof
                                     for k in self.WA:
                                         subset = True
@@ -354,11 +354,11 @@ class NKLandscape:
                                 else:
                                     for k in walTouch:
                                         schFit = schFit + int(math.pow(-1, self.binCountArr(k.arr, schTpl))) * k.w
-#                                    reuse = reuse + 1 
+#                                    reuse = reuse + 1
 
                                 schFitArr.append(Struct(fit=schFit,arr=schTpl))
                                 #print subBitIn, j, schFit
-#                            print 
+#                            print
 
                             schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
 
@@ -381,12 +381,12 @@ class NKLandscape:
         """
         self.transWal()
 
-        # initialize sumFitA 
+        # initialize sumFitA
         self.sumFitA = []
         evalSubFunc = []
         for i in range(self.n):
             self.sumFitA.append(Struct(one=0,zero=0))
-        
+
         for i in self.WA:
             subBit = i.arr
 
@@ -417,7 +417,7 @@ class NKLandscape:
 
                     schFitArr.append(Struct(fit=schFit,arr=schTpl))
 #                    print subBit, j, schFit
-#                print 
+#                print
 
                 schFitArrSort = sorted(schFitArr, key = lambda i: i.fit)
 
@@ -477,7 +477,7 @@ class NKLandscape:
     def indexOneBit(self, iStr):
         range1 = range(len(iStr))
         return [ i for i in range1 if iStr[i] == '1']
-            
+
     def dispNK(self):
         print self.n, self.k
 
