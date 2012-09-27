@@ -3,9 +3,7 @@ import random
 import math
 import time
 
-""" remember to generate the instances for MAXSAT problem
-    instances = random.sample(range(1,1001), numOfInstance)
-"""
+
 # python demo.py [NameOfProblem] [NameOfAlgorithm] [fit/mean/std] [I] [PopSize] [N] [K] [Q]
 class Struct:
     def __init__(self, **kwds):
@@ -16,7 +14,7 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w,m,t,e):
     if probName == 'NKQ':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-M'+m+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-Q'+str(q)+'-T'+str(t)+'-E'+str(e)+'.txt'
     elif probName == 'NK':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+c+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-E'+str(e)+'.txt'
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+str(c)+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-E'+str(e)+'.txt'
 
     if os.path.isfile(nameOfF)==True:
         print nameOfF, 'exists!!!'
@@ -29,11 +27,11 @@ def countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,count):
         return count
 
 def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track):
-    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t) == False:
+    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t,e) == False:
         scriptNo = random.randint(0,len(track)-1)
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
-        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t'+str(t)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t '+str(t)+' -e '+str(e)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -89,6 +87,7 @@ def submitJobs(numOfScript):
                 submit = False
                 time.sleep(10)
 
+
 if __name__== "__main__":
     count = 0
     chunkSize = 10000
@@ -98,23 +97,22 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    nRange = [1000]
-    # nRange = [1000]
-    kRange = [2]
+    nRange = [20,50,100,200,500]
+    kRange = [2,4]
     # cRange = [1000, 3000, 4260, 6000, 7500, 9000]
     # cRange = [500, 1500, 2130, 3000, 3750, 4500]
     vRange = [1]
+    # eRange = [10,20,50,100]
     eRange = [50]
-
+    
     tRange = [3]
 
-    #nRange = [100]
     iRange = [0]
     aRange = ['rLS']
-    fRange = ['fit','mean','combF']
-    mRange = ['walWalk']
+    fRange = ['fit']
+    mRange = ['bf', 'walRest']
 
-    pRange = ['NKQ']
+    pRange = ['NK']
 
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)
@@ -143,7 +141,7 @@ if __name__== "__main__":
                                                         for w in wRange :
                                                             s = 1
                                                             count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,count)
-                                                   else: # if the algorithm is population-based, for GA and CHC
+                                                    else: # if the algorithm is population-based, for GA and CHC
                                                        for s in [30]:
                                                            count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,count)
                                             elif p == 'NK': # for NK problem
@@ -152,14 +150,15 @@ if __name__== "__main__":
                                                     for w in wRange :
                                                         s = 1
                                                         count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,count)
-                                                    else: # if the algorithm is population-based, for GA and CHC
-                                                        for s in [30]:
-                                                            count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,count)
+                                                else: # if the algorithm is population-based, for GA and CHC
+                                                    for s in [30]:
+                                                        count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,count)
 
     totalJobs = count
 
     # clean up
-    os.system('rm run-* SumSat-*')
+    os.system('rm run-*')
+    os.system('rm  SumSat-*')
     # writeHeader(totalJobs, chunkSize)
     track = initTrack(totalJobs, chunkSize)
     numOfscript = len(track)
@@ -215,3 +214,4 @@ if __name__== "__main__":
     #
 
     print count, 'jobs submitted', 'separated into', numOfscript, 'scripts'
+

@@ -1,18 +1,20 @@
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 1000 -p NKQ -a rLS -f fit -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 3000 -p NKQ -a rLS -f fit -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 4260 -p NKQ -a rLS -f fit -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 6000 -p NKQ -a rLS -f fit -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 7500 -p NKQ -a rLS -f fit -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 9000 -p NKQ -a rLS -f fit -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 1000 -p NKQ -a rLS -f mean -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 3000 -p NKQ -a rLS -f mean -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 4260 -p NKQ -a rLS -f mean -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 6000 -p NKQ -a rLS -f mean -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 7500 -p NKQ -a rLS -f mean -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 9000 -p NKQ -a rLS -f mean -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 1000 -p NKQ -a rLS -f combF -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 3000 -p NKQ -a rLS -f combF -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 4260 -p NKQ -a rLS -f combF -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 6000 -p NKQ -a rLS -f combF -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 7500 -p NKQ -a rLS -f combF -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
-cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 9000 -p NKQ -a rLS -f combF -i 0 -s 1 -w 1 -n 1000 -k 1 -q 2 -mwalWalk -t3 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 20 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 20 -k 2 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 20 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 20 -k 2 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 50 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 50 -k 2 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 50 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 50 -k 2 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 100 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 100 -k 2 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 100 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 100 -k 2 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 200 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 200 -k 2 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 200 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 200 -k 2 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 500 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 500 -k 2 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 500 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 500 -k 2 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 20 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 20 -k 4 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 20 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 20 -k 4 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 50 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 50 -k 4 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 50 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 50 -k 4 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 100 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 100 -k 4 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 100 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 100 -k 4 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 200 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 200 -k 4 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 200 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 200 -k 4 -q 0 -mwalRest -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 500 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 500 -k 4 -q 0 -mbf -t 3 -e 50 &
+cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c 500 -p NK -a rLS -f fit -i 0 -s 1 -w 1 -n 500 -k 4 -q 0 -mwalRest -t 3 -e 50 &

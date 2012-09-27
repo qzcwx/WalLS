@@ -179,7 +179,7 @@ def main():
         tAll = np.zeros(runs)
 
         for i in range(runs):
-            start = os.times()[0]
+            start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName, minimize = False))
             elif opt.algoName == 'LS':
@@ -188,7 +188,7 @@ def main():
                 res.append(algo.run(opt.fitName, minimize = False, restart = True, beamWidth=opt.w))
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit, opt.popSize, opt.n, D, DR, M, opt.fitName, minimize = False))
-            tAll[i] = os.times()[0] - start
+            tAll[i] = time.time() - start
 
         if opt.probName == 'SAT':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'.txt'
@@ -220,19 +220,19 @@ def main():
             #model = nkq.NKQLandcape(n, k, q)
 
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
-            start = os.times()[0]
+            start = time.time()
             # Walsh analysis
             w = model.WalshCofLinearLinklist()
-            walTime = os.times()[0] - start
+            walTime = time.time() - start
 
-            start = os.times()[0]
+            start = time.time()
             if opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch':
                 model.genHyperVote()
             elif opt.compMeth == 'hyperSqSearch':
                 model.genHyperSqVote()
             elif opt.compMeth == 'hyperWalSearch':
                 model.genHyperWalVote()
-            hyperTime = os.times()[0] - start
+            hyperTime = time.time() - start
 
             # count the number of interative bits
             # model.countInterBits()
@@ -296,7 +296,7 @@ def main():
 
         tAll = np.zeros(runs)
         for i in range(runs):
-            start = os.times()[0]
+            start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))
             elif opt.algoName == 'LS':
@@ -305,7 +305,7 @@ def main():
                 res.append(algo.run(opt.fitName, minimize = False, restart = True,compM = opt.compMeth, beamWidth=opt.w))
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
-            tAll[i] = os.times()[0] - start
+            tAll[i] = time.time() - start
 
     #    trace = res[0]['trace']
     #    for i in trace:
