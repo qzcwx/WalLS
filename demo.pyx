@@ -117,7 +117,7 @@ def main():
                         default=1,
                         )
 
-    
+
 
     opt = parser.parse_args()
 
@@ -137,7 +137,7 @@ def main():
     # print opt.rseed
     random.seed(opt.rseed)
 
-    maxFit = opt.e*opt.n
+    maxFit = opt.e * opt.n
     runs = 20
 
     # runs = 1
@@ -214,10 +214,12 @@ def main():
 
         if opt.probName == 'NK':
             model = nk.NKLandscape(opt.n,opt.k,opt.c,prefixNK+'NK-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
-            #model = nk.NKLandscape(n,k)
         elif opt.probName == 'NKQ':
             model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
-            #model = nkq.NKQLandcape(n, k, q)
+        elif opt.probName == 'NK':
+            model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+'NK-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
+        elif opt.probName == 'NKQ':
+            model = nkq.NonNKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
 
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
             start = time.time()
@@ -256,12 +258,12 @@ def main():
         # for i in zip(bitF,fitF):
         #     print i[0],i[1]
 
-        
+
         # bitA,fitA = tl.compMean(model)
         # for i in zip(bitF,fitF, bitA, fitA):
         #     print i[0],'%g\t%g' %(i[1],i[3])
 
-        
+
 
 
         # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])

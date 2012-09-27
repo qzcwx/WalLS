@@ -45,9 +45,21 @@ class NKLandscape:
     def genNeigh(self):
         """ generate neighborhood of K+1 randomly picked positions out of N ones """
         self.neighs = []
-        for i in range(self.c):
-            oneNeigh = random.sample(range(self.n), self.k+1)
-            self.neighs.append(oneNeigh)
+        if self.c == self.n:              # strictly NK-landscapses
+            # print self.c, self.n
+            for i in range(self.c):
+                oneNeigh = random.sample(range(self.n-1),self.k)
+                # print 'before', oneNeigh
+                for j in range(len(oneNeigh)):
+                    if oneNeigh[j] >= i:
+                        oneNeigh[j] = oneNeigh[j] + 1
+                oneNeigh.append(i)
+                # print 'after', oneNeigh
+                self.neighs.append(oneNeigh)
+        else:                             # MaxSAT instances
+            for i in range(self.c):
+                oneNeigh = random.sample(range(self.n), self.k+1)
+                self.neighs.append(oneNeigh)
 
     def getNeigh(self):
         return self.neighs
@@ -542,3 +554,21 @@ class NKLandscape:
 class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
+
+class NonNKLandscape(NKLandscape):
+    """ Non-uniform random NK-Landscapes """
+    def __init__(self, inN, inK, inC, fileName = None):
+        self.n = inN
+        self.k = inK
+        self.c = inC
+        NKLandscape.__init__(self, inN, inK, inC, fileName)
+        if fileName == None:
+            self.genNonNeigh() # clear from parental class, re-generate
+        else:
+            self.readFile(fileName)
+        self.Kbits = tl.genSeqBits(self.k+1)
+
+    def genNonNeigh(self):
+        self.neighs = []
+        # for i in range(self.c):
+
