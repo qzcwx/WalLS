@@ -219,7 +219,7 @@ def main():
         elif opt.probName == 'NonNK':
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
 
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip':
             start = time.time()
             # Walsh analysis
             w = model.WalshCofLinearLinklist()
@@ -311,6 +311,8 @@ def main():
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = time.time() - start
+
+
 
     #    trace = res[0]['trace']
     #    for i in trace:
@@ -404,3 +406,17 @@ def main():
 
         f.close()
         print
+
+
+        if opt.compMeth == 'walRestFlip':
+            """ store trace of bit-flips to files """
+            for i in range(runs):
+                if opt.probName == 'NKQ' :
+                    nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-R'+str(i)+'.txt'
+                elif opt.probName == 'NK' or opt.probName == 'NonNK':
+                    nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-R'+str(i)+'.txt'
+                f = open(nameOfF, 'w')
+                for j in res[i]['traceFlip']:
+                    print >>f, "%d" %(j)
+                f.close()
+

@@ -85,6 +85,9 @@ cdef class LocalSearch:
                 return self.runFitSrest(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCrest(fitName, minimize, restart)
+        elif compM == 'walRestFlip':
+            if fitName == 'fit':
+                return self.runFitSrestFlip(fitName, minimize, restart)
         elif compM == 'walRestNext':
             if fitName == 'fit':
                 return self.runFitSrestNext(fitName, minimize, restart)
@@ -757,7 +760,7 @@ cdef class LocalSearch:
 
         traceEval = []
         traceFit = []
-        
+
         initT = time.time() - start
 
         while self.fitEval < self.MaxFit:
@@ -808,6 +811,92 @@ cdef class LocalSearch:
         self.oldindiv.destructor(fitName)
         # print 'init', initC, 'update', updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
+    def runFitSrestFlip(self,fitName, minimize, restart):
+        """
+        steepest descent local search running on S, with tracing bit-flips enabled
+        """
+        self.fitEval = 0
+        start = time.time()
+        self.model.transWal()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.initWal(self.model)
+        self.model.initInter()
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        self.oldindiv.genImproveS(minimize)
+        self.model.WA = []
+        # print 'init', self.bsf.fit
+        initC = 1
+        updateC = 0
+
+        # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
+        # print 'init improve', self.oldindiv.improveA
+
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+        walkLen = 10
+
+        traceEval = []
+        traceFit = []
+        traceFlip = np.zeros(self.dim)
+
+        initT = time.time() - start
+
+        while self.fitEval < self.MaxFit:
+            # print 'fitEval', self.fitEval
+            start = time.time()
+            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            descT = descT + time.time() - start
+            # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
+
+            if improveN == False:
+                initC = initC + 1
+                if restart == True:
+                    start = time.time()
+                    oldbit = self.oldindiv.bit
+                    oldfit = self.oldindiv.fit
+                    self.restart(fitName, minimize, False)
+                    # print 'restart', 'bsf', self.bsf.fit, '\n'
+
+                    pertT = pertT + time.time() - start
+
+                    start = time.time()
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    self.oldindiv.fit = oldfit
+                    for i in diff:
+                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
+                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.update(i)
+                        self.oldindiv.updateWAS(i)
+                        self.oldindiv.updatePertImprS(i, minimize)
+                    updatePertT = updatePertT + time.time() - start # TODO: need to count it in the next experiment
+                    # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE
+                # print 'bestI', bestI
+                # print 'improveA', self.oldindiv.improveA
+                start = time.time()
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.update(bestI)
+                self.oldindiv.updateWAS(bestI)
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+                self.oldindiv.flip(bestI)
+                traceFlip[bestI] = traceFlip[bestI] + 1
+
+        self.oldindiv.destructor(fitName)
+
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFlip':traceFlip}
+
 
     def runFitSrestNext(self,fitName, minimize, restart):
         """
