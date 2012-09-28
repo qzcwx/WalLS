@@ -213,13 +213,12 @@ def main():
         res = []
 
         if opt.probName == 'NK':
-            model = nk.NKLandscape(opt.n,opt.k,opt.c,prefixNK+'NK-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
+            model = nk.NKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
         elif opt.probName == 'NKQ':
-            model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
-        elif opt.probName == 'NK':
-            model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+'NK-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
-        elif opt.probName == 'NKQ':
-            model = nkq.NonNKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+'NKQ-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
+            model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
+        elif opt.probName == 'NonNK':
+            model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
+
 
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
             start = time.time()
@@ -240,11 +239,11 @@ def main():
             # model.countInterBits()
 
             """ store runtime to files """
-            if opt.probName == 'NKQ':
+            if opt.probName == 'NKQ' :
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
-            elif opt.probName == 'NK':
+            elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
-
+                
             f = open(nameOfF, 'w')
             print >>f,"%g\t%g" % (walTime,hyperTime)
             f.close()
@@ -321,7 +320,7 @@ def main():
         """ store results to files """
         if opt.probName == 'NKQ':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
-        elif opt.probName == 'NK':
+        elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
     #    """ print the mean over multiple runs """
@@ -343,7 +342,7 @@ def main():
             """ store trace to files: 1. the number of descent steps """
             if opt.probName == 'NKQ':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
-            elif opt.probName == 'NK':
+            elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
             f = open(nameOfF, 'w')
             for i in range(runs):
@@ -352,7 +351,7 @@ def main():
         else:
             if opt.probName == 'NKQ':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
-            elif opt.probName == 'NK':
+            elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
             f = open(nameOfF, 'w')
             print >>f,"initC\tupdateC\t"
@@ -365,7 +364,7 @@ def main():
             for i in range(runs):
                 if opt.probName == 'NKQ':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
-                elif opt.probName == 'NK':
+                elif opt.probName == 'NK' or opt.probName == 'NonNK':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 f = open(nameOfF, 'w')
                 if (opt.fitName == 'fit'):
@@ -379,7 +378,7 @@ def main():
         """ store runtime to files """
         if opt.probName == 'NKQ':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
-        elif opt.probName == 'NK':
+        elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
         f = open(nameOfF, 'w')
