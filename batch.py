@@ -13,7 +13,7 @@ def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w,m,t,e):
     """ check whether the results have been produced or not """
     if probName == 'NKQ':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-M'+m+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-Q'+str(q)+'-T'+str(t)+'-E'+str(e)+'.txt'
-    elif probName == 'NK':
+    elif probName == 'NK' or probName == 'NonNK':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+str(c)+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-E'+str(e)+'.txt'
 
     if os.path.isfile(nameOfF)==True:
@@ -97,18 +97,18 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    # nRange = [20,50,100,200,500]
-    # kRange = [2,4]
+    nRange = [20,50,100,200,500]
+    kRange = [2,4]
 
-    nRange = [200]
-    kRange = [2]
+    # nRange = [200]
+    # kRange = [2]
 
     # cRange = [1000, 3000, 4260, 6000, 7500, 9000]
     # cRange = [500, 1500, 2130, 3000, 3750, 4500]
     vRange = [1]
 
-    eRange = [10,20,100]
-    # eRange = [50]
+    # eRange = [10,20,100]
+    eRange = [50]
 
     tRange = [7]
 
@@ -117,7 +117,7 @@ if __name__== "__main__":
     fRange = ['fit']
     mRange = ['bf', 'walRest']
 
-    pRange = ['NK']
+    pRange = ['NonNK']
 
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)
@@ -149,7 +149,7 @@ if __name__== "__main__":
                                                     else: # if the algorithm is population-based, for GA and CHC
                                                        for s in [30]:
                                                            count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,count)
-                                            elif p == 'NK': # for NK problem
+                                            elif p == 'NK' or p == 'NonNK': # for NK problem
                                                 q = 0
                                                 if a == 'LS' or a == 'rLS':
                                                     for w in wRange :
@@ -190,7 +190,7 @@ if __name__== "__main__":
                                                     else: # if the algorithm is population-based, for GA and CHC
                                                         for s in [30]:
                                                             writeScript(p,a,f,i,s,c,n,k,q,1,m,t,chunkSize, track)
-                                            elif p == 'NK': # for NK problem
+                                            elif p == 'NK' or p == 'NonNK': # for NK problem
                                                 q = 0
                                                 if a == 'LS' or a == 'rLS':
                                                     for w in wRange :

@@ -138,7 +138,7 @@ def main():
     random.seed(opt.rseed)
 
     maxFit = opt.e * opt.n
-    runs = 0
+    runs = 20
 
     # runs = 1
     # maxFit = 1000
@@ -250,7 +250,7 @@ def main():
 
         if opt.compMeth == 'countFreq':
             freq = model.countFreqInFunc()
-
+            print sum(freq)
 
         # if opt.fitName == 'fit':
         #     bit,fit = tl.compFit(model)
