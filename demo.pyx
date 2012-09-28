@@ -138,7 +138,7 @@ def main():
     random.seed(opt.rseed)
 
     maxFit = opt.e * opt.n
-    runs = 20
+    runs = 0
 
     # runs = 1
     # maxFit = 1000
@@ -219,7 +219,6 @@ def main():
         elif opt.probName == 'NonNK':
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
 
-
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk':
             start = time.time()
             # Walsh analysis
@@ -243,10 +242,15 @@ def main():
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
-                
+
             f = open(nameOfF, 'w')
             print >>f,"%g\t%g" % (walTime,hyperTime)
             f.close()
+
+
+        if opt.compMeth == 'countFreq':
+            freq = model.countFreqInFunc()
+
 
         # if opt.fitName == 'fit':
         #     bit,fit = tl.compFit(model)
@@ -330,11 +334,15 @@ def main():
     #    print np.mean(r)
 
         f = open(nameOfF, 'w')
-        for i in range(runs):
-            if opt.fitName != 'fit':
-                print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
-            else:
-                print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
+        if opt.compMeth == 'countFreq':
+            for i in freq:
+                print >>f,"%d" %(i)
+        else:
+            for i in range(runs):
+                if opt.fitName != 'fit':
+                    print >>f,"%g\t%g\t%g" % (res[i]['sol'], res[i]['fitG'], res[i]['nEvals'])
+                else:
+                    print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
         f.close()
         print nameOfF
 

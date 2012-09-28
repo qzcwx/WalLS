@@ -552,6 +552,16 @@ class NKLandscape:
                             self.Inter[j].arr.add(k)
                     self.Inter[j].WI.add(i)
 
+    def countFreqInFunc(self):
+        """ count the frequency of a variable i appearing in a function """
+        self.freq = np.zeros(self.n)
+        for i in self.neighs:
+            for j in i:
+                self.freq[j] = self.freq[j] + 1
+
+        return self.freq
+
+
 class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)

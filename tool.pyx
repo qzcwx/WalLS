@@ -58,6 +58,7 @@ cpdef compMean(model):
         fit[i] = np.mean(fitN)
     return bitStr, fit
 
+
 #def plotDistNKQ():
 #    """ 
 #        Plot the distribution of fitness of when K and Q vary, 1000 samples,
