@@ -97,15 +97,20 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    nRange = [20,50,100,200,500]
-    kRange = [2,4]
+    # nRange = [20,50,100,200,500]
+    # kRange = [2,4]
+
+    nRange = [200]
+    kRange = [2]
+
     # cRange = [1000, 3000, 4260, 6000, 7500, 9000]
     # cRange = [500, 1500, 2130, 3000, 3750, 4500]
     vRange = [1]
-    # eRange = [10,20,50,100]
-    eRange = [50]
-    
-    tRange = [3]
+
+    eRange = [10,20,100]
+    # eRange = [50]
+
+    tRange = [7]
 
     iRange = [0]
     aRange = ['rLS']

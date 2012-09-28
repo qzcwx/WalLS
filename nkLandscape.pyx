@@ -3,6 +3,7 @@
 ## 00-0, 01-1, 10-2, 11-3 import WalshAnalysis as wal import random import numpy as np import math
 
 import random
+import numpy as np
 import WalshAnalysis as wal
 import numpy as np
 import tool as tl
@@ -562,6 +563,8 @@ class NonNKLandscape(NKLandscape):
         self.k = inK
         self.c = inC
         NKLandscape.__init__(self, inN, inK, inC, fileName)
+
+
         if fileName == None:
             self.genNonNeigh() # clear from parental class, re-generate
         else:
@@ -570,5 +573,20 @@ class NonNKLandscape(NKLandscape):
 
     def genNonNeigh(self):
         self.neighs = []
-        # for i in range(self.c):
+        # enforce n=c
+        if self.c == self.n:
+            # generate permutation
+            pi = range(self.n)
+            random.shuffle(pi)
+            # print pi
+            for i in range(self.n):
+                oneNeigh = [i]
+                while len(oneNeigh)<self.k+1:
+                    rand = pi[np.random.binomial(len(pi), 0.5)]
+                    if rand not in oneNeigh:
+                        oneNeigh.append(rand)
+                        # print rand
+                self.neighs.append(oneNeigh)
+        else:
+            print 'Non-uniform NK(q) landscape instances require c==n'
 
