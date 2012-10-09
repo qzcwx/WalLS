@@ -75,6 +75,7 @@ cdef class Individual:
 
     def init(self):
         self.initIndiv(self.dim)
+    
 
     def initWal(self, model):
         self.model = model
@@ -258,14 +259,13 @@ cdef class Individual:
         Cij stands for S_i(y_j) = S_i(x) - C_ij
         partially update the Sum Array and self.WAS, given the bit which is changed
         """
-        cdef int i,ii, k0, k1
+        cdef int i,ii, k0, k1, k
         cdef int len1
         cdef set[int].iterator it
         cdef vector[int].iterator itt
         cdef vector[int] arr
         cdef InfBit I
         cdef ComArr* comb
-
 
         self.sumArr[p] = - self.sumArr[p]
         if self.Inter[p]!=NULL:
@@ -288,6 +288,7 @@ cdef class Individual:
         # update the rest of elements in C matrix
         if self.infectBit[p].size() != 0:
             for i in prange(self.infectBit[p].size(), nogil=True):
+            # for i in range(self.infectBit[p].size()):
                 I = self.infectBit[p][0][i][0]
                 arr = I.arr[0]
                 itt = arr.begin()
@@ -303,11 +304,21 @@ cdef class Individual:
                     self.C[k0][k1] = self.C[k0][k1] - 2 * self.WAS[I.WI].w
 
 
-    def updateImprS(self, p, minimize):
+    cpdef updateImprS(self, p, minimize):
+        cdef int i
+        cdef set[int].iterator it
+        
         if p in self.improveA:
             self.improveA.remove(p)
-        if p in self.model.Inter:
-            for i in self.model.Inter[p].arr:
+
+
+        if self.Inter[p]!= NULL:
+            it = self.Inter[p].arr.begin()
+
+            while it!=self.Inter[p].arr.end():
+        # if p in self.model.Inter:
+        #     for i in self.model.Inter[p].arr:
+                i = deref(it)                
                 """ equal moves """
                 # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
                 """ NOT equal moves """
@@ -316,10 +327,18 @@ cdef class Individual:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
+                inc(it)
 
-    def updatePertImprS(self, p, minimize):
-        if p in self.model.Inter:
-            for i in self.model.Inter[p].arr :
+    cpdef updatePertImprS(self, p, minimize):
+        cdef int i
+        cdef set[int].iterator it
+        
+        if self.Inter[p]!= NULL:
+            it = self.Inter[p].arr.begin()
+            while it!=self.Inter[p].arr.end():
+                i = deref(it)
+        # if p in self.model.Inter:
+        #     for i in self.model.Inter[p].arr :
                 """ equal moves """
                 # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
                 """ NOT equal moves """
@@ -328,6 +347,7 @@ cdef class Individual:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
+                inc(it)
 
         """ equal move """
         #if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
@@ -353,11 +373,20 @@ cdef class Individual:
                     self.sumArrFake[i] = self.sumArrFake[i] - 2*self.Cfake[i,p]
                 else:
                     self.sumArrFake[i] = self.sumArrFake[i] - 2*self.Cfake[p,i]
-    def updateWAS(self,p):
-        if p in self.model.Inter:
-            for i in self.model.Inter[p].WI:
-                self.WAS[i].w = - self.WAS[i].w
+                    
+    cpdef updateWAS(self,p):
+        cdef int ii
 
+        cdef set[int].iterator it
+        
+        # if p in self.model.Inter:
+        if self.Inter[p]!=NULL:
+            # for i in self.Inter[p].WI:
+            it = self.Inter[p].WI.begin()
+            while it != self.Inter[p].WI.end():
+                ii = deref(it)
+                self.WAS[ii].w = - self.WAS[ii].w
+                inc(it)
 
     def updateSC(self, p):
         cdef int i,ii, k0, k1
@@ -448,6 +477,8 @@ cdef class Individual:
             # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
                 self.improveA.append(i)
 
+                
+        
 ##     def genFitNext(self,minimize):
 ##         """
 ##         generate the index of next improving neigh according to sumArr only (surrogate of fitness)

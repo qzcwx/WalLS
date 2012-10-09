@@ -535,18 +535,15 @@ class NKLandscape:
                         self.interBit[sub[k]].append(sub[j])
 
     def initInter(self):
+        """ 
+        initialization of interaction information
+        """
         self.Inter = dict()
         for i in range(len(self.WA)):
-#            W = int(math.pow(-1, self.binCount(self.WA[i].arr, self.bit))) * self.WA[i].w
-#            self.WAS[i] = Struct(arr = self.WA[i].arr, w = W)
-#            comb = self.genComb(len(self.WA[i].arr))
-
             for j in self.WA[i].arr:
-#                self.sumArr[j] = self.sumArr[j] + W
                 if len(self.WA[i].arr)>1: # for at least order Walsh terms
                     if j not in self.Inter: # the entry of i doesn't exist yet
                         self.Inter[j] = Struct(arr=Set(), WI=Set())
-
                     for k in self.WA[i].arr:
                         if k != j:
                             self.Inter[j].arr.add(k)

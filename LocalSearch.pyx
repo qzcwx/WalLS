@@ -60,6 +60,9 @@ cdef class LocalSearch:
                 return self.runFit(minimize,restart)
             else:
                 return self.runNeigh(fitName, minimize,restart)
+        elif compM == 'bfUp':
+            if fitName == 'fit':
+                return self.runFitUpdate(minimize, restart)
         elif compM == 'walWalk':
             if fitName == 'fit':
                 return self.runFitSwalk(fitName, minimize, restart)
@@ -729,7 +732,7 @@ cdef class LocalSearch:
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
 
-    def runFitSrest(self,fitName, minimize, restart):
+    cdef runFitSrest(self,fitName, minimize, restart):
         """
         steepest descent local search running on S
         """
@@ -740,11 +743,11 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.initInter()
+        # self.model.initInter()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
-        # print 'init', self.bsf.fit
+        
         initC = 1
         updateC = 0
 
@@ -764,7 +767,6 @@ cdef class LocalSearch:
         initT = time.time() - start
 
         while self.fitEval < self.MaxFit:
-            # print 'fitEval', self.fitEval
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             descT = descT + time.time() - start
@@ -778,7 +780,7 @@ cdef class LocalSearch:
                     oldfit = self.oldindiv.fit
                     self.restart(fitName, minimize, False)
                     # print 'restart', 'bsf', self.bsf.fit, '\n'
-
+                    
                     pertT = pertT + time.time() - start
 
                     start = time.time()
@@ -1885,7 +1887,7 @@ cdef class LocalSearch:
         updateT = updateT + time.time() - start
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'update':updateT}
 
-    def runFit(self, minimize,restart):
+    cdef runFit(self, minimize,restart):
         """
         brute force approach for running BILS
         """
@@ -2084,6 +2086,23 @@ cdef class LocalSearch:
         print  '%.3e' %(self.func(sol))
         print
         return { 'nEvals': 1, 'sol': None, 'bit': None}
+
+        
+    def runFitUpdate(self, minimize, restart):
+        # TODO: change the function type cdef
+        self.fitEval = 0
+        start = time.time()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        self.model.initInter()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        
+        # while self.fitEval < self.MaxFit:
+            
+            
+            
+            
 
     cdef runBeamFitSwalkNext(self,fitName, minimize, restart, beamWidth):
         """
