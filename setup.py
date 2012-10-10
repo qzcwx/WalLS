@@ -26,7 +26,7 @@ ext_module3 = Extension(
     ["nkLandscape.pyx"],
 #    extra_compile_args=['-fopenmp'],
 #    extra_link_args=['-fopenmp'],
-#    language="c++",
+   language="c++",
 )
 
 ext_module4 = Extension(
@@ -34,7 +34,7 @@ ext_module4 = Extension(
     ["nkqLandscape.pyx"],
 #    extra_compile_args=['-fopenmp'],
 #    extra_link_args=['-fopenmp'],
-#    language="c++",
+   language="c++",
 )
 
 ext_module5 = Extension(

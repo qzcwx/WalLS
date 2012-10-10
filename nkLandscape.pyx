@@ -9,15 +9,39 @@ import numpy as np
 import tool as tl
 import math
 from sets import Set
+from libc.stdlib cimport malloc, free
+from libcpp.set cimport set
+import cython 
+
 import pdb
 
+ctypedef struct ComArr:
+    int** arr
+    int size
 
-class NKLandscape:
+ctypedef struct InTer:
+    set[int]* arr
+
+    
+cdef class NKLandscape:
+    cdef ComArr** lookup
+    cdef InTer** Inter
+    cdef int n
+    cdef int k
+    cdef int c
+    cdef list neighs
+    cdef list func
+    cdef list Kbits
+    cdef public dict w
+    cdef public list WA
+    
+    
     """ NK-landscape class """
     def __init__(self,inN, inK, inC, fileName = None):
         self.n = inN
         self.k = inK
         self.c = inC
+ 
 
         # for run experiments
         if fileName == None:
@@ -25,8 +49,11 @@ class NKLandscape:
             self.genFunc()
         else:
             self.readFile(fileName)
-
         self.Kbits = tl.genSeqBits(self.k+1)
+
+        self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.n)
+        for i in xrange(self.n):
+            self.lookup[i] = NULL
 
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
@@ -534,21 +561,92 @@ class NKLandscape:
                     elif sub[j] not in self.interBit[sub[k]]:
                         self.interBit[sub[k]].append(sub[j])
 
-    def initInter(self):
+    # def initInter(self):
+    #     """ 
+    #     old implementation used by walsh search
+    #     """
+    #     self.Inter = dict()
+    #     for i in range(len(self.WA)):
+    #         for j in self.WA[i].arr:
+    #             if len(self.WA[i].arr)>1: # for at least order Walsh terms
+    #                 if j not in self.Inter: # the entry of i doesn't exist yet
+    #                     self.Inter[j] = Struct(arr=Set(), WI=Set())
+    #                 for k in self.WA[i].arr:
+    #                     if k != j:
+    #                         self.Inter[j].arr.add(k)
+    #                 self.Inter[j].WI.add(i)
+
+    cpdef initInter(self):
         """ 
         initialization of interaction information
         """
-        self.Inter = dict()
-        for i in range(len(self.WA)):
-            for j in self.WA[i].arr:
-                if len(self.WA[i].arr)>1: # for at least order Walsh terms
-                    if j not in self.Inter: # the entry of i doesn't exist yet
-                        self.Inter[j] = Struct(arr=Set(), WI=Set())
-                    for k in self.WA[i].arr:
-                        if k != j:
-                            self.Inter[j].arr.add(k)
-                    self.Inter[j].WI.add(i)
+        cdef list i
+        cdef int j0, j1
+        cdef InTer* inter
 
+        self.Inter = < InTer** > malloc(sizeof(void *)*self.n)
+        for i in xrange(self.n):
+            self.Inter[i] = NULL
+        
+        # merely out the function itself, check every pair of 
+        for i in self.neighs:
+            # generete all possible pairs
+            comb = self.genComb(len(i))
+            for j in xrange(comb.size):
+                j0 = i[comb.arr[j][0]]
+                j1 = i[comb.arr[j][1]]
+
+                if self.Inter[j0] == NULL:
+                    inter = <InTer*> malloc(sizeof(InTer))
+                    inter[0].arr = new set[int]()
+                    self.Inter[j0] = inter
+
+                if self.Inter[j1] == NULL:
+                    inter = <InTer*> malloc(sizeof(InTer))
+                    inter[0].arr = new set[int]()
+                    self.Inter[j1] = inter
+
+                self.Inter[j0].arr.insert(j1)
+                self.Inter[j1].arr.insert(j0)
+                
+                # if j0 not in self.Inter:
+                #     self.Inter[j0] = Struct(arr=Set())
+                #     self.Inter[j0].arr.add(j1)
+                # if j1 not in self.Inter:
+                #     self.Inter[j1] = Struct(arr=Set())
+                #     self.Inter[j1].arr.add(j0)
+            
+            
+
+    cdef ComArr* genComb(self,int N) nogil:
+        """
+        Generate C_N^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
+        """
+        cdef int c, j, i, counter
+        cdef ComArr* ptr
+        
+        if self.lookup[N] != NULL: # the key exists before
+            return self.lookup[N]
+        else : # the key not found
+            c = biomial(N, 2)
+            counter = 0
+
+            ptr = <ComArr*> malloc(sizeof(ComArr))
+            ptr.arr = <int**> malloc(sizeof(int*)*c)
+            ptr.size = c
+
+            for i in xrange(c):
+                ptr.arr[i] = <int*> malloc(sizeof(int)*2)
+
+            for i in xrange(N):
+                for j in xrange(i+1,N):
+                    ptr.arr[counter][0] = i
+                    ptr.arr[counter][1] = j
+                    counter = counter + 1
+            self.lookup[N] = ptr
+            return ptr
+
+            
     def countFreqInFunc(self):
         """ count the frequency of a variable i appearing in a function """
         self.freq = np.zeros(self.n)
@@ -559,6 +657,41 @@ class NKLandscape:
         return self.freq
 
 
+    def __del__(self):
+        """ 
+        destructor to be called automatically when instance is about to be destroyed
+        """
+        cdef int i,j
+        
+        for i in xrange(self.n):
+            free(self.lookup[i])
+        free(self.lookup)
+
+        for j in xrange(self.n):
+            if self.Inter[j] != NULL:
+                free(self.Inter[j][0].arr)
+                free(self.Inter[j])
+                self.Inter[j] = NULL
+        free(self.Inter)
+
+        
+        print 'del nklandscape' 
+
+
+@cython.cdivision(True)   #
+cdef int biomial(int N, int K) nogil:
+    """ compute the combination of N choose K """
+    return factorial(N)/( factorial(K) * factorial(N-K) )
+
+
+cdef int factorial(int N) nogil:
+    """ compute N! """
+    cdef int c, fact = 1
+    for c in xrange(1,N+1):
+        fact = fact*c
+    return fact
+
+        
 class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
@@ -578,6 +711,7 @@ class NonNKLandscape(NKLandscape):
             self.readFile(fileName)
         self.Kbits = tl.genSeqBits(self.k+1)
 
+        
     def genNonNeigh(self):
         self.neighs = []
         # enforce n=c
@@ -597,3 +731,4 @@ class NonNKLandscape(NKLandscape):
         else:
             print 'Non-uniform NK(q) landscape instances require c==n'
 
+            

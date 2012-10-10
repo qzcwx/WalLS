@@ -3,6 +3,7 @@ import numpy as np
 import math
 import random
 import copy
+# import tool as tl
 
 # import for Cython
 cimport cython
@@ -11,7 +12,6 @@ from libcpp.vector cimport vector
 from libcpp.set cimport set
 from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref, preincrement as inc
-
 
 class orderSum:
     def __init_(self, k=0):
@@ -53,7 +53,7 @@ cdef class Individual:
     cdef int MaxFit
     cdef public double threshold
     cdef int fitEval
-    cdef ComArr** lookup
+    cdef ComArr** lookup 
     cdef public double fit
     cdef public double fitG
     cdef public char* bit
@@ -197,7 +197,7 @@ cdef class Individual:
 
         for i in range(len(self.model.WA)):
             lenArr = len(self.model.WA[i].arr)
-            comb = self.genComb(lenArr)
+            comb = self.genComb3(lenArr)
             for j in xrange(comb.size):
                 j0 = self.model.WA[i].arr[comb.arr[j][0]]
                 j1 = self.model.WA[i].arr[comb.arr[j][1]]
@@ -802,7 +802,9 @@ cdef class Individual:
             self.bit[i]='0'
 
     cpdef destructor(self,fitName):
-        """ free memory to avoid memory leaks """
+        """ 
+        free memory to avoid memory leaks, espcially for executing multiple runs
+        """
         cdef int i,j
         free(self.bit)
 
@@ -821,16 +823,24 @@ cdef class Individual:
             free(self.lookup[i])
         free(self.lookup)
 
-        for i in xrange(len(self.model.WA)):
-            for j in self.model.WA[i].arr:
-                if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
-                    if self.Inter[j] != NULL:
-                        free(self.Inter[j][0].arr)
-                        free(self.Inter[j][0].WI)
-                        free(self.Inter[j])
-                        self.Inter[j] = NULL
+        # for i in xrange(len(self.model.WA)):
+        #     for j in self.model.WA[i].arr:
+        #         if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
+        #             if self.Inter[j] != NULL:
+        #                 free(self.Inter[j][0].arr)
+        #                 free(self.Inter[j][0].WI)
+        #                 free(self.Inter[j])
+        #                 self.Inter[j] = NULL
+        # free(self.Inter)
+
+        for j in xrange(self.dim):
+            if self.Inter[j] != NULL:
+                free(self.Inter[j][0].arr)
+                free(self.Inter[j])
+                self.Inter[j] = NULL
         free(self.Inter)
 
+        
         for i in xrange(self.dim):
             for j in xrange(self.infectBit[i][0].size()):
                 #del self.infectBit[i][0][j].arr
@@ -975,6 +985,7 @@ cdef class Individual:
     cpdef compFitG(self):
         self.fitG = self.fit - 2/ float(self.dim) * (sumC(self.sumArr, self.dim))
 
+        
     cdef ComArr* genComb(self,int N) nogil:
         """
         Generate C_N^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.

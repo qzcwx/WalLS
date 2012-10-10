@@ -4,8 +4,7 @@ import random
 import numpy as np
 import math
 import sys
-import nkLandscape as nk
-
+    
 argvCount = 1
 
 def getArgv():
@@ -295,3 +294,4 @@ cpdef genSeqBits(n):
 
 def printSep():
     print 80*'*'
+

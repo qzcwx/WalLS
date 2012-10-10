@@ -60,7 +60,7 @@ cdef class LocalSearch:
                 return self.runFit(minimize,restart)
             else:
                 return self.runNeigh(fitName, minimize,restart)
-        elif compM == 'bfUp':
+        elif compM == 'bfUpdate':
             if fitName == 'fit':
                 return self.runFitUpdate(minimize, restart)
         elif compM == 'walWalk':
@@ -2094,7 +2094,7 @@ cdef class LocalSearch:
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-        self.model.initInter()
+        self.initInter()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         
