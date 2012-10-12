@@ -348,7 +348,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.initInter()
+        # self.model.initInter()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
@@ -421,7 +421,7 @@ cdef class LocalSearch:
                 # else:
                 #     self.oldindiv.bit[bestI] = '1'
 
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
     def fitCheck(self,fitName, minimize, restart):
@@ -437,7 +437,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.initInter()
+        # self.model.initInter()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
@@ -495,7 +495,7 @@ cdef class LocalSearch:
                 updateC = updateC + 1
                 self.oldindiv.flip(bestI)
 
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
     def runFitSwalkNext(self,fitName, minimize, restart):
@@ -510,7 +510,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.initInter()
+        # self.model.initInter()
         self.bsf = copy.deepcopy(self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
@@ -810,7 +810,7 @@ cdef class LocalSearch:
                 updateC = updateC + 1
                 self.oldindiv.flip(bestI)
 
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         # print 'init', initC, 'update', updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
@@ -825,7 +825,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.initInter()
+        # self.model.initInter()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
@@ -895,7 +895,7 @@ cdef class LocalSearch:
                 self.oldindiv.flip(bestI)
                 traceFlip[bestI] = traceFlip[bestI] + 1
 
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
 
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFlip':traceFlip}
 
@@ -911,7 +911,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.initInter()
+        # self.model.initInter()
         self.bsf = copy.deepcopy(self.oldindiv)
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
@@ -982,7 +982,7 @@ cdef class LocalSearch:
 
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
 
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
@@ -1078,7 +1078,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
 
         # print('dest begin')
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
@@ -1090,7 +1090,7 @@ cdef class LocalSearch:
 
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
 
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
@@ -1193,7 +1193,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
 
         # print('dest begin')
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
@@ -1202,7 +1202,7 @@ cdef class LocalSearch:
 
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
 
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
@@ -1327,7 +1327,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
 
         # print('dest begin')
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
@@ -1339,7 +1339,7 @@ cdef class LocalSearch:
 
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
 
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
@@ -1444,7 +1444,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
 
         # print('dest begin')
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
@@ -1452,7 +1452,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
 
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
@@ -1577,7 +1577,7 @@ cdef class LocalSearch:
                 #     self.oldindiv.bit[bestI] = '1'
 
         # print('dest begin')
-        self.oldindiv.destructor(fitName)
+        self.oldindiv.destructorWal(fitName)
         # print('dest end')
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'fitG': self.bsf.fitG, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'platC':platC, 'restC':restC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG}
 
@@ -1593,7 +1593,7 @@ cdef class LocalSearch:
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.model.initInter()
+        # self.model.initInter()
         self.oldindiv.initWal(self.model)
         self.oldindiv.initSC()
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.oldindiv.sumArr))
@@ -1668,7 +1668,7 @@ cdef class LocalSearch:
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.model.initInter()
+        # self.model.initInter()
         self.oldindiv.initWal(self.model)
         self.oldindiv.initSC()
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.oldindiv.sumArr))
@@ -1747,7 +1747,7 @@ cdef class LocalSearch:
         self.oldindiv = individual.Individual(n=self.dim,neigh=True)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.model.initInter()
+        # self.model.initInter()
         self.oldindiv.initWal(self.model)
         self.oldindiv.initSC()
         self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (sum(self.oldindiv.sumArr))
@@ -2090,19 +2090,40 @@ cdef class LocalSearch:
         
     def runFitUpdate(self, minimize, restart):
         # TODO: change the function type cdef
+        """
+        run local search using fit function, with paritial update
+        """
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-        self.initInter()
+        self.model.genInter()
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        self.model.genU()
+        self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize)
         
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         # while self.fitEval < self.MaxFit:
+        #     improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             
-            
-            
-            
+        #     if improveN == False:
+        #         if restart == True:
+        #             oldbit = self.oldindiv.bit
+        #             oldfit = self.oldindiv.fit
+        #             self.restart(fitName, minimize, False)
+        #             # print 'restart', 'bsf', self.bsf.fit, '\n'
+                    
+        #             diff = self.diffBits(oldbit, self.oldindiv.bit)
+        #             self.oldindiv.fit = oldfit
+        #             for i in diff:
+        #                 self.oldindiv.updateSumArr(i)
+        #                 self.oldindiv.update(i)
+        #                 self.oldindiv.updateWAS(i)
+        #                 self.oldindiv.updatePertImprS(i, minimize)
+        #         else:
+        #             return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+
+        
 
     cdef runBeamFitSwalkNext(self,fitName, minimize, restart, beamWidth):
         """
@@ -2112,7 +2133,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
         self.oldpop = []
         for i in xrange(beamWidth):
             self.oldpop.append(individual.Individual(n=self.dim))
@@ -2185,7 +2206,7 @@ cdef class LocalSearch:
                     ## else:
                     ##     self.oldpop[i].bit[bestI] =
         for i in xrange(len(self.oldpop)):
-            self.oldpop[i].destructor(fitName)
+            self.oldpop[i].destructorWal(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamFitSwalk(self,fitName, minimize, restart, beamWidth):
@@ -2196,7 +2217,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
         self.oldpop = []
         for i in xrange(beamWidth):
             self.oldpop.append(individual.Individual(n=self.dim))
@@ -2266,7 +2287,7 @@ cdef class LocalSearch:
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
         for i in xrange(len(self.oldpop)):
-            self.oldpop[i].destructor(fitName)
+            self.oldpop[i].destructorWal(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamMeanSCwalkNext(self,fitName, minimize, restart, beamWidth):
@@ -2277,7 +2298,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
         self.oldpop = []
         for i in xrange(beamWidth):
             self.oldpop.append(individual.Individual(n=self.dim, neigh=True))
@@ -2347,7 +2368,7 @@ cdef class LocalSearch:
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
         for i in xrange(len(self.oldpop)):
-            self.oldpop[i].destructor(fitName)
+            self.oldpop[i].destructorWal(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit,'fitG': self.bsf.fitG, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
     def runBeamMeanSCwalk(self,fitName, minimize, restart, beamWidth):
@@ -2358,7 +2379,7 @@ cdef class LocalSearch:
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
-        self.model.initInter()
+        # self.model.initInter()
         self.oldpop = []
         for i in xrange(beamWidth):
             self.oldpop.append(individual.Individual(n=self.dim, neigh=True))
@@ -2432,7 +2453,7 @@ cdef class LocalSearch:
                     ## else:
                     ##     self.oldpop[i].bit[bestI] = '1'
         for i in xrange(len(self.oldpop)):
-            self.oldpop[i].destructor(fitName)
+            self.oldpop[i].destructorWal(fitName)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit,'fitG': self.bsf.fitG, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC}
 
         ## self.fitEval = 0

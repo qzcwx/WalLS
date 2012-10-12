@@ -59,7 +59,8 @@ cdef class Individual:
     cdef public char* bit
     cdef double* sumArr
     cdef public int dim
-
+    
+    
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         self.bit = NULL
         self.fit = 0
@@ -75,7 +76,7 @@ cdef class Individual:
 
     def init(self):
         self.initIndiv(self.dim)
-    
+
 
     def initWal(self, model):
         self.model = model
@@ -157,6 +158,23 @@ cdef class Individual:
                 self.C[j0][j1] = self.C[j0][j1] + W
 
 
+    def initBfUpdate(self,old,eval,minimize):
+        """ 
+        initialize data structures for performing partial update
+        """
+        
+        # initialize S vector
+        self.sumArr = <double*>malloc(self.dim * sizeof(double))
+        
+        # compute S vector by exploring the partial updates, for the
+        # very first step, we need to actually evaluate the whole vector
+        for i in xrange(self.dim):
+            indiv = Individual(oldIndiv=old)
+            indiv.flip(i)
+            indiv = eval(indiv)
+            self.sumArr[i] = indiv.fit - old.fit
+        self.genImproveS(minimize)
+            
     def checkWalshSum(self):
         """
         compute the sum of Walsh terms grouped by the order (1 to k)
@@ -197,7 +215,7 @@ cdef class Individual:
 
         for i in range(len(self.model.WA)):
             lenArr = len(self.model.WA[i].arr)
-            comb = self.genComb3(lenArr)
+            comb = self.genComb(lenArr)
             for j in xrange(comb.size):
                 j0 = self.model.WA[i].arr[comb.arr[j][0]]
                 j1 = self.model.WA[i].arr[comb.arr[j][1]]
@@ -801,7 +819,7 @@ cdef class Individual:
         else:
             self.bit[i]='0'
 
-    cpdef destructor(self,fitName):
+    cpdef destructorWal(self,fitName):
         """ 
         free memory to avoid memory leaks, espcially for executing multiple runs
         """
@@ -839,7 +857,6 @@ cdef class Individual:
                 free(self.Inter[j])
                 self.Inter[j] = NULL
         free(self.Inter)
-
         
         for i in xrange(self.dim):
             for j in xrange(self.infectBit[i][0].size()):
@@ -859,6 +876,16 @@ cdef class Individual:
             free(self.orderC)
 
 
+    def destructorBfUpdate(self):
+        """
+        destructor for Bfupdate implementation
+        """
+
+        free(self.bit)
+        free(self.sumArr)
+        
+        
+        
     ## def genMeanBest(self,minimize):
     ##     """
     ##     generate the index of best neigh according to {S_p(X)-2/N \Sigma_{i=1}^{N}C_{ip}(X)} only (surrogate of fitness)

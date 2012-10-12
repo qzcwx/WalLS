@@ -12,6 +12,7 @@ from sets import Set
 from libc.stdlib cimport malloc, free
 from libcpp.set cimport set
 import cython 
+from cython.operator cimport dereference as deref, preincrement as inc
 
 import pdb
 
@@ -26,22 +27,23 @@ ctypedef struct InTer:
 cdef class NKLandscape:
     cdef ComArr** lookup
     cdef InTer** Inter
-    cdef int n
-    cdef int k
-    cdef int c
+    cdef int n                            # number of variables
+    cdef int k                            
+    cdef int c                            # number of clauses
     cdef list neighs
     cdef list func
     cdef list Kbits
     cdef public dict w
     cdef public list WA
-    
+    cdef InTer** U
     
     """ NK-landscape class """
     def __init__(self,inN, inK, inC, fileName = None):
         self.n = inN
         self.k = inK
         self.c = inC
- 
+        # self.m = self.n * self.m
+        
 
         # for run experiments
         if fileName == None:
@@ -71,7 +73,10 @@ cdef class NKLandscape:
         self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
 
     def genNeigh(self):
-        """ generate neighborhood of K+1 randomly picked positions out of N ones """
+        """ 
+        generate neighborhood of K+1 randomly picked positions out of N ones 
+        self.neighs include the ith variable itself
+        """
         self.neighs = []
         if self.c == self.n:              # strictly NK-landscapses
             # print self.c, self.n
@@ -576,18 +581,20 @@ cdef class NKLandscape:
     #                         self.Inter[j].arr.add(k)
     #                 self.Inter[j].WI.add(i)
 
-    cpdef initInter(self):
+    cpdef genInter(self):
         """ 
         initialization of interaction information
         """
         cdef list i
+        cdef int j
         cdef int j0, j1
         cdef InTer* inter
-
-        self.Inter = < InTer** > malloc(sizeof(void *)*self.n)
-        for i in xrange(self.n):
-            self.Inter[i] = NULL
+        cdef ComArr* comb
         
+        self.Inter = < InTer** > malloc(sizeof(void *)*self.n)
+        for j in xrange(self.n):
+            self.Inter[j] = NULL
+
         # merely out the function itself, check every pair of 
         for i in self.neighs:
             # generete all possible pairs
@@ -615,6 +622,89 @@ cdef class NKLandscape:
                 # if j1 not in self.Inter:
                 #     self.Inter[j1] = Struct(arr=Set())
                 #     self.Inter[j1].arr.add(j0)
+
+    # cpdef genU(self):
+    cpdef genU(self):
+        """
+        construct a matrix U for updating purposes. where only i<=j
+        entries are non-empty. Each non-empty entry is a list of indices
+        of subfunctions that includes both i and j. The list can be
+        constructed on the basis of 'neighs' data structur. Using
+        one-dimensional representation to avoid the odds of generating
+        matrix.
+        
+        Note: need an analogy implementation for Walsh-based search
+        """
+        cdef int i, j, l, j0, j1, pos
+        cdef list neigh
+        cdef ComArr* comb
+        cdef InTer* inter
+
+        # initialize U matrix (in 1-D representation)
+        l = (self.c * (self.c-1))/2
+        # print 'l', l
+        self.U = < InTer** > malloc( sizeof(void *) * l )
+        
+        for i in xrange(l):
+            self.U[i] = NULL
+
+        # print 'init'
+        # generate entries for U matrix based on neighs
+        for i in xrange(len(self.neighs)):
+            # print '*******'
+            # print 'i',i
+            # print self.neighs[i]
+            comb = self.genComb(len(self.neighs[i]))
+            # print 'comb.size', comb.size
+            # print
+            for j in xrange(comb.size):
+                # print 'j', j
+                j0 = self.neighs[i][comb.arr[j][0]] 
+                j1 = self.neighs[i][comb.arr[j][1]] 
+                # print 'j0', j0
+                # print 'j1', j1
+                
+                # calculate the position in U
+                if j0<=j1:
+                    pos = j1*(j1 - 1)/2 + j0
+                else:
+                    pos = j0*(j0 - 1)/2 + j1
+                # print 'pos', pos
+                
+                if self.U[pos] == NULL:
+                    inter = <InTer*> malloc(sizeof(InTer))
+                    inter[0].arr = new set[int]()
+                    self.U[pos] = inter
+
+                #  variable j0 and j1 appear in ith subfunction
+                self.U[pos].arr.insert(i)
+
+
+        # self.printU()
+        
+    def printU(self):
+        """
+         print self.U for verifying purposes
+        """
+        cdef set[int].iterator it
+        cdef int ii, l, i, j, pos
+
+        print 'printU'
+        l = (self.c * (self.c-1))/2        
+        for i in xrange(self.n):
+            for j in xrange(i):
+                pos = i*(i - 1)/2 + j
+                print '*********'
+                print 'i', i, 'j', j, 'pos', pos
+
+                if self.U[pos] != NULL:
+                    it = self.U[pos].arr.begin()
+                    while it != self.U[pos].arr.end():
+                        ii = deref(it)
+                        print ii
+                        inc(it)
+                else:
+                    print i, j, 'not'
             
             
 
