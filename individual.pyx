@@ -11,6 +11,7 @@ from cython.parallel import prange, parallel, threadid
 from libcpp.vector cimport vector
 from libcpp.set cimport set
 from libc.stdlib cimport malloc, free
+from libc.string cimport strcpy
 from cython.operator cimport dereference as deref, preincrement as inc
 
 class orderSum:
@@ -60,7 +61,6 @@ cdef class Individual:
     cdef double* sumArr
     cdef public int dim
     
-    
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         self.bit = NULL
         self.fit = 0
@@ -76,7 +76,6 @@ cdef class Individual:
 
     def init(self):
         self.initIndiv(self.dim)
-
 
     def initWal(self, model):
         self.model = model
@@ -158,22 +157,41 @@ cdef class Individual:
                 self.C[j0][j1] = self.C[j0][j1] + W
 
 
-    def initBfUpdate(self,old,eval,minimize):
+    cpdef initBfUpdate(self,old,eval,minimize,model):
         """ 
         initialize data structures for performing partial update
         """
+        cdef int i
+        # cdef char *tempStr = <char*>malloc(dim+1 * sizeof(char))
+        self.model = model
         
         # initialize S vector
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
         
+        # print self.model.compSubFit(old.bit,0)
+        
         # compute S vector by exploring the partial updates, for the
         # very first step, we need to actually evaluate the whole vector
+
         for i in xrange(self.dim):
             indiv = Individual(oldIndiv=old)
             indiv.flip(i)
-            indiv = eval(indiv)
-            self.sumArr[i] = indiv.fit - old.fit
+            
+            # for each subfunctions that touches ith variable, exact the
+            # old and new subfunction fitness
+            for j in self.model.Inter[i]:
+                self.sumArr[i] = self.model.compSubFit(indiv.bit, j) - self.model.compSubFit
+                indiv.fit - old.fit
+                
+            
+            # print indiv.bit
+            # print self.model.compSubFit(indiv.bit,0)
+            
+            # indiv = eval(indiv)
+            # self.sumArr[i] = indiv.fit - old.fit
+            
         self.genImproveS(minimize)
+        
             
     def checkWalshSum(self):
         """
@@ -880,9 +898,9 @@ cdef class Individual:
         """
         destructor for Bfupdate implementation
         """
-
         free(self.bit)
         free(self.sumArr)
+
         
         
         

@@ -26,7 +26,8 @@ ctypedef struct InTer:
     
 cdef class NKLandscape:
     cdef ComArr** lookup
-    cdef InTer** Inter
+    # cdef InTer** Inter
+    cdef public list Inter
     cdef int n                            # number of variables
     cdef int k                            
     cdef int c                            # number of clauses
@@ -36,6 +37,7 @@ cdef class NKLandscape:
     cdef public dict w
     cdef public list WA
     cdef InTer** U
+    cdef double* subFit
     
     """ NK-landscape class """
     def __init__(self,inN, inK, inC, fileName = None):
@@ -43,7 +45,6 @@ cdef class NKLandscape:
         self.k = inK
         self.c = inC
         # self.m = self.n * self.m
-        
 
         # for run experiments
         if fileName == None:
@@ -57,6 +58,11 @@ cdef class NKLandscape:
         for i in xrange(self.n):
             self.lookup[i] = NULL
 
+        self.subFit = <double*> malloc(sizeof(double)*self.c) 
+
+    cpdef double getSubFitArr(self, i):
+        return self.subFit[i]
+        
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
         for i in range(self.c):
@@ -69,7 +75,15 @@ cdef class NKLandscape:
             print >>f
 
     def readFile(self, fName):
+        cdef int i
+        
         self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.c, autostrip=True, usecols = range(self.k+1)).tolist()
+        # sort the neighs, and overwrite self.neighs 
+        for i in range(self.c):
+            interbit = self.neighs[i][:]
+            interbit.sort()
+            self.neighs[i][:] = interbit
+        
         self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
 
     def genNeigh(self):
@@ -88,12 +102,15 @@ cdef class NKLandscape:
                         oneNeigh[j] = oneNeigh[j] + 1
                 oneNeigh.append(i)
                 # print 'after', oneNeigh
+                # oneNeigh.sort()
                 self.neighs.append(oneNeigh)
         else:                             # MaxSAT instances
             for i in range(self.c):
                 oneNeigh = random.sample(range(self.n), self.k+1)
+                # oneNeigh.sort()
                 self.neighs.append(oneNeigh)
-
+                
+                
     def getNeigh(self):
         return self.neighs
 
@@ -115,27 +132,49 @@ cdef class NKLandscape:
     def genK(self):
         return self.k
 
-    """ compute the fitness value"""
-    def compFit(self, bitStr):
+    cpdef double compFit(self, bitStr):
+        """ compute the fitness value"""
         #       print bitStr
         cdef int  i
-        cdef float sum = 0.0
+        cdef double s = 0.0
+        
+        # self.subFit = np.empty(self.c)
+        
         for i in range(self.c):
             """ compose interacting bits """
             interBit = self.neighs[i][:]
-            interBit.sort()
+            # don't sort the list every time
+            # interBit.sort()
             """ extract corresponding bits """
             bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
             """ sum up the sub-function values """
             #            print self.func[i][int(interStr,2)]
-            sum = sum + self.func[i][int(interStr,2)]
+            self.subFit[i] = self.func[i][int(interStr,2)]
+            s = s + self.subFit[i]
         # print sum/float(self.c)
         # print
         # return sum/float(self.c)
         # print('sum')
-        return sum
+        return s
 
+    cpdef double compSubFit(self, bitStr, i):
+        """
+        compute i^th subfunction fitness value according to bitStr
+        """ 
+        
+        cdef double s = 0.0
+               
+        """ compose interacting bits """
+        interBit = self.neighs[i][:]
+        # interBit.sort()
+        """ extract corresponding bits """
+        bits = [ bitStr[int(j)] for j in interBit ]
+        interStr = ''.join(bits)
+        """ sum up the sub-function values """
+        s = s +  self.func[i][int(interStr,2)] 
+        return s
+        
     def WalCof(self):
         """ compute the Walsh coefficients """
         subW = [] # subW is a N*2^K matrix
@@ -590,10 +629,12 @@ cdef class NKLandscape:
         cdef int j0, j1
         cdef InTer* inter
         cdef ComArr* comb
+        cdef InTer** CInter
+        cdef set[int].iterator it
         
-        self.Inter = < InTer** > malloc(sizeof(void *)*self.n)
+        Cinter = < InTer** > malloc(sizeof(void *)*self.n)
         for j in xrange(self.n):
-            self.Inter[j] = NULL
+            Cinter[j] = NULL
 
         # merely out the function itself, check every pair of 
         for i in self.neighs:
@@ -603,26 +644,47 @@ cdef class NKLandscape:
                 j0 = i[comb.arr[j][0]]
                 j1 = i[comb.arr[j][1]]
 
-                if self.Inter[j0] == NULL:
+                if Cinter[j0] == NULL:
                     inter = <InTer*> malloc(sizeof(InTer))
                     inter[0].arr = new set[int]()
-                    self.Inter[j0] = inter
+                    Cinter[j0] = inter
 
-                if self.Inter[j1] == NULL:
+                if Cinter[j1] == NULL:
                     inter = <InTer*> malloc(sizeof(InTer))
                     inter[0].arr = new set[int]()
-                    self.Inter[j1] = inter
+                    Cinter[j1] = inter
 
-                self.Inter[j0].arr.insert(j1)
-                self.Inter[j1].arr.insert(j0)
+                Cinter[j0].arr.insert(j1)
+                Cinter[j1].arr.insert(j0)
+
+        # copy data to python variable for future use in other moduler
+
+        # initialize
+        self.Inter = [None]*self.n
+        for j in xrange(self.n):
+            if Cinter[j] != NULL:
+                self.Inter[j] = []
+                it = Cinter[j].arr.begin()
+                while it!=Cinter[j].arr.end():
+                    self.Inter[j].append(deref(it))
+                    inc(it)
+        
+        # free space associated with Inter
+        for j in xrange(self.n):
+            if Cinter[j] != NULL:
+                free(Cinter[j][0].arr)
+                free(Cinter[j])
+                Cinter[j] = NULL
+        free(Cinter)
+
+
+    # cdef getInter(self, i):
+    #     """
+    #     return the vector that contains all subfunction 9that contain ith variable
+    #     """
+    #     return self.Inter[i]
+    
                 
-                # if j0 not in self.Inter:
-                #     self.Inter[j0] = Struct(arr=Set())
-                #     self.Inter[j0].arr.add(j1)
-                # if j1 not in self.Inter:
-                #     self.Inter[j1] = Struct(arr=Set())
-                #     self.Inter[j1].arr.add(j0)
-
     # cpdef genU(self):
     cpdef genU(self):
         """
@@ -752,17 +814,19 @@ cdef class NKLandscape:
         destructor to be called automatically when instance is about to be destroyed
         """
         cdef int i,j
+
+        # free(self.subFit)
         
         for i in xrange(self.n):
             free(self.lookup[i])
         free(self.lookup)
 
-        for j in xrange(self.n):
-            if self.Inter[j] != NULL:
-                free(self.Inter[j][0].arr)
-                free(self.Inter[j])
-                self.Inter[j] = NULL
-        free(self.Inter)
+        # for j in xrange(self.n):
+        #     if self.Inter[j] != NULL:
+        #         free(self.Inter[j][0].arr)
+        #         free(self.Inter[j])
+        #         self.Inter[j] = NULL
+        # free(self.Inter)
 
         
         print 'del nklandscape' 

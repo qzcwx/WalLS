@@ -62,7 +62,7 @@ cdef class LocalSearch:
                 return self.runNeigh(fitName, minimize,restart)
         elif compM == 'bfUpdate':
             if fitName == 'fit':
-                return self.runFitUpdate(minimize, restart)
+                return self.runFitUpdate(fitName, minimize, restart)
         elif compM == 'walWalk':
             if fitName == 'fit':
                 return self.runFitSwalk(fitName, minimize, restart)
@@ -2087,42 +2087,49 @@ cdef class LocalSearch:
         print
         return { 'nEvals': 1, 'sol': None, 'bit': None}
 
-        
-    def runFitUpdate(self, minimize, restart):
+    cdef runFitUpdate(self, fitName, minimize, restart):
         # TODO: change the function type cdef
         """
         run local search using fit function, with paritial update
         """
+        # cdef double* subFitArr
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
         self.model.genInter()
         self.oldindiv = self.evalPop(self.oldindiv)
-        self.model.genU()
-        self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize)
+        self.model.genU() 
+        # subFitArr = self.model.getSubFitArr()
         
+        self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
-        # while self.fitEval < self.MaxFit:
-        #     improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+        
+        while self.fitEval < self.MaxFit:
+            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             
-        #     if improveN == False:
-        #         if restart == True:
-        #             oldbit = self.oldindiv.bit
-        #             oldfit = self.oldindiv.fit
-        #             self.restart(fitName, minimize, False)
-        #             # print 'restart', 'bsf', self.bsf.fit, '\n'
+            if improveN == False:
+                if restart == True:
+                    oldbit = self.oldindiv.bit
+                    oldfit = self.oldindiv.fit
+                    self.restart(fitName, minimize, False)
+                    # print 'restart', 'bsf', self.bsf.fit, '\n'
                     
-        #             diff = self.diffBits(oldbit, self.oldindiv.bit)
-        #             self.oldindiv.fit = oldfit
-        #             for i in diff:
-        #                 self.oldindiv.updateSumArr(i)
-        #                 self.oldindiv.update(i)
-        #                 self.oldindiv.updateWAS(i)
-        #                 self.oldindiv.updatePertImprS(i, minimize)
-        #         else:
-        #             return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    self.oldindiv.fit = oldfit
+                    for i in diff:
+                        # take the move
+                        self.oldindiv.updateSumArr(i)
+                        # updating data structures to reflect current solution, namely sumArr and improveS
+                        
+                        
+                        # self.oldindiv.update(i)
+                        # self.oldindiv.updateWAS(i)
+                        # self.oldindiv.updatePertImprS(i, minimize)
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
 
+        
         
 
     cdef runBeamFitSwalkNext(self,fitName, minimize, restart, beamWidth):
