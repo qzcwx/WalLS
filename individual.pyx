@@ -164,33 +164,37 @@ cdef class Individual:
         cdef int i
         # cdef char *tempStr = <char*>malloc(dim+1 * sizeof(char))
         self.model = model
+        print 'initBf'
+
         
-        # initialize S vector
+        # initialize S vector, first derivative
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
+
+        # print 'initBf'
+        for i in xrange(self.dim):
+            self.sumArr[i] = 0
         
         # print self.model.compSubFit(old.bit,0)
         
         # compute S vector by exploring the partial updates, for the
         # very first step, we need to actually evaluate the whole vector
-
+        # print 'initBf'
         for i in xrange(self.dim):
             indiv = Individual(oldIndiv=old)
             indiv.flip(i)
-            
             # for each subfunctions that touches ith variable, exact the
             # old and new subfunction fitness
             for j in self.model.Inter[i]:
-                self.sumArr[i] = self.model.compSubFit(indiv.bit, j) - self.model.compSubFit
-                indiv.fit - old.fit
+                self.sumArr[i] = self.sumArr[i] + self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j)
                 
-            
             # print indiv.bit
             # print self.model.compSubFit(indiv.bit,0)
             
             # indiv = eval(indiv)
             # self.sumArr[i] = indiv.fit - old.fit
-            
+        # print 'initBf'
         self.genImproveS(minimize)
+
         
             
     def checkWalshSum(self):
@@ -200,8 +204,7 @@ cdef class Individual:
         * compute the sum of order seperately for each possible bit-flip (k*n)
         """
         self.walSumArr = [orderSum(self.model.k) for i in range(self.dim)]
-
-
+        
 
     def initSC(self):
         # compute the SC array
@@ -344,10 +347,10 @@ cdef class Individual:
         cdef int i
         cdef set[int].iterator it
         
+        
         if p in self.improveA:
             self.improveA.remove(p)
-
-
+            
         if self.Inter[p]!= NULL:
             it = self.Inter[p].arr.begin()
 
@@ -1019,9 +1022,35 @@ cdef class Individual:
 
         self.bit = randBitStr
 
-    cpdef updateSumArr(self, I):
+    cpdef updateEval(self, I):
+        """
+        update the evaluation function according to sumArr
+        """
         self.fit = self.fit - 2*self.sumArr[I]
+        
+    def updateSumArr(self, q, old):
+        """
+        for the partial update implementation:
 
+        update the first derivative according to second derivative
+        """
+        cdef int i
+        for p in xrange(self.dim):
+            # calculate the sum of second derivative
+            indivpq = Individual(oldIndiv = old)
+            indivpq.flip(p)
+            indivpq.flip(q)
+            
+            indivp = Individual(oldIndiv = old)
+            indivp.flip(p)
+            
+            indivq = Individual(oldIndiv = old)
+            indivq.flip(q)
+            
+            for i in self.model.getU(p,q):
+                self.sumArr[p] = self.sumArr[p] + ( self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i) ) - ( self.model.compSubFit(indivp.bit, i) - self.model.compSubFit(old.bit, i) )
+                
+                
     cpdef printSumArr(self):
         for i in range(self.dim):
             print self.sumArr[i]

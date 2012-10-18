@@ -383,7 +383,7 @@ cdef class LocalSearch:
 
                     start = time.time()
                     for i in diff:
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         #                        self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         # self.oldindiv.printSumArr()
                         self.oldindiv.update(i)
@@ -401,8 +401,7 @@ cdef class LocalSearch:
             else : # improveN is TRUE
                 start = time.time()
                 # self.oldindiv.printSumArr()
-                self.oldindiv.updateSumArr(bestI)
-                #                self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprS(bestI, minimize)
@@ -472,7 +471,7 @@ cdef class LocalSearch:
 
                     start = time.time()
                     for i in diff:
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
@@ -486,7 +485,7 @@ cdef class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
                 start = time.time()
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprS(bestI, minimize)
@@ -788,7 +787,7 @@ cdef class LocalSearch:
                     self.oldindiv.fit = oldfit
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
@@ -801,7 +800,7 @@ cdef class LocalSearch:
                 # print 'improveA', self.oldindiv.improveA
                 start = time.time()
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprS(bestI, minimize)
@@ -872,7 +871,7 @@ cdef class LocalSearch:
                     self.oldindiv.fit = oldfit
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
@@ -885,7 +884,7 @@ cdef class LocalSearch:
                 # print 'improveA', self.oldindiv.improveA
                 start = time.time()
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateWAS(bestI)
                 self.oldindiv.updateImprS(bestI, minimize)
@@ -1032,7 +1031,7 @@ cdef class LocalSearch:
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateSC(i)
                         self.oldindiv.updateWAS(i)
@@ -1055,7 +1054,7 @@ cdef class LocalSearch:
                 # print('flip begin')
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateSC(bestI)
                 self.oldindiv.updateWAS(bestI)
@@ -1145,7 +1144,7 @@ cdef class LocalSearch:
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateSC(i)
                         self.oldindiv.updateWAS(i)
@@ -1169,7 +1168,7 @@ cdef class LocalSearch:
                 # print('flip begin')
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateSC(bestI)
                 self.oldindiv.updateWAS(bestI)
@@ -1279,7 +1278,7 @@ cdef class LocalSearch:
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateSC(i)
                         self.oldindiv.updateWAS(i)
@@ -1303,7 +1302,7 @@ cdef class LocalSearch:
                 # print('flip begin')
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateSC(bestI)
                 self.oldindiv.updateWAS(bestI)
@@ -1396,7 +1395,7 @@ cdef class LocalSearch:
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateSC(i)
                         self.oldindiv.updateWAS(i)
@@ -1420,7 +1419,7 @@ cdef class LocalSearch:
                 # print('flip begin')
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateSC(bestI)
                 self.oldindiv.updateWAS(bestI)
@@ -1529,7 +1528,7 @@ cdef class LocalSearch:
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]
                         # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                        self.oldindiv.updateSumArr(i)
+                        self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateSC(i)
                         self.oldindiv.updateWAS(i)
@@ -1553,7 +1552,7 @@ cdef class LocalSearch:
                 # print('flip begin')
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # self.oldindiv.fitG = self.oldindiv.fit - 2/float(self.dim) * (np.sum(self.oldindiv.sumArr))
-                self.oldindiv.updateSumArr(bestI)
+                self.oldindiv.updateEval(bestI)
                 self.oldindiv.update(bestI)
                 self.oldindiv.updateSC(bestI)
                 self.oldindiv.updateWAS(bestI)
@@ -2097,37 +2096,51 @@ cdef class LocalSearch:
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
+        print 'genInter'
         self.model.genInter()
         self.oldindiv = self.evalPop(self.oldindiv)
+        print 'genU'
         self.model.genU() 
-        # subFitArr = self.model.getSubFitArr()
         
         self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         
         while self.fitEval < self.MaxFit:
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
-            
+
             if improveN == False:
                 if restart == True:
                     oldbit = self.oldindiv.bit
                     oldfit = self.oldindiv.fit
                     self.restart(fitName, minimize, False)
-                    # print 'restart', 'bsf', self.bsf.fit, '\n'
+                    print 'restart', 'bsf', self.bsf.fit, '\n'
                     
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     self.oldindiv.fit = oldfit
                     for i in diff:
                         # take the move
-                        self.oldindiv.updateSumArr(i)
-                        # updating data structures to reflect current solution, namely sumArr and improveS
-                        
-                        
-                        # self.oldindiv.update(i)
-                        # self.oldindiv.updateWAS(i)
-                        # self.oldindiv.updatePertImprS(i, minimize)
+                        print 'eval'
+                        self.oldindiv.updateEval(i)
+                        # updating data structures to reflect current solution, namely the first derivate 
+                        print 'sumArr'
+                        self.oldindiv.updateSumArr(i, self.oldindiv)
+                        print 'pertimprs'
+                        self.oldindiv.updatePertImprS(i, minimize)
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else:
+                print 'eval'
+                self.oldindiv.updateEval(bestI)
+                print 'sumArr'
+                self.oldindiv.updateSumArr(bestI, self.oldindiv)
+                print 'imprs'
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+                
+        self.oldindiv.destructorBfUpdate()
+        print 'return'
+        return 
 
         
         
@@ -2187,7 +2200,7 @@ cdef class LocalSearch:
                         start = time.time()
                         for j in diff:
                             #                            self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
-                            self.oldpop[i].updateSumArr(j)
+                            self.oldpop[i].updateEval(j)
                             self.oldpop[i].update(j)
                             self.oldpop[i].updateWAS(j)
                             self.oldpop[i].updatePertImprS(j, minimize)
@@ -2199,7 +2212,7 @@ cdef class LocalSearch:
                 else : # improveN is TRUE
                     start = time.time()
                     #                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
-                    self.oldpop[i].updateSumArr(bestI)
+                    self.oldpop[i].updateEval(bestI)
                     self.oldpop[i].update(bestI)
                     self.oldpop[i].updateWAS(bestI)
                     self.oldpop[i].updateImprS(bestI, minimize)
@@ -2268,7 +2281,7 @@ cdef class LocalSearch:
                         start = time.time()
                         for j in diff:
                             #                            self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
-                            self.oldpop[i].updateSumArr(j)
+                            self.oldpop[i].updateEval(j)
                             self.oldpop[i].update(j)
                             self.oldpop[i].updateWAS(j)
                             self.oldpop[i].updatePertImprS(j, minimize)
@@ -2280,7 +2293,7 @@ cdef class LocalSearch:
                 else : # improveN is TRUE
                     start = time.time()
                     #                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
-                    self.oldpop[i].updateSumArr(bestI)
+                    self.oldpop[i].updateEval(bestI)
                     self.oldpop[i].update(bestI)
                     self.oldpop[i].updateWAS(bestI)
                     self.oldpop[i].updateImprS(bestI, minimize)
@@ -2348,7 +2361,7 @@ cdef class LocalSearch:
                         for j in diff:
                             #                      self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
                             #                     self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
-                            self.oldpop[i].updateSumArr(j)
+                            self.oldpop[i].updateEval(j)
                             self.oldpop[i].compFitG()
                             self.oldpop[i].update(j)
                             self.oldpop[i].updateSC(j)
@@ -2360,7 +2373,7 @@ cdef class LocalSearch:
                         return { 'nEvals': self.fitEval, 'sol': self.oldpop[i].fit, 'fitG': self.oldpop[i].fitG, 'bit':self.oldpop[i].bit}
                 else : # improveN is TRUE
                     start = time.time()
-                    self.oldpop[i].updateSumArr(bestI)
+                    self.oldpop[i].updateEval(bestI)
                     self.oldpop[i].compFitG()
                     self.oldpop[i].update(bestI)
                     self.oldpop[i].updateSC(bestI)
@@ -2430,7 +2443,7 @@ cdef class LocalSearch:
                         for j in diff:
                             #                      self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[j]
                             #                     self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
-                            self.oldpop[i].updateSumArr(j)
+                            self.oldpop[i].updateEval(j)
                             self.oldpop[i].compFitG()
                             self.oldpop[i].update(j)
                             self.oldpop[i].updateSC(j)
@@ -2444,7 +2457,7 @@ cdef class LocalSearch:
                     start = time.time()
 #                    print 'bestI', bestI
 #                    self.oldpop[i].fit = self.oldpop[i].fit - 2*self.oldpop[i].sumArr[bestI]
-                    self.oldpop[i].updateSumArr(bestI)
+                    self.oldpop[i].updateEval(bestI)
 #                    self.oldpop[i].fitG = self.oldpop[i].fit - 2/float(self.dim) * (np.sum(self.oldpop[i].sumArr))
                     self.oldpop[i].compFitG()
                     self.oldpop[i].update(bestI)

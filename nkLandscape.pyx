@@ -36,7 +36,7 @@ cdef class NKLandscape:
     cdef list Kbits
     cdef public dict w
     cdef public list WA
-    cdef InTer** U
+    cdef public list U
     cdef double* subFit
     
     """ NK-landscape class """
@@ -144,7 +144,7 @@ cdef class NKLandscape:
             """ compose interacting bits """
             interBit = self.neighs[i][:]
             # don't sort the list every time
-            # interBit.sort()
+            # interBit.sort() 
             """ extract corresponding bits """
             bits = [ bitStr[int(j)] for j in interBit ]
             interStr = ''.join(bits)
@@ -167,6 +167,7 @@ cdef class NKLandscape:
                
         """ compose interacting bits """
         interBit = self.neighs[i][:]
+        # don't sort the list every time
         # interBit.sort()
         """ extract corresponding bits """
         bits = [ bitStr[int(j)] for j in interBit ]
@@ -656,9 +657,8 @@ cdef class NKLandscape:
 
                 Cinter[j0].arr.insert(j1)
                 Cinter[j1].arr.insert(j0)
-
+        
         # copy data to python variable for future use in other moduler
-
         # initialize
         self.Inter = [None]*self.n
         for j in xrange(self.n):
@@ -684,8 +684,6 @@ cdef class NKLandscape:
     #     """
     #     return self.Inter[i]
     
-                
-    # cpdef genU(self):
     cpdef genU(self):
         """
         construct a matrix U for updating purposes. where only i<=j
@@ -701,31 +699,24 @@ cdef class NKLandscape:
         cdef list neigh
         cdef ComArr* comb
         cdef InTer* inter
-
+        cdef InTer** u
+        cdef set[int].iterator it
+        
         # initialize U matrix (in 1-D representation)
         l = (self.c * (self.c-1))/2
         # print 'l', l
-        self.U = < InTer** > malloc( sizeof(void *) * l )
+        u = < InTer** > malloc( sizeof(void *) * l )
         
         for i in xrange(l):
-            self.U[i] = NULL
+            u[i] = NULL
 
         # print 'init'
         # generate entries for U matrix based on neighs
         for i in xrange(len(self.neighs)):
-            # print '*******'
-            # print 'i',i
-            # print self.neighs[i]
             comb = self.genComb(len(self.neighs[i]))
-            # print 'comb.size', comb.size
-            # print
             for j in xrange(comb.size):
-                # print 'j', j
                 j0 = self.neighs[i][comb.arr[j][0]] 
                 j1 = self.neighs[i][comb.arr[j][1]] 
-                # print 'j0', j0
-                # print 'j1', j1
-                
                 # calculate the position in U
                 if j0<=j1:
                     pos = j1*(j1 - 1)/2 + j0
@@ -733,41 +724,68 @@ cdef class NKLandscape:
                     pos = j0*(j0 - 1)/2 + j1
                 # print 'pos', pos
                 
-                if self.U[pos] == NULL:
+                if u[pos] == NULL:
                     inter = <InTer*> malloc(sizeof(InTer))
                     inter[0].arr = new set[int]()
-                    self.U[pos] = inter
+                    u[pos] = inter
 
                 #  variable j0 and j1 appear in ith subfunction
-                self.U[pos].arr.insert(i)
+                u[pos].arr.insert(i)
+                
+        # print 'copy'        
+        # copy data C space to Python space        
+        self.U = [None]*l
+        for i in xrange(l):
+            self.U[i] = []
+            if u[i] != NULL:
+                it = u[i].arr.begin()  
+                while it != u[i].arr.end():
+                    self.U[i].append(deref(it))  
+                    inc(it)
 
-
-        # self.printU()
+        # print 'free'
+        # free memory
+        for i in xrange(l):
+            if u[i] != NULL:
+                free(u[i].arr)
+                free(u[i])
+        free(u)
         
-    def printU(self):
+    def getU(self, i, j):
         """
-         print self.U for verifying purposes
+        return the list of clause indices that touches both i and j
         """
-        cdef set[int].iterator it
-        cdef int ii, l, i, j, pos
+        cdef int pos
+        if i<=j:
+            pos = i*(j - 1)/2 + i
+        else:
+            pos = j*(i - 1)/2 + j
 
-        print 'printU'
-        l = (self.c * (self.c-1))/2        
-        for i in xrange(self.n):
-            for j in xrange(i):
-                pos = i*(i - 1)/2 + j
-                print '*********'
-                print 'i', i, 'j', j, 'pos', pos
-
-                if self.U[pos] != NULL:
-                    it = self.U[pos].arr.begin()
-                    while it != self.U[pos].arr.end():
-                        ii = deref(it)
-                        print ii
-                        inc(it)
-                else:
-                    print i, j, 'not'
+        return self.U[pos]
             
+    # def printU(self):
+    #     """
+    #      print self.U for verifying purposes
+    #     """
+    #     cdef set[int].iterator it
+    #     cdef int ii, l, i, j, pos
+
+    #     print 'printU'
+    #     l = (self.c * (self.c-1))/2        
+    #     for i in xrange(self.n):
+    #         for j in xrange(i):
+    #             pos = i*(i - 1)/2 + j
+    #             print '*********'
+    #             print 'i', i, 'j', j, 'pos', pos
+
+    #             if self.U[pos] != NULL:
+    #                 it = self.U[pos].arr.begin()
+    #                 while it != self.U[pos].arr.end():
+    #                     ii = deref(it)
+    #                     print ii
+    #                     inc(it)
+    #             else:
+    #                 print i, j, 'not'
             
 
     cdef ComArr* genComb(self,int N) nogil:

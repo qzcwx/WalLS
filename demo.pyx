@@ -138,9 +138,9 @@ def main():
     random.seed(opt.rseed)
 
     maxFit = opt.e * opt.n
-    runs = 20
+    # runs = 20
 
-    # runs = 1
+    runs = 1
     # maxFit = 1000
 
     t = opt.t
@@ -179,6 +179,7 @@ def main():
         tAll = np.zeros(runs)
 
         for i in range(runs):
+
             start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName, minimize = False))
@@ -301,6 +302,7 @@ def main():
 
         tAll = np.zeros(runs)
         for i in range(runs):
+            print 'run', i
             start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))
@@ -311,7 +313,7 @@ def main():
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = time.time() - start
-
+            print
 
 
     #    trace = res[0]['trace']
