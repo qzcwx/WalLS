@@ -735,6 +735,7 @@ cdef class LocalSearch:
         """
         steepest descent local search running on S
         """
+        print 'runFitrest'
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
@@ -742,8 +743,9 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
-        self.model.genInter()
+        # self.model.genInter()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        print 'initWal'
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
         
@@ -763,11 +765,13 @@ cdef class LocalSearch:
         traceEval = []
         traceFit = []
 
+
         initT = time.time() - start
 
         while self.fitEval < self.MaxFit:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            print 'steep'
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
 
