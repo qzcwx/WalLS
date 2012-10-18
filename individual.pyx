@@ -82,7 +82,7 @@ cdef class Individual:
 
         cdef int i,j,k
         cdef double W
-        cdef InTer* inter
+        # cdef InTer* inter
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
@@ -108,9 +108,9 @@ cdef class Individual:
         for i in xrange(self.dim):
             self.lookup[i] = NULL
 
-        self.Inter = < InTer** > malloc(sizeof(void *)*self.dim)
-        for i in xrange(self.dim):
-            self.Inter[i] = NULL
+        # self.Inter = < InTer** > malloc(sizeof(void *)*self.dim)
+        # for i in xrange(self.dim):
+        #     self.Inter[i] = NULL
 
 
         for i in xrange(len(self.model.WA)):
@@ -127,18 +127,18 @@ cdef class Individual:
 
             for j in self.model.WA[i].arr:
                 self.sumArr[j] = self.sumArr[j] + W
-                if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
-                    #if not self.Inter[j]: # the entry of i doesn't exist yet
-                    if self.Inter[j] == NULL:
-                        inter = <InTer*> malloc(sizeof(InTer))
-                        inter[0].arr = new set[int]()
-                        inter[0].WI = new set[int]()
-                        self.Inter[j] = inter
+                # if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
+                #     #if not self.Inter[j]: # the entry of i doesn't exist yet
+                #     if self.Inter[j] == NULL:
+                #         inter = <InTer*> malloc(sizeof(InTer))
+                #         inter[0].arr = new set[int]()
+                #         inter[0].WI = new set[int]()
+                #         self.Inter[j] = inter
 
-                    for k in self.model.WA[i].arr:
-                        if k != j :
-                            self.Inter[j].arr.insert(k)
-                    self.Inter[j].WI.insert(i)
+                #     for k in self.model.WA[i].arr:
+                #         if k != j :
+                #             self.Inter[j].arr.insert(k)
+                #     self.Inter[j].WI.insert(i)
 
                 # add list of order >= 3 Walsh terms for the purpose of updating C matrix
                 if len(self.model.WA[i].arr) >= 3:
@@ -345,19 +345,16 @@ cdef class Individual:
 
     cpdef updateImprS(self, p, minimize):
         cdef int i
-        cdef set[int].iterator it
-        
+        print 'updateImprS'
         
         if p in self.improveA:
             self.improveA.remove(p)
-            
-        if self.Inter[p]!= NULL:
-            it = self.Inter[p].arr.begin()
 
-            while it!=self.Inter[p].arr.end():
-        # if p in self.model.Inter:
-        #     for i in self.model.Inter[p].arr:
-                i = deref(it)                
+            # while it!=self.model.Inter[p].arr.end():
+        if p in self.model.Inter:
+        # if self.model.Inter[p]:
+            for i in self.model.Inter[p]:
+                # i = deref(it)                
                 """ equal moves """
                 # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
                 """ NOT equal moves """
@@ -366,18 +363,20 @@ cdef class Individual:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
-                inc(it)
+                # inc(it)
 
     cpdef updatePertImprS(self, p, minimize):
         cdef int i
-        cdef set[int].iterator it
-        
-        if self.Inter[p]!= NULL:
-            it = self.Inter[p].arr.begin()
-            while it!=self.Inter[p].arr.end():
-                i = deref(it)
-        # if p in self.model.Inter:
-        #     for i in self.model.Inter[p].arr :
+        # cdef set[int].iterator it
+
+        print 'updatePertImprS'
+        # if self.model.Inter[p]!= NULL:
+        # if self.model.Inter[p]:
+        if p in self.model.Inter:
+            for i in self.model.Inter[p]:
+            # it = self.model.Inter[p].arr.begin()
+            # while it!=self.model.Inter[p].arr.end():
+                # i = deref(it)
                 """ equal moves """
                 # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
                 """ NOT equal moves """
@@ -386,7 +385,7 @@ cdef class Individual:
                         self.improveA.append(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
-                inc(it)
+                # inc(it)
 
         """ equal move """
         #if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
@@ -872,12 +871,12 @@ cdef class Individual:
         #                 self.Inter[j] = NULL
         # free(self.Inter)
 
-        for j in xrange(self.dim):
-            if self.Inter[j] != NULL:
-                free(self.Inter[j][0].arr)
-                free(self.Inter[j])
-                self.Inter[j] = NULL
-        free(self.Inter)
+        # for j in xrange(self.dim):
+        #     if self.Inter[j] != NULL:
+        #         free(self.Inter[j][0].arr)
+        #         free(self.Inter[j])
+        #         self.Inter[j] = NULL
+        # free(self.Inter)
         
         for i in xrange(self.dim):
             for j in xrange(self.infectBit[i][0].size()):
