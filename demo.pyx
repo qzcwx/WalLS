@@ -141,7 +141,7 @@ def main():
     # runs = 20
 
     runs = 1
-    # maxFit = 1000
+    # maxFit = 109
 
     t = opt.t
 
@@ -253,6 +253,7 @@ def main():
             freq = model.countFreqInFunc()
             print sum(freq)
 
+        # print 'enumerating all solutions'
         # if opt.fitName == 'fit':
         #     bit,fit = tl.compFit(model)
         # elif opt.fitName == 'mean':

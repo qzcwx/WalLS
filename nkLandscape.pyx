@@ -27,7 +27,7 @@ ctypedef struct InTer:
 cdef class NKLandscape:
     cdef ComArr** lookup
     # cdef InTer** Inter
-    cdef public list Inter
+    cdef public list Inter                # the list of variables that interact with ith variable
     cdef int n                            # number of variables
     cdef int k                            
     cdef int c                            # number of clauses
@@ -37,6 +37,7 @@ cdef class NKLandscape:
     cdef public dict w
     cdef public list WA
     cdef public list U
+    cdef public list listSubfFunc
     cdef double* subFit
     
     """ NK-landscape class """
@@ -45,23 +46,25 @@ cdef class NKLandscape:
         self.k = inK
         self.c = inC
         # self.m = self.n * self.m
-
+        print 'init NK'
         # for run experiments
         if fileName == None:
             self.genNeigh()
             self.genFunc()
         else:
+            print fileName
             self.readFile(fileName)
+
         self.Kbits = tl.genSeqBits(self.k+1)
 
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.n)
         for i in xrange(self.n):
             self.lookup[i] = NULL
 
-        self.subFit = <double*> malloc(sizeof(double)*self.c) 
+        # self.subFit = <double*> malloc(sizeof(double)*self.c) 
 
-    cpdef double getSubFitArr(self, i):
-        return self.subFit[i]
+    # cpdef double getSubFitArr(self, i):
+    #     return self.subFit[i]
         
     def exportToFile(self, fileName):
         f = open(fileName, 'w')
@@ -110,7 +113,6 @@ cdef class NKLandscape:
                 # oneNeigh.sort()
                 self.neighs.append(oneNeigh)
                 
-                
     def getNeigh(self):
         return self.neighs
 
@@ -150,8 +152,8 @@ cdef class NKLandscape:
             interStr = ''.join(bits)
             """ sum up the sub-function values """
             #            print self.func[i][int(interStr,2)]
-            self.subFit[i] = self.func[i][int(interStr,2)]
-            s = s + self.subFit[i]
+            # self.subFit[i] = self.func[i][int(interStr,2)]
+            s = s + self.func[i][int(interStr,2)]
         # print sum/float(self.c)
         # print
         # return sum/float(self.c)
@@ -164,15 +166,19 @@ cdef class NKLandscape:
         """ 
         
         cdef double s = 0.0
-               
+        # print 'bitStr', bitStr 
+        # print 'i', i      
         """ compose interacting bits """
         interBit = self.neighs[i][:]
+        # print 'interbit'
         # don't sort the list every time
         # interBit.sort()
         """ extract corresponding bits """
         bits = [ bitStr[int(j)] for j in interBit ]
+        # print bits
         interStr = ''.join(bits)
         """ sum up the sub-function values """
+        # print 'interStr',interStr
         s = s +  self.func[i][int(interStr,2)] 
         return s
         
@@ -677,13 +683,36 @@ cdef class NKLandscape:
                 Cinter[j] = NULL
         free(Cinter)
 
-
+    def printInter(self):
+        print 'full Inter'
+        for i in xrange(self.n):
+            print self.Inter[i]
+        print
     # cdef getInter(self, i):
     #     """
     #     return the vector that contains all subfunction 9that contain ith variable
     #     """
     #     return self.Inter[i]
-    
+
+    def genListSubFunc(self):
+        """
+        generate the list of variables that interact with ith variable
+        """
+        self.listSubFunc = [None] * self.n
+        # go through all subfunction indices
+        for i in xrange(len(self.neighs)):
+            indices = self.neighs[i]
+            for j in indices:
+                if self.listSubFunc[j] == None:
+                    self.listSubFunc[j] = []
+                self.listSubFunc[j].append(i)
+
+    def printListSubFunc(self):
+        print 'listSubFunc'
+        for i in self.listSubFunc:
+            print i
+            
+
     cpdef genU(self):
         """
         construct a matrix U for updating purposes. where only i<=j
@@ -704,13 +733,13 @@ cdef class NKLandscape:
         
         # initialize U matrix (in 1-D representation)
         l = (self.c * (self.c-1))/2
-        # print 'l', l
+        # print 'l', l, 'c', self.c
         u = < InTer** > malloc( sizeof(void *) * l )
         
         for i in xrange(l):
             u[i] = NULL
 
-        # print 'init'
+        print 'init'
         # generate entries for U matrix based on neighs
         for i in xrange(len(self.neighs)):
             comb = self.genComb(len(self.neighs[i]))
@@ -757,10 +786,11 @@ cdef class NKLandscape:
         """
         cdef int pos
         if i<=j:
-            pos = i*(j - 1)/2 + i
+            pos = j*(j - 1)/2 + i
         else:
-            pos = j*(i - 1)/2 + j
-
+            pos = i*(i - 1)/2 + j
+        # print i,j, pos, (self.c * (self.c-1))/2
+            
         return self.U[pos]
             
     # def printU(self):
@@ -847,10 +877,10 @@ cdef class NKLandscape:
         # free(self.Inter)
 
         
-        print 'del nklandscape' 
+        # print 'del nklandscape' 
 
 
-@cython.cdivision(True)   #
+@cython.cdivision(True)
 cdef int biomial(int N, int K) nogil:
     """ compute the combination of N choose K """
     return factorial(N)/( factorial(K) * factorial(N-K) )

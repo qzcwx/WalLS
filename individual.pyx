@@ -69,13 +69,26 @@ cdef class Individual:
             self.fitG = 0
         if oldIndiv != False:
             self.fit = oldIndiv.fit
-            self.bit = oldIndiv.bit
             self.dim = oldIndiv.dim
+            # self.bit = oldIndiv.bit
             self.fitG = oldIndiv.fitG
+            self.copyBit(oldIndiv.bit)
         self.threshold = 1e-15
 
+    def __del__(self):
+        free(self.bit)
+        
     def init(self):
         self.initIndiv(self.dim)
+
+    cdef copyBit(self, char* bit):
+        cdef char *randBitStr = <char*>malloc(self.dim+1 * sizeof(char))
+        # print bit
+        for j in xrange(self.dim):
+            randBitStr[j] = bit[j]
+        randBitStr[self.dim] = '\0'
+        # print 'copybit', randBitStr
+        self.bit = randBitStr
 
     def initWal(self, model):
         self.model = model
@@ -164,8 +177,7 @@ cdef class Individual:
         cdef int i
         # cdef char *tempStr = <char*>malloc(dim+1 * sizeof(char))
         self.model = model
-        print 'initBf'
-
+        # print 'initBf'
         
         # initialize S vector, first derivative
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
@@ -173,27 +185,50 @@ cdef class Individual:
         # print 'initBf'
         for i in xrange(self.dim):
             self.sumArr[i] = 0
+
+        # print
+        # print 'neigh'
+        # print self.model.getNeigh()
+        # print
+        
         
         # print self.model.compSubFit(old.bit,0)
-        
         # compute S vector by exploring the partial updates, for the
         # very first step, we need to actually evaluate the whole vector
         # print 'initBf'
         for i in xrange(self.dim):
             indiv = Individual(oldIndiv=old)
             indiv.flip(i)
+            # oldbit = old.bit
+            # bit = indiv.bit
+            # print
+            # print 'begin', i
+            # # print
+            # print 'indiv bit', indiv.bit, 'old bit', old.bit
+            
             # for each subfunctions that touches ith variable, exact the
             # old and new subfunction fitness
-            for j in self.model.Inter[i]:
-                self.sumArr[i] = self.sumArr[i] + self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j)
-                
+            # print 'Inter', self.model.listSubFunc[i]
+            
+            for j in self.model.listSubFunc[i]:
+                # print 'j', j, 'i', i
+                # print 'sub fit bit', self.model.compSubFit(indiv.bit, j)
+                # print 'sub old bit', self.model.compSubFit(old.bit, j)
+                self.sumArr[i] = self.sumArr[i] + (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))
+                # self.sumArr[i] = self.sumArr[i] - (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))       
+
+
+            # print 'end', i
+            # print
+
+            
             # print indiv.bit
             # print self.model.compSubFit(indiv.bit,0)
             
             # indiv = eval(indiv)
             # self.sumArr[i] = indiv.fit - old.fit
         # print 'initBf'
-        self.genImproveS(minimize)
+        self.genImproveSpartialUpdate(minimize)
 
         
             
@@ -368,7 +403,33 @@ cdef class Individual:
                 elif i in self.improveA:
                     self.improveA.remove(i)
                 inc(it)
+                
+    cpdef updateImprSpartialUpdate(self, p, minimize):
+        cdef int i
+        # cdef set[int].iterator it
+        
+        if p in self.improveA:
+            self.improveA.remove(p)
 
+            # while it!=self.model.Inter[p].arr.end():
+        # if p in self.model.Inter:
+        if self.model.Inter[p]!=None:
+            for i in self.model.Inter[p]:
+        # if self.Inter[p]!=NULL:
+            # it = self.Inter[p].arr.begin()
+            # while it != self.Inter[p].arr.end():
+                # i = deref(it)
+                """ equal moves """
+                # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold ):
+                """ NOT equal moves """
+                if (minimize == False and self.sumArr[i] > self.threshold) or (minimize == True and self.sumArr[i]< - self.threshold ):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+                # inc(it)
+
+    
     cpdef updatePertImprS(self, p, minimize):
         cdef int i
         cdef set[int].iterator it
@@ -395,6 +456,37 @@ cdef class Individual:
         #if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
         """ NOT equal move """
         if (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p] < - self.threshold ):
+            if p not in self.improveA:
+                self.improveA.append(p)
+        elif p in self.improveA:
+            self.improveA.remove(p)
+
+    cpdef updatePertImprSpartialUpdate(self, p, minimize):
+        cdef int i
+        # cdef set[int].iterator it
+
+        # print 'updatePertImprS'
+        # if self.Inter[p]!= NULL:
+        if self.model.Inter[p] != None:
+        # if p in self.model.Inter:
+            for i in self.model.Inter[p]:
+            # it = self.Inter[p].arr.begin()
+            # while it!=self.Inter[p].arr.end():
+                # i = deref(it)
+                """ equal moves """
+                # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i]< self.threshold ):
+                """ NOT equal moves """
+                if (minimize == False and self.sumArr[i] > self.threshold) or (minimize == True and self.sumArr[i]< - self.threshold ):
+                    if i not in self.improveA:
+                        self.improveA.append(i)
+                elif i in self.improveA:
+                    self.improveA.remove(i)
+                # inc(it)
+
+        """ equal move """
+        #if (minimize == True and self.sumArr[p] > - self.threshold) or (minimize == False and self.sumArr[p] < self.threshold ):
+        """ NOT equal move """
+        if (minimize == False and self.sumArr[p] > self.threshold) or (minimize == True and self.sumArr[p] < - self.threshold ):
             if p not in self.improveA:
                 self.improveA.append(p)
         elif p in self.improveA:
@@ -518,8 +610,18 @@ cdef class Individual:
             if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold):            # NOT equal moves
             # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
                 self.improveA.append(i)
-
                 
+    def genImproveSpartialUpdate(self,minimize):
+        """
+        generate the index of best neigh according to sumArr only (surrogate of fitness)
+        """
+        # check improving move
+        self.improveA = []
+        for i in range(self.dim):
+            if (minimize == True and self.sumArr[i] < - self.threshold) or (minimize == False and self.sumArr[i] >  self.threshold):            # NOT equal moves
+            # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
+                self.improveA.append(i)
+
         
 ##     def genFitNext(self,minimize):
 ##         """
@@ -706,6 +808,30 @@ cdef class Individual:
 
         return True, random.choice(bestList)
 
+    def steepFitDescPartialUpdate(self, minimize):
+        if not self.improveA:
+            return False, None
+        bestList = []
+
+        # random.shuffle(self.improveA)
+
+        for i in self.improveA:
+            if i == self.improveA[0]:
+                best = self.sumArr[i]
+                # bestI = i
+            #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+            elif (best<self.sumArr[i] + self.threshold and minimize == False) or (best > self.sumArr[i] - self.threshold and minimize == True):
+                best = self.sumArr[i]
+                # bestI = i
+
+        for i in self.improveA:
+            if (abs(best - self.sumArr[i])<self.threshold):
+                bestList.append(i)
+        # bestList.sort()
+
+        return True, random.choice(bestList)
+
+        
     def steepMeanDesc(self, minimize):
         if not self.improveSC:
             return False, None
@@ -848,7 +974,7 @@ cdef class Individual:
         free memory to avoid memory leaks, espcially for executing multiple runs
         """
         cdef int i,j
-        free(self.bit)
+        # free(self.bit)
 
         free(self.sumArr)
 
@@ -904,10 +1030,8 @@ cdef class Individual:
         """
         destructor for Bfupdate implementation
         """
-        free(self.bit)
+        # free(self.bit)
         free(self.sumArr)
-
-        
         
         
     ## def genMeanBest(self,minimize):
@@ -1021,7 +1145,7 @@ cdef class Individual:
             else:
                 randBitStr[j] = '1'
 
-            randBitStr[dim] = '\0'
+        randBitStr[dim] = '\0'
 
         self.bit = randBitStr
 
@@ -1030,29 +1154,32 @@ cdef class Individual:
         update the evaluation function according to sumArr
         """
         self.fit = self.fit - 2*self.sumArr[I]
-        
+
+    cpdef updateEvalPartialUpdate(self, I):
+        self.fit = self.fit + self.sumArr[I]
+            
+    
     def updateSumArr(self, q, old):
         """
         for the partial update implementation:
-
         update the first derivative according to second derivative
         """
         cdef int i
         for p in xrange(self.dim):
-            # calculate the sum of second derivative
-            indivpq = Individual(oldIndiv = old)
-            indivpq.flip(p)
-            indivpq.flip(q)
-            
-            indivp = Individual(oldIndiv = old)
-            indivp.flip(p)
-            
-            indivq = Individual(oldIndiv = old)
-            indivq.flip(q)
-            
-            for i in self.model.getU(p,q):
-                self.sumArr[p] = self.sumArr[p] + ( self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i) ) - ( self.model.compSubFit(indivp.bit, i) - self.model.compSubFit(old.bit, i) )
+            if p!=q:
+                # calculate the sum of second derivative
+                indivpq = Individual(oldIndiv = old)
+                indivpq.flip(p)
+                indivpq.flip(q)
+                indivp = Individual(oldIndiv = old)
+                indivp.flip(p)
+                indivq = Individual(oldIndiv = old)
+                indivq.flip(q)
                 
+                for i in self.model.getU(p,q):
+                    self.sumArr[p] = self.sumArr[p] + ( self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i) ) - ( self.model.compSubFit(indivp.bit, i) - self.model.compSubFit(old.bit, i) )
+            else:
+                self.sumArr[p] = - self.sumArr[p]
                 
     cpdef printSumArr(self):
         for i in range(self.dim):

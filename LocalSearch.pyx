@@ -735,9 +735,10 @@ cdef class LocalSearch:
         """
         steepest descent local search running on S
         """
-        print 'runFitrest'
+        # print 'runFitrest'
         self.fitEval = 0
         start = time.time()
+
         self.model.transWal()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
@@ -745,16 +746,16 @@ cdef class LocalSearch:
         self.oldindiv.initWal(self.model)
         # self.model.genInter()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
-        print 'initWal'
+        # print 'initWal'
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
-        
         initC = 1
         updateC = 0
-
         # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
         # print 'init improve', self.oldindiv.improveA
-
+        print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+        self.oldindiv.printSumArr()        
+        
         descT = 0
         pertT = 0
         updatePertT = 0
@@ -771,9 +772,15 @@ cdef class LocalSearch:
         while self.fitEval < self.MaxFit:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
-            print 'steep'
+            print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+            self.oldindiv.printSumArr()
+            print 'bestI', bestI
+            print 'improveA', self.oldindiv.improveA
+                        
+            # print 'steep'
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
+
 
             if improveN == False:
                 initC = initC + 1
@@ -782,7 +789,10 @@ cdef class LocalSearch:
                     oldbit = self.oldindiv.bit
                     oldfit = self.oldindiv.fit
                     self.restart(fitName, minimize, False)
+                    print 'after restart bit', self.oldindiv.bit
                     print 'restart', 'bsf', self.bsf.fit, '\n'
+
+
                     
                     pertT = pertT + time.time() - start
 
@@ -794,29 +804,28 @@ cdef class LocalSearch:
                         self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
+                        self.oldindiv.printSumArr()
                         self.oldindiv.updatePertImprS(i, minimize)
                     updatePertT = updatePertT + time.time() - start # TODO: need to count it in the next experiment
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
-                print 'bestI', bestI
-                print 'improveA', self.oldindiv.improveA
                 start = time.time()
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
-                print 'updateEval'
+                # print 'updateEval'
                 self.oldindiv.updateEval(bestI)
-                print 'update'
+                # print 'update'
                 self.oldindiv.update(bestI)
-                print 'updateWAS'
+                # print 'updateWAS'
                 self.oldindiv.updateWAS(bestI)
-                print 'updateImprS'
+                # print 'updateImprS'
                 self.oldindiv.updateImprS(bestI, minimize)
                 self.fitEval = self.fitEval + 1
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
                 self.oldindiv.flip(bestI)
-        print 'dest'
+        # print 'dest'
         self.oldindiv.destructorWal(fitName)
         # print 'init', initC, 'update', updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
@@ -2100,54 +2109,77 @@ cdef class LocalSearch:
         run local search using fit function, with paritial update
         """
         # cdef double* subFitArr
+        # print 'runFitUpdate'
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-        print 'genInter'
+
+        # print 'genInter'
         self.model.genInter()
-        self.oldindiv = self.evalPop(self.oldindiv)
-        print 'genU'
-        self.model.genU() 
+        self.model.genListSubFunc()
+
+        # self.model.printListSubFunc()
         
+        self.oldindiv = self.evalPop(self.oldindiv)
+        # print ''
+        # print 'genU'
+        self.model.genU() 
         self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+        # print 'init SumArr'
+        self.oldindiv.printSumArr()
         
         while self.fitEval < self.MaxFit:
-            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            # print 'desc eval', self.fitEval, 'max', self.MaxFit
+            improveN, bestI = self.oldindiv.steepFitDescPartialUpdate(minimize)
+            print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+            self.oldindiv.printSumArr()
+            print 'bestI', bestI
+            print 'improveA', self.oldindiv.improveA
+                            
 
             if improveN == False:
                 if restart == True:
                     oldbit = self.oldindiv.bit
                     oldfit = self.oldindiv.fit
                     self.restart(fitName, minimize, False)
+                    print 'after restart bit', self.oldindiv.bit
                     print 'restart', 'bsf', self.bsf.fit, '\n'
+                    # return
                     
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     self.oldindiv.fit = oldfit
+                    self.oldindiv.bit = oldbit
+                    # print 'old bit', self.oldindiv.bit, self.oldindiv.fit
                     for i in diff:
                         # take the move
-                        print 'eval'
-                        self.oldindiv.updateEval(i)
+                        # print 'eval'
+                        self.oldindiv.updateEvalPartialUpdate(i)
                         # updating data structures to reflect current solution, namely the first derivate 
-                        print 'sumArr'
+                        # print 'sumArr'
                         self.oldindiv.updateSumArr(i, self.oldindiv)
-                        print 'pertimprs'
-                        self.oldindiv.updatePertImprS(i, minimize)
+                        
+
+                        # print 'pertimprs'
+                        self.oldindiv.updatePertImprSpartialUpdate(i, minimize)
+                        self.oldindiv.flip(i)
+                        self.oldindiv.printSumArr()
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else:
-                print 'eval'
-                self.oldindiv.updateEval(bestI)
-                print 'sumArr'
+                # print 'eval'
+                self.oldindiv.updateEvalPartialUpdate(bestI)
+                # print 'sumArr'
                 self.oldindiv.updateSumArr(bestI, self.oldindiv)
-                print 'imprs'
-                self.oldindiv.updateImprS(bestI, minimize)
+                # print 'imprs'
+                self.oldindiv.updateImprSpartialUpdate(bestI, minimize)
                 self.fitEval = self.fitEval + 1
                 self.oldindiv.flip(bestI)
                 
         self.oldindiv.destructorBfUpdate()
-        print 'return'
+        #        print 'return'
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
 
         
@@ -2567,17 +2599,23 @@ cdef class LocalSearch:
 
     def restart(self, fitName, minimize, evaluate):
         oldbit = self.oldindiv.bit
+        # print 'oldfit', self.oldindiv.fit, 'bsf fit', self.bsf.fit
+
         if fitName == 'fit' and minimize == True :
             if self.bsf.fit > self.oldindiv.fit:
+                # print 'update'
                 self.bsf = individual.Individual(oldIndiv = self.oldindiv)
         elif fitName == 'fit' and minimize == False :
             if self.bsf.fit < self.oldindiv.fit:
+                # print 'update'
                 self.bsf = individual.Individual(oldIndiv = self.oldindiv)
         elif minimize == True :
             if self.bsf.fitG > self.oldindiv.fitG:
+                # print 'update'
                 self.bsf = individual.Individual(oldIndiv = self.oldindiv)
         elif minimize == False :
             if self.bsf.fitG < self.oldindiv.fitG:
+                # print 'update'
                 self.bsf = individual.Individual(oldIndiv = self.oldindiv)
 
         self.oldindiv.init()
