@@ -46,13 +46,13 @@ cdef class NKLandscape:
         self.k = inK
         self.c = inC
         # self.m = self.n * self.m
-        print 'init NK'
+        # print 'init NK'
         # for run experiments
         if fileName == None:
             self.genNeigh()
             self.genFunc()
         else:
-            print fileName
+            # print fileName
             self.readFile(fileName)
 
         self.Kbits = tl.genSeqBits(self.k+1)
@@ -739,7 +739,7 @@ cdef class NKLandscape:
         for i in xrange(l):
             u[i] = NULL
 
-        print 'init'
+        # print 'init'
         # generate entries for U matrix based on neighs
         for i in xrange(len(self.neighs)):
             comb = self.genComb(len(self.neighs[i]))

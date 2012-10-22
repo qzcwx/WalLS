@@ -185,7 +185,6 @@ cdef class Individual:
         # print 'initBf'
         for i in xrange(self.dim):
             self.sumArr[i] = 0
-
         # print
         # print 'neigh'
         # print self.model.getNeigh()

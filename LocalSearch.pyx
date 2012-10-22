@@ -736,9 +736,9 @@ cdef class LocalSearch:
         steepest descent local search running on S
         """
         # print 'runFitrest'
-        self.fitEval = 0
         start = time.time()
-
+        
+        self.fitEval = 0
         self.model.transWal()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
@@ -761,11 +761,9 @@ cdef class LocalSearch:
         updatePertT = 0
         updateT = 0
         self.fitEval = 0
-        walkLen = 10
 
         traceEval = []
         traceFit = []
-
 
         initT = time.time() - start
 
@@ -791,7 +789,6 @@ cdef class LocalSearch:
                     self.restart(fitName, minimize, False)
                     # print 'after restart bit', self.oldindiv.bit
                     # print 'restart', 'bsf', self.bsf.fit, '\n'
-                    
                     pertT = pertT + time.time() - start
 
                     start = time.time()
@@ -802,9 +799,9 @@ cdef class LocalSearch:
                         self.oldindiv.updateEval(i)
                         self.oldindiv.update(i)
                         self.oldindiv.updateWAS(i)
-                        self.oldindiv.printSumArr()
+                        # self.oldindiv.printSumArr()
                         self.oldindiv.updatePertImprS(i, minimize)
-                    updatePertT = updatePertT + time.time() - start # TODO: need to count it in the next experiment
+                    updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
@@ -820,9 +817,9 @@ cdef class LocalSearch:
                 # print 'updateImprS'
                 self.oldindiv.updateImprS(bestI, minimize)
                 self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
-                self.oldindiv.flip(bestI)
         # print 'dest'
         self.oldindiv.destructorWal(fitName)
         # print 'init', initC, 'update', updateC
@@ -2108,6 +2105,8 @@ cdef class LocalSearch:
         """
         # cdef double* subFitArr
         # print 'runFitUpdate'
+        
+        start = time.time()
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
@@ -2121,31 +2120,51 @@ cdef class LocalSearch:
         
         self.oldindiv = self.evalPop(self.oldindiv)
         # print ''
-        # print 'genU'
+        # print 'genU'ppp
         self.model.genU() 
         self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
         # print 'init SumArr'
-        self.oldindiv.printSumArr()
+        # self.oldindiv.printSumArr()
+        # keep track of the behavior of local search
+        initC = 1
+        updateC = 0
+        
+        # track running time
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+
+        # place holder
+        traceEval = []
+        traceFit = []
+        
+        initT = time.time() -start
         
         while self.fitEval < self.MaxFit:
+            start = time.time()
             # print 'desc eval', self.fitEval, 'max', self.MaxFit
             improveN, bestI = self.oldindiv.steepFitDescPartialUpdate(minimize)
             # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
             # self.oldindiv.printSumArr()
             # print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
-                            
+            descT = descT + time.time() - start
 
             if improveN == False:
+                initC = initC + 1
                 if restart == True:
+                    start = time.time()
                     oldbit = self.oldindiv.bit
                     oldfit = self.oldindiv.fit
                     self.restart(fitName, minimize, False)
                     # print 'after restart bit', self.oldindiv.bit
                     # print 'restart', 'bsf', self.bsf.fit, '\n'
-                    
+                    pertT = pertT + time.time() - start
+
+                    start= time.time()
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
                     self.oldindiv.fit = oldfit
                     self.oldindiv.bit = oldbit
@@ -2162,10 +2181,12 @@ cdef class LocalSearch:
                         # print 'pertimprs'
                         self.oldindiv.updatePertImprSpartialUpdate(i, minimize)
                         self.oldindiv.flip(i)
-                        self.oldindiv.printSumArr()
+                        # self.oldindiv.printSumArr()
+                    updatePertT = updatePertT + time.time() - start 
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else:
+                start = time.time()
                 # print 'eval'
                 self.oldindiv.updateEvalPartialUpdate(bestI)
                 # print 'sumArr'
@@ -2174,10 +2195,11 @@ cdef class LocalSearch:
                 self.oldindiv.updateImprSpartialUpdate(bestI, minimize)
                 self.fitEval = self.fitEval + 1
                 self.oldindiv.flip(bestI)
-                
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+
         self.oldindiv.destructorBfUpdate()
-        #        print 'return'
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
         
         

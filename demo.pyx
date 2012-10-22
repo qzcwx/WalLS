@@ -268,9 +268,6 @@ def main():
         # for i in zip(bitF,fitF, bitA, fitA):
         #     print i[0],'%g\t%g' %(i[1],i[3])
 
-
-
-
         # a = sorted(zip(bit,fit), key=lambda a_entry: a_entry[1])
         # print 'opti\n', a[0][0], a[0][1]
         # print
@@ -303,7 +300,7 @@ def main():
 
         tAll = np.zeros(runs)
         for i in range(runs):
-            print 'run', i
+            # print 'run', i 
             start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))
