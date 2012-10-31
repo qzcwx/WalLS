@@ -3,6 +3,7 @@ import numpy as np
 import math
 import random
 import copy
+import time
 # import tool as tl
 
 # import for Cython
@@ -27,6 +28,9 @@ ctypedef struct InfBit:
     vector[int]* arr
     int WI
 
+ctypedef struct Uelem:                      # each element in the U array/matrix is a list
+    vector[int]* arr                      # indices of WAS terms
+    
 ctypedef struct InTer:
     set[int]* arr
     set[int]* WI
@@ -40,13 +44,14 @@ ctypedef struct ComArr:
     int size
 
 cdef class Individual:
-    cdef InTer** Inter
+    cdef InTer** Inter                    # the list of variables that interact with the ith variable
     cdef vector[InfBit*]** infectBit
     cdef Was* WAS
     cdef double* SC
     cdef double* Z
     cdef double** C
     cdef double** orderC
+    cdef Uelem** U
     cdef public list improveA
     cdef public list improveSC
     cdef object func
@@ -57,12 +62,13 @@ cdef class Individual:
     cdef ComArr** lookup 
     cdef public double fit
     cdef public double fitG
-    cdef public char* bit
+    cdef public list bit
     cdef double* sumArr
     cdef public int dim
     
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
-        self.bit = NULL
+        # self.bit = NULL
+        self.bit = []
         self.fit = 0
         self.dim = n
         if neigh == True:
@@ -70,25 +76,48 @@ cdef class Individual:
         if oldIndiv != False:
             self.fit = oldIndiv.fit
             self.dim = oldIndiv.dim
-            # self.bit = oldIndiv.bit
             self.fitG = oldIndiv.fitG
-            self.copyBit(oldIndiv.bit)
+            # print 'oldindiv.bit', oldIndiv.bit
+            # time.sleep(2)
+            # self.copyBit(oldIndiv.bit)
+            self.bit = oldIndiv.bit[:]
         self.threshold = 1e-15
 
-    def __del__(self):
-        free(self.bit)
+    # def __del__(self):
+    #     # free(self.bit)
         
     def init(self):
-        self.initIndiv(self.dim)
+        # self.initIndiv()
+        self.initIndivPy()
 
-    cdef copyBit(self, char* bit):
-        cdef char *randBitStr = <char*>malloc(self.dim+1 * sizeof(char))
-        # print bit
-        for j in xrange(self.dim):
-            randBitStr[j] = bit[j]
-        randBitStr[self.dim] = '\0'
-        # print 'copybit', randBitStr
-        self.bit = randBitStr
+    # def copyBit(self,  bit):
+    #     # print  bit
+    #     # time.sleep(2)
+        
+    #     # self.bit = new char[self.dim+1]()
+        
+    #     # self.bit = <char*>malloc( (self.dim+1) * sizeof(char))
+    #     # self.bit=bit[:]
+    #     # print bit
+    #     # time.sleep(2)
+
+    #     # print bit
+    #     # for j in xrange(self.dim):
+    #     #     randBitStr[j] = bit[j]
+    #     for j in xrange(self.dim):
+    #             self.bit[j] = bit[j]
+    #     self.bit[self.dim] = '\0'
+        
+    #     # print 'randBitStr',randBitStr
+    #     print bit
+        
+        # # time.sleep(2)
+        # exit()
+        
+        # # print 'copybit', randBitStr
+        
+        # print 'self.bit',self.bit
+        # time.sleep(2)
 
     def initWal(self, model):
         self.model = model
@@ -169,16 +198,141 @@ cdef class Individual:
                 j1 = self.model.WA[i].arr[comb.arr[l][1]]
                 self.C[j0][j1] = self.C[j0][j1] + W
 
+    def initWalU(self, model):
+        self.model = model
 
+        cdef int i,j,k,l,j0,j1,pos
+        cdef double W
+        cdef vector[InfBit*]* vectPtr
+        cdef InfBit* strPtr
+        cdef ComArr* comb
+        cdef Was* was
+        cdef Uelem* uelem
+
+        self.sumArr = <double*>malloc(self.dim * sizeof(double))
+        for i in xrange(self.dim):
+            self.sumArr[i] = 0
+
+        # self.infectBit = < vector[InfBit*]** > malloc(sizeof(void *) * self.dim)
+        # for i in xrange(self.dim):
+        #     vectPtr = new vector[InfBit*]()
+        #     self.infectBit[i] = vectPtr
+
+        self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
+        self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
+        for i in xrange(self.dim):
+            self.lookup[i] = NULL
+
+        self.Inter = < InTer** > malloc(sizeof(void *)*self.dim)
+        for i in xrange(self.dim):
+            self.Inter[i] = NULL
+
+        # initialize U array
+        l = (self.model.c * (self.model.c-1))/2
+        self.U = < Uelem** > malloc( sizeof(void *) * l )
+        for i in xrange(l):
+            self.U[i] = NULL
+
+        for i in xrange(len(self.model.WA)):
+            W = int(math.pow(-1, binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w
+
+            was = <Was *>malloc(sizeof(Was))
+            was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
+            for j in xrange(len(self.model.WA[i].arr)):
+                was[0].arr[j] = self.model.WA[i].arr[j]
+            was[0].w = W
+            self.WAS[i] = was[0]
+
+            for j in self.model.WA[i].arr:
+                self.sumArr[j] = self.sumArr[j] + W
+
+            if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
+                for j in self.model.WA[i].arr:
+                    #if not self.Inter[j]: # the entry of i doesn't exist yet
+                    if self.Inter[j] == NULL:
+                        inter = <InTer*> malloc(sizeof(InTer))
+                        inter[0].arr = new set[int]()
+                        inter[0].WI = new set[int]()
+                        self.Inter[j] = inter
+
+                    for k in self.model.WA[i].arr:
+                        if k != j :
+                            self.Inter[j].arr.insert(k)
+                    self.Inter[j].WI.insert(i)
+                    
+                # add entries in U matrix 
+                comb = self.genComb(len(self.model.WA[i].arr)) 
+
+                for j in xrange(comb.size):
+                    j0 = self.model.WA[i].arr[comb.arr[j][0]] 
+                    j1 = self.model.WA[i].arr[comb.arr[j][1]] 
+                    # calculate the position in U
+                    if j0<=j1:
+                        pos = j1*(j1 - 1)/2 + j0
+                    else:
+                        pos = j0*(j0 - 1)/2 + j1
+                        # print 'pos', pos
+                        
+                if self.U[pos] == NULL:
+                    uelem = <Uelem*> malloc(sizeof(Uelem))
+                    uelem[0].arr = new vector[int]()
+                    self.U[pos] = uelem
+                    
+                self.U[pos].arr.push_back(i)   # store the index of Walsh term
+
+        # print 'finish initWalU'
+    
+            #     # add list of order >= 3 Walsh terms for the purpose of updating C matrix
+            #     if len(self.model.WA[i].arr) >= 3:
+            #         strPtr = <InfBit *> malloc(sizeof(InfBit))
+            #         strPtr.WI = i
+            #         strPtr.arr = new vector[int]()
+
+            #         for k in self.model.WA[i].arr:
+            #             strPtr.arr[0].push_back(k)
+            #         #self.infectBit[j][0].push_back(strPtr[0])
+            #         self.infectBit[j][0].push_back(strPtr)
+
+            # for l in xrange(comb.size):
+            #     j0 = self.model.WA[i].arr[comb.arr[l][0]]
+            #     j1 = self.model.WA[i].arr[comb.arr[l][1]]
+            #     self.C[j0][j1] = self.C[j0][j1] + W
+
+
+    def printWalU(self):
+        """
+        print the U matrix associated with indices of Walsh terms
+        """
+        cdef vector[int].iterator it
+        print 'printWalU'
+
+        for i in xrange(self.dim):
+            for j in xrange(i):
+                pos = i*(i - 1)/2 + j
+                print '*********'
+                print 'i', i, 'j', j, 'pos', pos
+
+                if self.U[pos] != NULL:
+                    # for k in self.U[pos].arr:
+                    #     print k
+                    it = self.U[pos].arr.begin()
+                    while it != self.U[pos].arr.end():
+                        ii = deref(it)
+                        print ii
+                        inc(it)
+                else:
+                    print i, j, 'not'
+            
+        
     cpdef initBfUpdate(self,old,eval,minimize,model):
         """ 
         initialize data structures for performing partial update
         """
         cdef int i
-        # cdef char *tempStr = <char*>malloc(dim+1 * sizeof(char))
         self.model = model
         # print 'initBf'
-        
+
+
         # initialize S vector, first derivative
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
 
@@ -190,7 +344,6 @@ cdef class Individual:
         # print self.model.getNeigh()
         # print
         
-        
         # print self.model.compSubFit(old.bit,0)
         # compute S vector by exploring the partial updates, for the
         # very first step, we need to actually evaluate the whole vector
@@ -198,6 +351,12 @@ cdef class Individual:
         for i in xrange(self.dim):
             indiv = Individual(oldIndiv=old)
             indiv.flip(i)
+            
+            # print 'indiv', indiv.bit
+            # time.sleep(2)
+            
+            # if i == 0:
+            # print 'indiv.bit', indiv.bit
             # oldbit = old.bit
             # bit = indiv.bit
             # print
@@ -341,6 +500,7 @@ cdef class Individual:
         cdef InfBit I
         cdef ComArr* comb
 
+        # print 'update'
         self.sumArr[p] = - self.sumArr[p]
         if self.Inter[p]!=NULL:
             """ iterative over self.Inter[p].arr """
@@ -377,7 +537,52 @@ cdef class Individual:
                     k1 = arr[int(comb.arr[k][1])]
                     self.C[k0][k1] = self.C[k0][k1] - 2 * self.WAS[I.WI].w
 
+    cpdef updateU(self,int p):
+        """
+        partially update the sum array directly by refering to U array,
+        without C matrix
+        """
+        cdef int i,ii, k0, k1, k, pos
+        cdef int len1
+        cdef double s
+        cdef set[int].iterator it
+        cdef vector[int].iterator itt
+        cdef vector[int] arr
+        cdef InfBit I
+        cdef ComArr* comb
+        cdef vector[int].iterator itWI
 
+        self.sumArr[p] = - self.sumArr[p]
+        if self.Inter[p]!=NULL:
+            """ iterative over self.Inter[p].arr """
+            #for i in prange(len(self.Inter[p].arr), nogil= True):
+            it = self.Inter[p].arr.begin()
+            while it != self.Inter[p].arr.end():
+                ii = deref(it)
+                # compute the sum of walsh terms that touches both ii and p
+                if ii<=p:
+                    pos = p*(p - 1)/2 + ii
+                else:
+                    pos = ii*(ii - 1)/2 + p
+
+                if self.U[pos] != NULL:
+                    s = 0.0
+                    itWI = self.U[pos].arr.begin()
+                    while itWI != self.U[pos].arr.end():
+                        s = s + self.WAS[deref(itWI)].w
+                        inc(itWI)
+                        
+                self.sumArr[ii] = self.sumArr[ii] - 2 * s
+                inc(it)
+                # if ii < p:
+                #     self.sumArr[ii] = self.sumArr[ii] - 2*self.C[ii][p]
+                #     self.C[ii][p] = - self.C[ii][p]
+                # else:
+                #     self.sumArr[ii] = self.sumArr[ii] - 2*self.C[p][ii]
+                #     self.C[p][ii] = - self.C[p][ii]
+                # inc(it)
+
+                
     cpdef updateImprS(self, p, minimize):
         cdef int i
         cdef set[int].iterator it
@@ -967,7 +1172,8 @@ cdef class Individual:
             self.bit[i]='1'
         else:
             self.bit[i]='0'
-
+        # print self.bit
+            
     cpdef destructorWal(self,fitName):
         """ 
         free memory to avoid memory leaks, espcially for executing multiple runs
@@ -1015,6 +1221,38 @@ cdef class Individual:
             #del self.infectBit[i]
             free( self.infectBit[i] )
         free(self.infectBit)
+
+        if fitName == 'mean':
+            """ release extra memory for performing local search using mean """
+            free(self.Z)
+            free(self.SC)
+            for i in xrange(self.dim):
+                free(self.orderC[i])
+            free(self.orderC)
+
+    def destructorWalU(self,fitName):
+        """ 
+        free memory to avoid memory leaks, espcially for executing multiple runs
+        """
+        cdef int i,j
+        
+        free(self.sumArr)
+
+        for i in xrange(len(self.model.WA)):
+            free(self.WAS[i].arr)
+            free(self.WAS+i)
+        free(self.WAS)
+
+        for i in xrange(self.dim):
+            free(self.lookup[i])
+        free(self.lookup)
+
+        j = (self.model.c * (self.model.c-1))/2
+        for i in xrange(j):
+            if self.U[i] != NULL:
+                free(self.U[i].arr)
+                free(self.U[i])
+        free(self.U)
 
         if fitName == 'mean':
             """ release extra memory for performing local search using mean """
@@ -1135,18 +1373,29 @@ cdef class Individual:
     ##             s = s + 1
     ##     return s
 
-    cdef initIndiv(self, int dim):
+    def initIndivPy(self):
         """ initial the search inidividual with random bit string """
-        cdef char *randBitStr = <char*>malloc(dim+1 * sizeof(char))
-        for j in xrange(dim):
+        # self.bit = <char*>malloc( (self.dim+1) * sizeof(char) )
+        # self.bit = new char[self.dim+1]()
+        for j in xrange(self.dim):
             if random.random()<0.5:
-                randBitStr[j] = '0'
+                self.bit.append('0')
             else:
-                randBitStr[j] = '1'
+                # self.bit[j] = '1'
+                self.bit.append('1')
 
-        randBitStr[dim] = '\0'
+    # cdef initIndiv(self):
+    #     """ initial the search inidividual with random bit string """
+    #     self.bit = <char*>malloc( (self.dim+1) * sizeof(char) )
+    #     # self.bit = new char[self.dim+1]()
+    #     for j in xrange(self.dim):
+    #         if random.random()<0.5:
+    #             self.bit[j] = '0'
+    #         else:
+    #             self.bit[j] = '1'
+    #     self.bit[self.dim] = '\0'
+    #     self.bit[self.dim-1] = 'a'
 
-        self.bit = randBitStr
 
     cpdef updateEval(self, I):
         """
@@ -1219,7 +1468,7 @@ cdef class Individual:
 
 
 
-cdef int binCount(list arr,str bit):
+cdef int binCount(list arr, list bit):
     """
     count the one bit of union self.model.WA[i].arr and bit
     """

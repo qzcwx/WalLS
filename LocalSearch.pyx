@@ -88,6 +88,9 @@ cdef class LocalSearch:
                 return self.runFitSrest(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCrest(fitName, minimize, restart)
+        elif compM == 'walRestU':
+            if fitName == 'fit':
+                return self.runFitSrestU(fitName, minimize, restart)
         elif compM == 'walRestFlip':
             if fitName == 'fit':
                 return self.runFitSrestFlip(fitName, minimize, restart)
@@ -745,6 +748,7 @@ cdef class LocalSearch:
         self.oldindiv = self.evalPop(self.oldindiv)
         self.oldindiv.initWal(self.model)
         # self.model.genInter()
+
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         # print 'initWal'
         self.oldindiv.genImproveS(minimize)
@@ -824,6 +828,100 @@ cdef class LocalSearch:
         self.oldindiv.destructorWal(fitName)
         # print 'init', initC, 'update', updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
+    cdef runFitSrestU(self,fitName, minimize, restart):
+        """
+        steepest descent local search running on S, without using C matrix, instead, using the U
+        """
+        print 'runFitrestU'
+        start = time.time()
+        self.fitEval = 0
+        self.model.transWal()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.initWalU(self.model)
+        # self.oldindiv.genWalU()
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        # print 'initWal'
+        self.oldindiv.genImproveS(minimize)
+        self.model.WA = []
+        initC = 1
+        updateC = 0
+        # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
+        # print 'init improve', self.oldindiv.improveA
+        # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+        # self.oldindiv.printSumArr()        
+        self.oldindiv.printWalU()        
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+
+        traceEval = []
+        traceFit = []
+
+        initT = time.time() - start
+
+        while self.fitEval < self.MaxFit:
+            start = time.time()
+            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+            # self.oldindiv.printSumArr()
+            # print 'bestI', bestI
+            # print 'improveA', self.oldindiv.improveA
+            
+            # print 'steep'
+            descT = descT + time.time() - start
+            # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
+
+
+            if improveN == False:
+                initC = initC + 1
+                if restart == True:
+                    start = time.time()
+                    oldbit = self.oldindiv.bit
+                    oldfit = self.oldindiv.fit
+                    self.restart(fitName, minimize, False)
+                    # print 'after restart bit', self.oldindiv.bit
+                    # print 'restart', 'bsf', self.bsf.fit, '\n'
+                    pertT = pertT + time.time() - start
+
+                    start = time.time()
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    self.oldindiv.fit = oldfit
+                    for i in diff:
+                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
+                        self.oldindiv.updateEval(i)
+                        self.oldindiv.updateU(i)
+                        self.oldindiv.updateWAS(i)
+                        # self.oldindiv.printSumArr()
+                        self.oldindiv.updatePertImprS(i, minimize)
+                    updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
+                    # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE
+                start = time.time()
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                # print 'updateEval'
+                self.oldindiv.updateEval(bestI)
+                # print 'update'
+                self.oldindiv.updateU(bestI)
+                # print 'updateWAS'
+                self.oldindiv.updateWAS(bestI)
+                # print 'updateImprS'
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+        # print 'dest'
+        self.oldindiv.destructorWalU(fitName)
+        # print 'init', initC, 'update', updateC
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
 
     def runFitSrestFlip(self,fitName, minimize, restart):
         """
@@ -2103,22 +2201,25 @@ cdef class LocalSearch:
         """
         run local search using fit function, with paritial update
         """
-        # cdef double* subFitArr
-        # print 'runFitUpdate'
-        
         start = time.time()
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-
+        
+        # print 'oldindiv',self.oldindiv.bit
+        # time.sleep(2)
+        
         # print 'genInter'
         self.model.genInter()
         self.model.genListSubFunc()
 
         # self.model.printListSubFunc()
-        
         self.oldindiv = self.evalPop(self.oldindiv)
+        
+        # print 'oldindiv',self.oldindiv.bit
+        # time.sleep(2)
+        
         # print ''
         # print 'genU'ppp
         self.model.genU() 

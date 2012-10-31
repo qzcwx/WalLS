@@ -3,6 +3,8 @@
 ## 00-0, 01-1, 10-2, 11-3 import WalshAnalysis as wal import random import numpy as np import math
 
 import random
+import time 
+import sys
 import numpy as np
 import WalshAnalysis as wal
 import numpy as np
@@ -166,8 +168,10 @@ cdef class NKLandscape:
         """ 
         
         cdef double s = 0.0
-        # print 'bitStr', bitStr 
-        # print 'i', i      
+        
+        # print 'bitStr', bitStr
+        # time.sleep(2)
+        
         """ compose interacting bits """
         interBit = self.neighs[i][:]
         # print 'interbit'
@@ -215,7 +219,7 @@ cdef class NKLandscape:
             """ Compute coefficients for each sub-functions """
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
-        print 'len', math.pow(2,self.n)
+        # print 'len', math.pow(2,self.n)
         w = np.zeros(math.pow(2,self.n))
         for i in range(self.n): # i: index of subfunction
             interBits = self.neighs[i][:]
@@ -798,10 +802,9 @@ cdef class NKLandscape:
     #      print self.U for verifying purposes
     #     """
     #     cdef set[int].iterator it
-    #     cdef int ii, l, i, j, pos
+    #     cdef int ii, i, j, pos
 
     #     print 'printU'
-    #     l = (self.c * (self.c-1))/2        
     #     for i in xrange(self.n):
     #         for j in xrange(i):
     #             pos = i*(i - 1)/2 + j

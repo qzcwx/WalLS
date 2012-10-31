@@ -117,8 +117,6 @@ def main():
                         default=1,
                         )
 
-
-
     opt = parser.parse_args()
 
     if opt.v != 0:
@@ -137,11 +135,11 @@ def main():
     # print opt.rseed
     random.seed(opt.rseed)
 
-    maxFit = opt.e * opt.n
+    # maxFit = opt.e * opt.n
     # runs = 20
 
     runs = 1
-    # maxFit = 109
+    maxFit = 1
 
     t = opt.t
 
@@ -219,10 +217,11 @@ def main():
             model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
         elif opt.probName == 'NonNK':
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
-
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip':
+            
+        # Walsh analysis
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU':
             start = time.time()
-            # Walsh analysis
+
             w = model.WalshCofLinearLinklist()
             walTime = time.time() - start
 
