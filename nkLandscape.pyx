@@ -30,9 +30,9 @@ cdef class NKLandscape:
     cdef ComArr** lookup
     # cdef InTer** Inter
     cdef public list Inter                # the list of variables that interact with ith variable
-    cdef int n                            # number of variables
-    cdef int k                            
-    cdef int c                            # number of clauses
+    cdef public int n                            # number of variables
+    cdef public int k                            
+    cdef public int c                            # number of clauses
     cdef list neighs
     cdef list func
     cdef list Kbits
@@ -54,7 +54,7 @@ cdef class NKLandscape:
             self.genNeigh()
             self.genFunc()
         else:
-            # print fileName
+            print fileName
             self.readFile(fileName)
 
         self.Kbits = tl.genSeqBits(self.k+1)

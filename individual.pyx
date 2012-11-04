@@ -146,6 +146,7 @@ cdef class Individual:
                 self.C[i][j] = 0
 
         self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
+        
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
         for i in xrange(self.dim):
             self.lookup[i] = NULL
@@ -212,7 +213,7 @@ cdef class Individual:
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
-
+            
         # self.infectBit = < vector[InfBit*]** > malloc(sizeof(void *) * self.dim)
         # for i in xrange(self.dim):
         #     vectPtr = new vector[InfBit*]()
@@ -261,25 +262,32 @@ cdef class Individual:
                     self.Inter[j].WI.insert(i)
                     
                 # add entries in U matrix 
-                comb = self.genComb(len(self.model.WA[i].arr)) 
 
+                comb = self.genComb(len(self.model.WA[i].arr)) 
+                
+                # print self.model.WA[i].arr   
+                
                 for j in xrange(comb.size):
                     j0 = self.model.WA[i].arr[comb.arr[j][0]] 
                     j1 = self.model.WA[i].arr[comb.arr[j][1]] 
+
+                                        
                     # calculate the position in U
                     if j0<=j1:
                         pos = j1*(j1 - 1)/2 + j0
                     else:
                         pos = j0*(j0 - 1)/2 + j1
                         # print 'pos', pos
-                        
-                if self.U[pos] == NULL:
-                    uelem = <Uelem*> malloc(sizeof(Uelem))
-                    uelem[0].arr = new vector[int]()
-                    self.U[pos] = uelem
+                    # print '(j0, j1)', j0, j1
+                    # print 'pos',pos
                     
-                self.U[pos].arr.push_back(i)   # store the index of Walsh term
+                    if self.U[pos] == NULL:
+                        uelem = <Uelem*> malloc(sizeof(Uelem))
+                        uelem[0].arr = new vector[int]()
+                        self.U[pos] = uelem
 
+                    self.U[pos].arr.push_back(i)   # store the index of Walsh term
+                
         # print 'finish initWalU'
     
             #     # add list of order >= 3 Walsh terms for the purpose of updating C matrix
@@ -323,6 +331,20 @@ cdef class Individual:
                 else:
                     print i, j, 'not'
             
+    def printWAS(self):
+        """
+        print WAS array, all Walsh terms
+        """
+        print 'WAS'
+        # print len(self.model.WA)
+        for i in xrange(len(self.model.WA)):
+            print 'i',i
+            print 'arr',
+            for j in xrange(len(self.model.WA[i].arr)):
+                print self.WAS[i].arr[j],
+            print
+            print self.WAS[i].w
+            print '***************'
         
     cpdef initBfUpdate(self,old,eval,minimize,model):
         """ 
@@ -1235,13 +1257,17 @@ cdef class Individual:
         free memory to avoid memory leaks, espcially for executing multiple runs
         """
         cdef int i,j
-        
+
         free(self.sumArr)
 
         for i in xrange(len(self.model.WA)):
+
             free(self.WAS[i].arr)
-            free(self.WAS+i)
+
+            # free(self.WAS+i)
+
         free(self.WAS)
+        
 
         for i in xrange(self.dim):
             free(self.lookup[i])
@@ -1377,6 +1403,7 @@ cdef class Individual:
         """ initial the search inidividual with random bit string """
         # self.bit = <char*>malloc( (self.dim+1) * sizeof(char) )
         # self.bit = new char[self.dim+1]()
+        self.bit=[]
         for j in xrange(self.dim):
             if random.random()<0.5:
                 self.bit.append('0')

@@ -135,11 +135,11 @@ def main():
     # print opt.rseed
     random.seed(opt.rseed)
 
-    # maxFit = opt.e * opt.n
+    maxFit = opt.e * opt.n
     # runs = 20
 
     runs = 1
-    maxFit = 1
+    # maxFit = 10
 
     t = opt.t
 

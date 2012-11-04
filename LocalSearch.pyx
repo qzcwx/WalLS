@@ -753,6 +753,7 @@ cdef class LocalSearch:
         # print 'initWal'
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
+        
         initC = 1
         updateC = 0
         # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
@@ -764,7 +765,6 @@ cdef class LocalSearch:
         pertT = 0
         updatePertT = 0
         updateT = 0
-        self.fitEval = 0
 
         traceEval = []
         traceFit = []
@@ -778,7 +778,8 @@ cdef class LocalSearch:
             # self.oldindiv.printSumArr()
             # print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
-                        
+            # if self.fitEval == 0:
+            # print 'steep', bestI, improveN            
             # print 'steep'
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
@@ -797,6 +798,7 @@ cdef class LocalSearch:
 
                     start = time.time()
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    # print 'diff', diff
                     self.oldindiv.fit = oldfit
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
@@ -833,26 +835,30 @@ cdef class LocalSearch:
         """
         steepest descent local search running on S, without using C matrix, instead, using the U
         """
-        print 'runFitrestU'
+        # print 'runFitrestU'
         start = time.time()
         self.fitEval = 0
         self.model.transWal()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
+        # print 'initWalU'
         self.oldindiv.initWalU(self.model)
         # self.oldindiv.genWalU()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         # print 'initWal'
+        # print 'genImproveS'
         self.oldindiv.genImproveS(minimize)
-        self.model.WA = []
+        # self.model.WA = []
         initC = 1
         updateC = 0
         # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
         # print 'init improve', self.oldindiv.improveA
         # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
         # self.oldindiv.printSumArr()        
-        self.oldindiv.printWalU()        
+        # self.oldindiv.printWAS()
+        # self.oldindiv.printWalU()
+                
         descT = 0
         pertT = 0
         updatePertT = 0
@@ -862,6 +868,8 @@ cdef class LocalSearch:
         traceEval = []
         traceFit = []
 
+        # print self.MaxFit
+        
         initT = time.time() - start
 
         while self.fitEval < self.MaxFit:
@@ -872,7 +880,7 @@ cdef class LocalSearch:
             # print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
             
-            # print 'steep'
+            # print 'steep', self.fitEval, improveN
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
 
@@ -2223,12 +2231,15 @@ cdef class LocalSearch:
         # print ''
         # print 'genU'ppp
         self.model.genU() 
+        
         self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        
         # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
         # print 'init SumArr'
         # self.oldindiv.printSumArr()
         # keep track of the behavior of local search
+        
         initC = 1
         updateC = 0
         
