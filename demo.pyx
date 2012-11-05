@@ -347,7 +347,7 @@ def main():
         f.close()
         print nameOfF
 
-        if opt.compMeth != 'bf' and (opt.fitName == 'switchF' or opt.fitName == 'switchAvg' or opt.fitName == 'combF' or opt.fitName == 'combAvg'):
+        if (opt.compMeth != 'bf'  and opt.compMeth!='partEval') and (opt.fitName == 'switchF' or opt.fitName == 'switchAvg' or opt.fitName == 'combF' or opt.fitName == 'combAvg'):
             """ store trace to files: 1. the number of descent steps """
             if opt.probName == 'NKQ':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
@@ -368,7 +368,7 @@ def main():
                 print >>f,"%g\t%g\t" % (res[i]['initC'], res[i]['updateC'])
             f.close()
 
-        if opt.compMeth != 'bf':
+        if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             """ store trace to files: the number of descent steps """
             for i in range(runs):
                 if opt.probName == 'NKQ':
@@ -391,7 +391,7 @@ def main():
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
         f = open(nameOfF, 'w')
-        if opt.compMeth != 'bf':
+        if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             # tracking for walsh-based approach
             print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
             for i in range(runs):

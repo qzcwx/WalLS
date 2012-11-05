@@ -39,7 +39,7 @@ cdef class NKLandscape:
     cdef public dict w
     cdef public list WA
     cdef public list U
-    cdef public list listSubfFunc
+    cdef public list listSubFunc
     cdef double* subFit
     
     """ NK-landscape class """
@@ -47,9 +47,11 @@ cdef class NKLandscape:
         self.n = inN
         self.k = inK
         self.c = inC
+        
         # self.m = self.n * self.m
         # print 'init NK'
         # for run experiments
+        
         if fileName == None:
             self.genNeigh()
             self.genFunc()
@@ -692,6 +694,7 @@ cdef class NKLandscape:
         for i in xrange(self.n):
             print self.Inter[i]
         print
+        
     # cdef getInter(self, i):
     #     """
     #     return the vector that contains all subfunction 9that contain ith variable
@@ -700,7 +703,7 @@ cdef class NKLandscape:
 
     def genListSubFunc(self):
         """
-        generate the list of variables that interact with ith variable
+        generate the list of subfunctions that interact with ith variable
         """
         self.listSubFunc = [None] * self.n
         # go through all subfunction indices

@@ -354,7 +354,6 @@ cdef class Individual:
         self.model = model
         # print 'initBf'
 
-
         # initialize S vector, first derivative
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
 

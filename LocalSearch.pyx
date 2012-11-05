@@ -63,6 +63,9 @@ cdef class LocalSearch:
         elif compM == 'bfUpdate':
             if fitName == 'fit':
                 return self.runFitUpdate(fitName, minimize, restart)
+        elif compM == 'partEval':         # partial evalutation
+            if fitName == 'fit':
+                return self.runPartEval(fitName, minimize, restart)
         elif compM == 'walWalk':
             if fitName == 'fit':
                 return self.runFitSwalk(fitName, minimize, restart)
@@ -2205,11 +2208,10 @@ cdef class LocalSearch:
         return { 'nEvals': 1, 'sol': None, 'bit': None}
 
     cdef runFitUpdate(self, fitName, minimize, restart):
-        # TODO: change the function type cdef
         """
         run local search using fit function, with paritial update
         """
-        start = time.time()
+
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
@@ -2288,7 +2290,6 @@ cdef class LocalSearch:
                         # updating data structures to reflect current solution, namely the first derivate 
                         # print 'sumArr'
                         self.oldindiv.updateSumArr(i, self.oldindiv)
-                        
 
                         # print 'pertimprs'
                         self.oldindiv.updatePertImprSpartialUpdate(i, minimize)
@@ -2312,6 +2313,96 @@ cdef class LocalSearch:
 
         self.oldindiv.destructorBfUpdate()
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
+    cdef runPartEval(self, fitName, minimize, restart):
+        """
+        run local search using fit function for NK-landscape, using partial evalutation method
+
+        there is no extra data structures 
+        """
+        cdef list improveA
+        # print 'runPartEval'
+        self.fitEval = 0
+        start = time.time()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        
+        # print 'oldindiv',self.oldindiv.bit
+        # time.sleep(2)
+        
+        # print 'genInter'
+        # self.model.genInter()
+        self.model.genListSubFunc()
+
+        # self.model.printListSubFunc()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        
+        # print 'oldindiv',self.oldindiv.bit
+        # time.sleep(2)
+        
+        # print ''
+        # print 'genU'ppp
+        # self.model.genU() 
+        
+        # self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        
+        # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
+        # print 'init SumArr'
+        # self.oldindiv.printSumArr()
+        # keep track of the behavior of local search
+        
+        initC = 1
+        updateC = 0
+        
+        # track running time
+        updateT = 0
+
+        # place holder
+        traceEval = []
+        traceFit = []
+        
+        initT = time.time() -start
+        
+        while self.fitEval < self.MaxFit:
+            improveA = []
+            bestFit = self.oldindiv.fit
+            
+            for i in xrange(self.dim):
+                self.indiv = individual.Individual(oldIndiv= self.oldindiv)
+                self.indiv.flip(i)
+                # self.indiv = self.evalPop(self.indiv) 
+                # partial evaluation, only evaluate the affected subfunctions
+                for j in self.model.listSubFunc[i]:
+                    self.indiv.fit = self.indiv.fit - self.model.compSubFit(self.oldindiv.bit, j) + self.model.compSubFit(self.indiv.bit, j)
+
+                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i)
+                
+            if len(improveA)==0: # issue restart
+                # print 'restart'
+                updateT = updateT + time.time() - start
+                initC = initC + 1
+                if restart == True:
+                    self.restart('fit', minimize, True)
+                    # print 'restart', 'bsf', self.bsf.fit, '\n'
+                else:
+                    return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+                start = time.time()
+            else: # randomly take an best-improvement move
+                updateC = updateC + 1
+                # print 'improve'
+                bestI = random.choice(improveA)
+                # print 'bestI', bestI, 'eval', self.fitEval
+                # print 'improveA', improveA
+                self.oldindiv.flip(bestI)
+                self.oldindiv = self.evalPop(self.oldindiv)
+                # print self.oldindiv.fit
+                self.fitEval = self.fitEval + 1
+                
+
+        updateT = updateT + time.time() - start
+
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'initC':initC, 'updateC':updateC,  'updateT':updateT}
 
         
         
