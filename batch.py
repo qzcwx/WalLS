@@ -32,7 +32,7 @@ def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track):
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
         # fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t '+str(t)+' -e '+str(e)+' '+'&\n')
-        fileName.write('nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t '+str(t)+' -e '+str(e)+' '+'&\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+'&\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -109,16 +109,16 @@ if __name__== "__main__":
     vRange = [1]
 
     # eRange = [10,20,100]
-    eRange = [50]
+    eRange = [100]
 
     tRange = [7]
 
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
-    mRange = ['countFreq']
-
-    pRange = ['NonNK']
+    mRange = ['walRest','partEval']
+    
+    pRange = ['NonNK','NK']
 
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)
