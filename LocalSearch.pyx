@@ -938,6 +938,7 @@ cdef class LocalSearch:
         """
         steepest descent local search running on S, with tracing bit-flips enabled
         """
+        
         self.fitEval = 0
         start = time.time()
         self.model.transWal()
@@ -950,6 +951,7 @@ cdef class LocalSearch:
         self.oldindiv.genImproveS(minimize)
         self.model.WA = []
         # print 'init', self.bsf.fit
+        
         initC = 1
         updateC = 0
 

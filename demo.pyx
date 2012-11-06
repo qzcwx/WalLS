@@ -310,7 +310,7 @@ def main():
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = time.time() - start
-            print
+            # print
 
 
     #    trace = res[0]['trace']

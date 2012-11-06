@@ -116,9 +116,9 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
-    mRange = ['walRest','partEval']
+    mRange = ['walRestFlip']
     
-    pRange = ['NonNK','NK']
+    pRange = ['NK','NonNK']
 
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)
