@@ -826,6 +826,7 @@ cdef class LocalSearch:
                 # print 'updateImprS'
                 self.oldindiv.updateImprS(bestI, minimize)
                 self.fitEval = self.fitEval + 1
+                # print self.fitEval
                 self.oldindiv.flip(bestI)
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1

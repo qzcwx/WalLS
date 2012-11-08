@@ -56,7 +56,7 @@ cdef class NKLandscape:
             self.genNeigh()
             self.genFunc()
         else:
-            print fileName
+            # print fileName
             self.readFile(fileName)
 
         self.Kbits = tl.genSeqBits(self.k+1)
@@ -855,12 +855,12 @@ cdef class NKLandscape:
             
     def countFreqInFunc(self):
         """ count the frequency of a variable i appearing in a function """
-        self.freq = np.zeros(self.n)
+        freq = np.zeros(self.n)
         for i in self.neighs:
             for j in i:
-                self.freq[j] = self.freq[j] + 1
+                freq[j] = freq[j] + 1
 
-        return self.freq
+        return freq
 
 
     def __del__(self):

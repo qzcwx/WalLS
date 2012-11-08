@@ -139,7 +139,7 @@ def main():
     # runs = 20
 
     runs = 10
-    # maxFit = 10
+    maxFit = 100000
 
     t = opt.t
 

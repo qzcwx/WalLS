@@ -98,7 +98,7 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    nRange = [20,50,100,200,500]
+    nRange = [20,50,100,200,300,400,500]
     kRange = [2,4]
 
     # nRange = [200]
@@ -109,14 +109,14 @@ if __name__== "__main__":
     vRange = [1]
 
     # eRange = [10,20,100]
-    eRange = [100]
+    eRange = [0]
 
     tRange = [7]
 
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
-    mRange = ['walRestFlip']
+    mRange = ['walRestFlip','walRest','partEval']
     
     pRange = ['NK','NonNK']
 
