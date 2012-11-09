@@ -2364,6 +2364,8 @@ cdef class LocalSearch:
         # place holder
         traceEval = []
         traceFit = []
+
+        touchCount = 0                    # counter for investigation purpose
         
         initT = time.time() -start
         
@@ -2378,7 +2380,8 @@ cdef class LocalSearch:
                 # partial evaluation, only evaluate the affected subfunctions
                 for j in self.model.listSubFunc[i]:
                     self.indiv.fit = self.indiv.fit - self.model.compSubFit(self.oldindiv.bit, j) + self.model.compSubFit(self.indiv.bit, j)
-
+                    touchCount = touchCount + 1
+                
                 improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i)
                 
             if len(improveA)==0: # issue restart
@@ -2395,16 +2398,17 @@ cdef class LocalSearch:
                 updateC = updateC + 1
                 # print 'improve'
                 bestI = random.choice(improveA)
-                # print 'bestI', bestI, 'eval', self.fitEval
                 # print 'improveA', improveA
                 self.oldindiv.flip(bestI)
-                self.oldindiv = self.evalPop(self.oldindiv)
+                self.oldindiv.fit = bestFit
                 # print self.oldindiv.fit
                 self.fitEval = self.fitEval + 1
+                # print 'bestI', bestI, 'eval', self.fitEval
+                # print 'touchCount', touchCount
                 
 
         updateT = updateT + time.time() - start
-
+        
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'initC':initC, 'updateC':updateC,  'updateT':updateT}
 
         
@@ -2844,8 +2848,8 @@ cdef class LocalSearch:
                 self.bsf = individual.Individual(oldIndiv = self.oldindiv)
 
         self.oldindiv.init()
-        diff = self.diffBits(oldbit, self.oldindiv.bit)
-        self.fitEval = self.fitEval + len(diff)
+        # diff = self.diffBits(oldbit, self.oldindiv.bit)
+        # self.fitEval = self.fitEval + len(diff)
         # print 'diff', len(diff)
         if fitName == 'fit':
             if evaluate == True:

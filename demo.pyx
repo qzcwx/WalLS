@@ -140,6 +140,7 @@ def main():
 
     runs = 10
     maxFit = 100000
+    # maxFit = 100
 
     t = opt.t
 
@@ -250,7 +251,7 @@ def main():
 
         if opt.compMeth == 'countFreq':
             freq = model.countFreqInFunc()
-            print sum(freq)
+            # print sum(freq)
 
         # print 'enumerating all solutions'
         # if opt.fitName == 'fit':
@@ -345,8 +346,11 @@ def main():
                 else:
                     print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
         f.close()
-        print nameOfF
 
+        print nameOfF
+        if opt.compMeth == 'countFreq':
+            exit()
+        
         if (opt.compMeth != 'bf'  and opt.compMeth!='partEval') and (opt.fitName == 'switchF' or opt.fitName == 'switchAvg' or opt.fitName == 'combF' or opt.fitName == 'combAvg'):
             """ store trace to files: 1. the number of descent steps """
             if opt.probName == 'NKQ':
@@ -404,8 +408,6 @@ def main():
                 print >>f,"%0.2e\t%0.2e" % (tAll[i], res[i]['updateT'])
 
         f.close()
-        print
-
 
         if opt.compMeth == 'walRestFlip':
             """ store trace of bit-flips to files """

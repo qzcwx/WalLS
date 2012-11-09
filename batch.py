@@ -100,7 +100,7 @@ if __name__== "__main__":
 
     nRange = [20,50,100,200,300,400,500]
     kRange = [2,4]
-
+    
     # nRange = [200]
     # kRange = [2]
 
@@ -116,7 +116,7 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
-    mRange = ['walRestFlip','walRest','partEval']
+    mRange = ['walRestFlip','walRest','partEval','countFreq']
     
     pRange = ['NK','NonNK']
 
