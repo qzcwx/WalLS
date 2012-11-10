@@ -33,7 +33,7 @@ cdef class NKLandscape:
     cdef public int n                            # number of variables
     cdef public int k                            
     cdef public int c                            # number of clauses
-    cdef list neighs
+    cdef public list neighs
     cdef list func
     cdef list Kbits
     cdef public dict w
@@ -55,6 +55,7 @@ cdef class NKLandscape:
         if fileName == None:
             self.genNeigh()
             self.genFunc()
+            # print 'NK', self.neighs
         else:
             # print fileName
             self.readFile(fileName)
@@ -71,6 +72,8 @@ cdef class NKLandscape:
     #     return self.subFit[i]
         
     def exportToFile(self, fileName):
+        # print 'fileName', fileName
+        # print self.neighs
         f = open(fileName, 'w')
         for i in range(self.c):
             for j in range(len(self.neighs[i])):
@@ -904,7 +907,7 @@ class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-class NonNKLandscape(NKLandscape):
+cdef class NonNKLandscape(NKLandscape):
     """ Non-uniform random NK-Landscapes """
     def __init__(self, inN, inK, inC, fileName = None):
         self.n = inN
@@ -912,31 +915,34 @@ class NonNKLandscape(NKLandscape):
         self.c = inC
         NKLandscape.__init__(self, inN, inK, inC, fileName)
 
-
         if fileName == None:
             self.genNonNeigh() # clear from parental class, re-generate
         else:
             self.readFile(fileName)
         self.Kbits = tl.genSeqBits(self.k+1)
-
+        # print 'after init', self.neighs
         
     def genNonNeigh(self):
         self.neighs = []
         # enforce n=c
         if self.c == self.n:
+            # print 'NonNK', 'N', self.n, 'C', self.c
+            
             # generate permutation
             pi = range(self.n)
             random.shuffle(pi)
             # print pi
             for i in range(self.n):
+                # print 'i', i
                 oneNeigh = [i]
                 while len(oneNeigh)<self.k+1:
-                    rand = pi[np.random.binomial(len(pi), 0.5)]
+                    index = np.random.binomial(len(pi), 0.5)
+                    # print 'index', index
+                    rand = pi[index]
                     if rand not in oneNeigh:
                         oneNeigh.append(rand)
-                        # print rand
+                        # print 'rand', rand
                 self.neighs.append(oneNeigh)
+            # print 'neighs', self.neighs
         else:
             print 'Non-uniform NK(q) landscape instances require c==n'
-
-            
