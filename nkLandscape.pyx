@@ -247,7 +247,7 @@ cdef class NKLandscape:
         w = dict()
         for i in range(self.c): # i: index of sub-function
             interBits = self.neighs[i][:]
-            interBits.sort()
+            # interBits.sort()
             for j in range(int(math.pow(2, self.k+1))): # j: index of substrings
                 indexW = self.composeFullBitStr(i, j, interBits, self.n)
                 if w.has_key(indexW):
