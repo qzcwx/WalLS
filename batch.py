@@ -116,7 +116,7 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
-    mRange = ['walRestFlip','walRest','partEval','countFreq']
+    mRange = ['walRestUDist']
     
     pRange = ['NK','NonNK']
 
