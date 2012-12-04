@@ -91,16 +91,19 @@ cdef class LocalSearch:
                 return self.runFitSrest(fitName, minimize, restart)
             elif fitName == 'mean':
                 return self.runMeanSCrest(fitName, minimize, restart)
-        elif compM == 'walRestU':         # exact-Walsh-LS
+        elif compM == 'walRestU':                       # exact-Walsh-LS
             if fitName == 'fit':
                 return self.runFitSrestU(fitName, minimize, restart)
-        elif compM == 'walWalkU':
-            if fitName == 'fit':          # walk-Walsh-LS
+        elif compM == 'walWalkU':                        # walk-Walsh-LS
+            if fitName == 'fit':         
                 return self.runFitSwalkU(fitName, minimize, restart)
-        elif compM == 'walRestUDist':
+        elif compM == 'walRestUDist':              # exact-Walsh-LS dist
             if fitName == 'fit':
                 return self.runFitSrestUDist(fitName, minimize, restart)
-        elif compM == 'walRestFlip':
+        elif compM == 'walWalkUDist':               # walk-Walsh-LS dist
+            if fitName == 'fit': 
+                return self.runFitSwalkUDist(fitName, minimize, restart)
+        elif compM == 'walRestFlip':         # tracking bit-flip pattern
             if fitName == 'fit':
                 return self.runFitSrestFlip(fitName, minimize, restart)
         elif compM == 'walRestNext':
@@ -990,6 +993,7 @@ cdef class LocalSearch:
                         self.oldindiv.updateU(i)
                         self.oldindiv.updateWAS(i)
                         self.oldindiv.updatePertImprS(i, minimize)
+                        
                     updatePertT = updatePertT + time.time() - start
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
@@ -1019,6 +1023,7 @@ cdef class LocalSearch:
         """
         steepest descent local search running on S, without using C
         matrix, instead, using the U
+    
         report fit and len
         """
         # print 'runFitrestU'
@@ -1100,6 +1105,92 @@ cdef class LocalSearch:
                     traceFit.append(self.oldindiv.fit)
 
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
+                    # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE
+                start = time.time()
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                # print 'updateEval'
+                self.oldindiv.updateEval(bestI)
+                # print 'update'
+                self.oldindiv.updateU(bestI)
+                # print 'updateWAS'
+                self.oldindiv.updateWAS(bestI)
+                # print 'updateImprS'
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+
+                traceEval.append(len(self.oldindiv.improveA))
+                traceFit.append(self.oldindiv.fit)
+                
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+        # print 'dest'
+        self.oldindiv.destructorWalU(fitName)
+        # print 'init', initC, 'update', updateC
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+        
+    cdef runFitSwalkUDist(self,fitName, minimize, restart):
+        """
+        walk-Walsh-LS
+        steepest descent local search running on S, without using C matrix, instead, using the U
+
+        replace random restart with random walk
+
+        with Impr.len vs fit distribution reported
+        """
+        start = time.time()
+        self.fitEval = 0
+        self.model.transWal()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.initWalU(self.model)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        self.oldindiv.genImproveS(minimize)
+        initC = 1
+        updateC = 0
+                
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+        walkLen = 10
+
+        traceEval = []
+        traceFit = []
+
+        traceEval.append(len(self.oldindiv.improveA))
+        traceFit.append(self.oldindiv.fit)
+        
+        initT = time.time() - start
+        while self.fitEval < self.MaxFit:
+            start = time.time()
+            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            descT = descT + time.time() - start
+
+            if improveN == False:
+                initC = initC + 1
+                if restart == True:
+                    start = time.time()
+                    start = time.time()
+                    diff, self.oldindiv = self.walk(fitName, minimize,False, walkLen, self.oldindiv)
+                    pertT = pertT + time.time() - start
+                    
+                    start = time.time()
+                    for i in diff:
+                        self.oldindiv.updateEval(i)
+                        self.oldindiv.updateU(i)
+                        self.oldindiv.updateWAS(i)
+                        self.oldindiv.updatePertImprS(i, minimize)
+
+                    traceEval.append(len(self.oldindiv.improveA))
+                    traceFit.append(self.oldindiv.fit)
+
+                    updatePertT = updatePertT + time.time() - start
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
