@@ -1468,20 +1468,23 @@ cdef class Individual:
         
         if self.model.Inter[q]!=None:
             for p in self.model.Inter[q]:
-        # for p in xrange(self.dim):
-            # if p!=q:
                 # calculate the sum of second derivative
-                
-                indivpq = Individual(oldIndiv = old)
-                indivpq.flip(p)
-                indivpq.flip(q)
-                indivp = Individual(oldIndiv = old)
-                indivp.flip(p)
-                indivq = Individual(oldIndiv = old)
-                indivq.flip(q)
-            
+                # manipulate on the length-k extracted string
                 for i in self.model.getU(p,q):
-                    self.sumArr[p] = self.sumArr[p] +  self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i)  -  self.model.compSubFit(indivp.bit, i) + self.model.compSubFit(old.bit, i) 
+                    # print 'before', old.bit
+                    self.sumArr[p] = self.sumArr[p] + self.model.sumTerm(old.bit, i, p, q)
+                    # print 'after ', old.bit
+                    # print
+                # indivpq = Individual(oldIndiv = old)
+                # indivpq.flip(p)
+                # indivpq.flip(q)
+                # indivp = Individual(oldIndiv = old)
+                # indivp.flip(p)
+                # indivq = Individual(oldIndiv = old)
+                # indivq.flip(q)
+            
+                # for i in self.model.getU(p,q):
+                #     self.sumArr[p] = self.sumArr[p] +  self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i)  -  self.model.compSubFit(indivp.bit, i) + self.model.compSubFit(old.bit, i) 
             
         self.sumArr[q] = - self.sumArr[q]
 

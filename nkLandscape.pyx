@@ -172,8 +172,6 @@ cdef class NKLandscape:
         compute i^th subfunction fitness value according to bitStr
         """ 
         
-        cdef double s = 0.0
-        
         # print 'bitStr', bitStr
         # time.sleep(2)
         
@@ -188,9 +186,62 @@ cdef class NKLandscape:
         interStr = ''.join(bits)
         """ sum up the sub-function values """
         # print 'interStr',interStr
-        s = s + self.func[i][int(interStr,2)] 
+        
+        return self.func[i][int(interStr,2)] 
+        
+    cpdef double sumTerm(self, bitStr, i, p, q):
+        """
+        compute the inner summation term 
+        
+        f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
+        """
+        cdef double s = 0.0# , x, xqp, xq, xp
+    
+        
+        """ extract corresponding bits """
+        # x
+        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        s = s + self.func[i][int(''.join(bits),2)] 
+
+        # p
+        if bitStr[p] == '0':
+            bitStr[p] = '1'
+            pb = '0'
+        else:
+            bitStr[p] = '0'
+            pb = '1'
+        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        s = s - self.func[i][int(''.join(bits),2)] 
+        
+        # pq
+        if bitStr[q] == '0':
+            bitStr[q] = '1'
+            qb = '0'
+        else:
+            bitStr[q] = '0'
+            qb = '1'
+        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        s = s + self.func[i][int(''.join(bits),2)] 
+
+        # q
+        bitStr[p] = pb
+        # if bitStr[p] == '0':
+        #     bitStr[p] = '1'
+        # else:
+        #     bitStr[p] = '0'
+        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        s = s - self.func[i][int(''.join(bits),2)] 
+        
+        # back to x
+        bitStr[q] = qb
+        # if bitStr[q] == '0':
+        #     bitStr[q] = '1'
+        # else:
+        #     bitStr[q] = '0'
         
         return s
+    
+    
         
     def WalCof(self):
         """ compute the Walsh coefficients """
