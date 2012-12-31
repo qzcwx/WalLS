@@ -847,6 +847,8 @@ cdef class LocalSearch:
     cdef runFitSrestU(self,fitName, minimize, restart):
         """
         steepest descent local search running on S, without using C matrix, instead, using the U
+
+        with random restart
         """
         # print 'runFitrestU'
         start = time.time()
@@ -2498,8 +2500,9 @@ cdef class LocalSearch:
     cdef runFitUpdate(self, fitName, minimize, restart):
         """
         run local search using fit function, with paritial update
-        """
 
+        with S vector maintained
+        """
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
@@ -2601,7 +2604,8 @@ cdef class LocalSearch:
 
         self.oldindiv.destructorBfUpdate()
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
-
+        
+        
     cdef runPartEval(self, fitName, minimize, restart):
         """
         run local search using fit function for NK-landscape, using partial evalutation method

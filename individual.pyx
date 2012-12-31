@@ -1053,7 +1053,7 @@ cdef class Individual:
             if (abs(best - self.sumArr[i])<self.threshold):
                 bestList.append(i)
         # bestList.sort()
-
+        
         return True, random.choice(bestList)
 
         
@@ -1431,14 +1431,15 @@ cdef class Individual:
 
     cpdef updateEvalPartialUpdate(self, I):
         self.fit = self.fit + self.sumArr[I]
-            
     
-    def updateSumArr(self, q, old):
+    cpdef updateSumArrOld(self, int q, old):
         """
         for the partial update implementation:
         update the first derivative according to second derivative
+
+        iterate through all p
         """
-        cdef int i
+        cdef int i,p
         for p in xrange(self.dim):
             if p!=q:
                 # calculate the sum of second derivative
@@ -1454,6 +1455,36 @@ cdef class Individual:
                     self.sumArr[p] = self.sumArr[p] + ( self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i) ) - ( self.model.compSubFit(indivp.bit, i) - self.model.compSubFit(old.bit, i) )
             else:
                 self.sumArr[p] = - self.sumArr[p]
+
+
+    cpdef updateSumArr(self, int q, old):
+        """
+        for the partial update implementation:
+        update the first derivative according to second derivative
+
+        only consider the p setting that possibly interacts with q
+        """
+        cdef int i, p
+        
+        if self.model.Inter[q]!=None:
+            for p in self.model.Inter[q]:
+        # for p in xrange(self.dim):
+            # if p!=q:
+                # calculate the sum of second derivative
+                
+                indivpq = Individual(oldIndiv = old)
+                indivpq.flip(p)
+                indivpq.flip(q)
+                indivp = Individual(oldIndiv = old)
+                indivp.flip(p)
+                indivq = Individual(oldIndiv = old)
+                indivq.flip(q)
+            
+                for i in self.model.getU(p,q):
+                    self.sumArr[p] = self.sumArr[p] +  self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i)  -  self.model.compSubFit(indivp.bit, i) + self.model.compSubFit(old.bit, i) 
+            
+        self.sumArr[q] = - self.sumArr[q]
+
                 
     cpdef printSumArr(self):
         for i in range(self.dim):

@@ -188,7 +188,8 @@ cdef class NKLandscape:
         interStr = ''.join(bits)
         """ sum up the sub-function values """
         # print 'interStr',interStr
-        s = s +  self.func[i][int(interStr,2)] 
+        s = s + self.func[i][int(interStr,2)] 
+        
         return s
         
     def WalCof(self):
@@ -635,7 +636,7 @@ cdef class NKLandscape:
     #                     if k != j:
     #                         self.Inter[j].arr.add(k)
     #                 self.Inter[j].WI.add(i)
-
+    
     cpdef genInter(self):
         """ 
         initialization of interaction information
