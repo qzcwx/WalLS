@@ -309,24 +309,24 @@ cdef class NKLandscape:
         # cdef tuple indexW
         # cdef np.ndarray masks = np.array([False]*(self.k+1), dtype=bool)
         # cdef int i, j
-        t0 = 0.0
-        t1 = 0.0
-        t2 = 0.0
-        t3 = 0.0
+        # t0 = 0.0
+        # t1 = 0.0
+        # t2 = 0.0
+        # t3 = 0.0
         
         
         subW = [] # subW is a N * 2^K matrix
 
-        start = time.time() 
+        # start = time.time() 
         """ Compute coefficients for each sub-functions """
         for i in xrange(self.c):
-            # subWone = wal.computeW(self.Kbits, self.func[i])
-            subWone = fht.fht(np.asarray(self.func[i]))/(2*math.sqrt(2))
+            subWone = wal.computeW(self.Kbits, self.func[i])
+            # subWone = fht.fht(np.asarray(self.func[i]))/(2*math.sqrt(2))
             # print subWone
             # print subWoneF
             # print
             subW.append(subWone)
-        t0 = t0 + time.time() - start
+        # t0 = t0 + time.time() - start
         
         """ use dict to represent all non-zero Walsh Coefficients"""
         w = dict()
@@ -336,32 +336,35 @@ cdef class NKLandscape:
             # print(type(interBits))
             
             masks = np.array([False]*(self.k+1), dtype=bool)   # initialize mask array 
-            
+
+            # print
+            # print interBits
             for j in xrange(int(math.pow(2, self.k+1))): # j: index of substrings
                 # indexW = interBits[ii] for ii in masks
-                start = time.time()
+                # start = time.time()
                 indexW =tuple(interBits[masks])
-                t1 = t1 + time.time() - start
+                # print indexW
+                # t1 = t1 + time.time() - start
 
-                start = time.time()
+                # start = time.time()
                 # print 'indexW', indexW, type(indexW)
                 # indexW = self.composeFullBitStr(i, j, interBits, self.n)
                 if w.has_key(indexW):
                     w[indexW] = w[indexW] + subW[i][j]
                 else:
                     w[indexW] = subW[i][j]
-                t2 = t2 + time.time() - start
+                # t2 = t2 + time.time() - start
                     
                 # print(masks)
-                start = time.time()
+                # start = time.time()
                 self.addOne(masks)
-                t3 = t3 + time.time() - start
+                # t3 = t3 + time.time() - start
                 # print(masks), '\n'
             
             # exit()
         # for k in w.keys():
         #     w[k] = w[k]/float(self.n)
-        print t0, t1, t2, t3
+        # print t0, t1, t2, t3
         
         self.w = w
         return w
@@ -371,7 +374,8 @@ cdef class NKLandscape:
         add one to the boolean numpy array, a
         """
         cdef int i
-        for i in xrange(len(a)):
+        for i in xrange(len(a)-1,-1,-1):
+             # range(6,0,-1)
             if a[i]==False:
                 a[i] = True
                 break

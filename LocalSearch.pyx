@@ -62,7 +62,10 @@ cdef class LocalSearch:
                 return self.runNeigh(fitName, minimize,restart)
         elif compM == 'bfUpdate':
             if fitName == 'fit':
-                return self.runFitUpdate(fitName, minimize, restart)
+                return self.runFitUpdate(fitName, minimize, restart)        
+        elif compM == 'bfUpdateTLO':
+            if fitName == 'fit':
+                return self.runFitUpdateTLO(fitName, minimize, restart)
         elif compM == 'partEval':         # partial evalutation
             if fitName == 'fit':
                 return self.runPartEval(fitName, minimize, restart)
@@ -97,6 +100,9 @@ cdef class LocalSearch:
         elif compM == 'walRestNextU':                       # exact-Walsh-LS
             if fitName == 'fit':
                 return self.runFitSrestNextU(fitName, minimize, restart)
+        elif compM == 'walTLONextU':                       # exact-Walsh-LS
+            if fitName == 'fit':
+                return self.runFitSTLONextU(fitName, minimize, restart)
         elif compM == 'walWalkU':                        # walk-Walsh-LS
             if fitName == 'fit':         
                 return self.runFitSwalkU(fitName, minimize, restart)
@@ -1030,6 +1036,72 @@ cdef class LocalSearch:
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE
+                start = time.time()
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                # print 'updateEval'
+                self.oldindiv.updateEval(bestI)
+                # print 'update'
+                self.oldindiv.updateU(bestI)
+                # print 'updateWAS'
+                self.oldindiv.updateWAS(bestI)
+                # print 'updateImprS'
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+        # print 'dest'
+        self.oldindiv.destructorWalU(fitName)
+        # print 'init', initC, 'update', updateC
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
+    cdef runFitSTLONextU(self,fitName, minimize, restart):
+        """
+        next descent local search running on S, without using C matrix, instead, using the U
+
+        only considering time to first local optimum
+        """
+        # print 'runFitrestU'
+        start = time.time()
+        self.fitEval = 0
+        self.model.transWal()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        # print 'init', self.oldindiv.fit
+        # print 'initWalU'
+        self.oldindiv.initWalU(self.model)
+        # self.oldindiv.genWalU()
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        # print 'initWal'
+        # print 'genImproveS'
+        self.oldindiv.genImproveS(minimize)
+        # self.model.WA = []
+        initC = 1
+        updateC = 0
+                
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+
+        traceEval = []
+        traceFit = []
+
+        initT = time.time() - start
+
+        while self.fitEval < self.MaxFit:
+            start = time.time()
+            improveN, bestI = self.oldindiv.nextDesc()
+            # print self.oldindiv.improveA
+            # print bestI
+            descT = descT + time.time() - start
+            
+            if improveN == False:
+                self.updateBSF(fitName, minimize)
+                return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
             else : # improveN is TRUE
                 start = time.time()
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
@@ -2710,7 +2782,68 @@ cdef class LocalSearch:
 
         self.oldindiv.destructorBfUpdate()
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
+    cdef runFitUpdateTLO(self, fitName, minimize, restart):
+        """
+        run local search using fit function, with paritial update
+    
+        with S vector maintained, only consider time to first local optimum
+        """
+        self.fitEval = 0
+        start = time.time()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
         
+        self.model.genInter()
+        self.model.genListSubFunc()
+
+        self.oldindiv = self.evalPop(self.oldindiv)
+        # print 'init', self.oldindiv.fit        
+        self.model.genU() 
+        
+        self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        initC = 1
+        updateC = 0
+        
+        # track running time
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+
+        # place holder
+        traceEval = []
+        traceFit = []
+        
+        initT = time.time() -start
+        
+        while self.fitEval < self.MaxFit:
+            start = time.time()
+            improveN, bestI = self.oldindiv.nextFitDescPartialUpdate()
+            # print self.oldindiv.improveA
+            # print bestI
+            descT = descT + time.time() - start
+
+            if improveN == False:
+                self.updateBSF(fitName, minimize)
+                return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+            else:
+                start = time.time()
+                # print 'eval'
+                self.oldindiv.updateEvalPartialUpdate(bestI)
+                # print 'sumArr'
+                self.oldindiv.updateSumArr(bestI, self.oldindiv)
+                # print 'imprs'
+                self.oldindiv.updateImprSpartialUpdate(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+
+        self.oldindiv.destructorBfUpdate()
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
         
     cdef runPartEval(self, fitName, minimize, restart):
         """
@@ -3252,6 +3385,25 @@ cdef class LocalSearch:
         else :
             if evaluate == True:
                 self.oldindiv = self.evalPopNeigh(self.oldindiv, fitName, minimize)
+
+    def updateBSF(self, fitName, minimize):
+
+        if fitName == 'fit' and minimize == True :
+            if self.bsf.fit > self.oldindiv.fit:
+                # print 'update'
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
+        elif fitName == 'fit' and minimize == False :
+            if self.bsf.fit < self.oldindiv.fit:
+                # print 'update'
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
+        elif minimize == True :
+            if self.bsf.fitG > self.oldindiv.fitG:
+                # print 'update'
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
+        elif minimize == False :
+            if self.bsf.fitG < self.oldindiv.fitG:
+                # print 'update'
+                self.bsf = individual.Individual(oldIndiv = self.oldindiv)
 
     def hyperRestart(self, fitName, minimize, evaluate):
         """

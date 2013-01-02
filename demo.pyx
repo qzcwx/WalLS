@@ -146,7 +146,7 @@ def main():
     # runs = 1
     # maxFit = 1000000
     
-    maxFit = 1
+    # maxFit = 1 
 
     t = opt.t
 
@@ -225,11 +225,11 @@ def main():
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
             
         # Walsh analysis
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU':
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU':
             start = time.time()
             w = model.WalshCofLinearLinklist()
             walTime = time.time() - start
-            print 'walsh trans\n', "%.4g" %(walTime)
+            # print 'walsh trans\n', "%.4g" %(walTime)
 
             start = time.time()
             if opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch':
