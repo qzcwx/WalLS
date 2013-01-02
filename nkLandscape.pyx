@@ -5,9 +5,13 @@
 import random
 import time 
 import sys
+# sys.path.append("../fht/build/lib.linux-x86_64-2.7/fht/")
+
+import fht
+
 import numpy as np
 import WalshAnalysis as wal
-import numpy as np
+cimport numpy as np
 import tool as tl
 import math
 from sets import Set
@@ -15,6 +19,7 @@ from libc.stdlib cimport malloc, free
 from libcpp.set cimport set
 import cython 
 from cython.operator cimport dereference as deref, preincrement as inc
+cimport cython
 
 import pdb
 
@@ -113,13 +118,14 @@ cdef class NKLandscape:
                 oneNeigh.append(i)
                 # print 'after', oneNeigh
                 # oneNeigh.sort()
-                self.neighs.append(oneNeigh)
+
         else:                             # MaxSAT instances
             for i in range(self.c):
                 oneNeigh = random.sample(range(self.n), self.k+1)
                 # oneNeigh.sort()
-                self.neighs.append(oneNeigh)
-                
+                # self.neighs.append(aoneNeigh)
+        self.neighs.append(oneNeigh)
+        
     def getNeigh(self):
         return self.neighs
 
@@ -293,33 +299,85 @@ cdef class NKLandscape:
 
         return w/float(self.n)
 
+    # @cython.boundscheck(False)
     def WalshCofLinearLinklist(self):
         """ compute the Walsh Coefficients in a liner time with linear space """
-        subW = [] # subW is a N * 2^K matrix
+
+        # print('WalshCofLinearLinklist')
+        # cdef list subW, subWone
+        # cdef dict w
+        # cdef tuple indexW
+        # cdef np.ndarray masks = np.array([False]*(self.k+1), dtype=bool)
+        # cdef int i, j
+        t0 = 0.0
+        t1 = 0.0
+        t2 = 0.0
+        t3 = 0.0
         
+        
+        subW = [] # subW is a N * 2^K matrix
+
+        start = time.time() 
         """ Compute coefficients for each sub-functions """
-        for i in range(self.c):
-            subWone = wal.computeW(self.Kbits, self.func[i])
+        for i in xrange(self.c):
+            # subWone = wal.computeW(self.Kbits, self.func[i])
+            subWone = fht.fht(np.asarray(self.func[i]))/(2*math.sqrt(2))
+            # print subWone
+            # print subWoneF
+            # print
             subW.append(subWone)
-            
+        t0 = t0 + time.time() - start
+        
         """ use dict to represent all non-zero Walsh Coefficients"""
         w = dict()
-        for i in range(self.c): # i: index of sub-function
-            interBits = self.neighs[i][:]
-            # interBits.sort()
-            for j in range(int(math.pow(2, self.k+1))): # j: index of substrings
-                indexW = self.composeFullBitStr(i, j, interBits, self.n)
+        for i in xrange(self.c): # i: index of sub-function
+            interBits = self.neighs[i]
+            interBits = np.array(interBits)
+            # print(type(interBits))
+            
+            masks = np.array([False]*(self.k+1), dtype=bool)   # initialize mask array 
+            
+            for j in xrange(int(math.pow(2, self.k+1))): # j: index of substrings
+                # indexW = interBits[ii] for ii in masks
+                start = time.time()
+                indexW =tuple(interBits[masks])
+                t1 = t1 + time.time() - start
+
+                start = time.time()
+                # print 'indexW', indexW, type(indexW)
+                # indexW = self.composeFullBitStr(i, j, interBits, self.n)
                 if w.has_key(indexW):
                     w[indexW] = w[indexW] + subW[i][j]
                 else:
                     w[indexW] = subW[i][j]
+                t2 = t2 + time.time() - start
                     
+                # print(masks)
+                start = time.time()
+                self.addOne(masks)
+                t3 = t3 + time.time() - start
+                # print(masks), '\n'
+            
+            # exit()
         # for k in w.keys():
         #     w[k] = w[k]/float(self.n)
+        print t0, t1, t2, t3
         
         self.w = w
         return w
 
+    cdef addOne(self, a):
+        """
+        add one to the boolean numpy array, a
+        """
+        cdef int i
+        for i in xrange(len(a)):
+            if a[i]==False:
+                a[i] = True
+                break
+            else:
+                a[i] = False
+        
     """
     for Walsh Local Search
     """
@@ -330,11 +388,11 @@ cdef class NKLandscape:
         self.WA = [] # array representing Walsh terms
         for k in self.w.keys():
             if self.w[k] != 0:
-                a = []
-                for i in range(self.n):
-                    if k[i] == '1':
-                        a.append(i)
-                self.WA.append( Struct(arr = a, w = self.w[k]) )
+                # a = []
+                # for i in range(self.n):
+                #     if k[i] == '1':
+                #         a.append(i)
+                self.WA.append( Struct(arr = list(k), w = self.w[k]) )
 
         # # density of Non-Zero Walsh terms
         # print len(self.WA), self.n * 2**(self.k+1), (len(self.WA)+0.)/(self.n * 2**(self.k+1))
