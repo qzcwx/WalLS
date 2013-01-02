@@ -1056,6 +1056,12 @@ cdef class Individual:
         
         return True, random.choice(bestList)
 
+    def nextFitDescPartialUpdate(self):
+        if not self.improveA:
+            return False, None
+        
+        return True, random.choice(self.improveA)
+
         
     def steepMeanDesc(self, minimize):
         if not self.improveSC:
@@ -1105,7 +1111,7 @@ cdef class Individual:
 
         # randomly pick an improving move, which takes only constant time
         bestI = random.choice(self.improveA)
-
+        
         # for i in range(self.dim):
         #     print self.sumArr[i]
 

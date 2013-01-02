@@ -103,7 +103,7 @@ cdef class NKLandscape:
         """
         self.neighs = []
         if self.c == self.n:              # strictly NK-landscapses
-            # print self.c, self.n
+             # print self.c, self.n
             for i in range(self.c):
                 oneNeigh = random.sample(range(self.n-1),self.k)
                 # print 'before', oneNeigh
@@ -189,20 +189,25 @@ cdef class NKLandscape:
         
         return self.func[i][int(interStr,2)] 
         
-    cpdef double sumTerm(self, bitStr, i, p, q):
+    cpdef double sumTerm(self, list bitStr, int i, int p, int q):
         """
         compute the inner summation term 
         
         f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
         """
-        cdef double s = 0.0# , x, xqp, xq, xp
-    
-        
+        cdef double s = 0.0
+        cdef int j
+        cdef list bits
+        # cdef str pb, qb
+
         """ extract corresponding bits """
         # x
-        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
-        s = s + self.func[i][int(''.join(bits),2)] 
-
+        
+        # O(k), according to %timeit
+        bits = [ bitStr[j] for j in self.neighs[i][:] ]
+        # O(k), %timeit int(''.join(['1']*10000),2)
+        s = s + self.func[i][int(''.join(bits),2)]   
+        
         # p
         if bitStr[p] == '0':
             bitStr[p] = '1'
@@ -210,7 +215,7 @@ cdef class NKLandscape:
         else:
             bitStr[p] = '0'
             pb = '1'
-        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        bits = [ bitStr[j] for j in self.neighs[i][:] ]
         s = s - self.func[i][int(''.join(bits),2)] 
         
         # pq
@@ -220,7 +225,7 @@ cdef class NKLandscape:
         else:
             bitStr[q] = '0'
             qb = '1'
-        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        bits = [ bitStr[j] for j in self.neighs[i][:] ]
         s = s + self.func[i][int(''.join(bits),2)] 
 
         # q
@@ -229,7 +234,7 @@ cdef class NKLandscape:
         #     bitStr[p] = '1'
         # else:
         #     bitStr[p] = '0'
-        bits = [ bitStr[int(j)] for j in self.neighs[i][:] ]
+        bits = [ bitStr[j] for j in self.neighs[i][:] ]
         s = s - self.func[i][int(''.join(bits),2)] 
         
         # back to x
@@ -291,10 +296,12 @@ cdef class NKLandscape:
     def WalshCofLinearLinklist(self):
         """ compute the Walsh Coefficients in a liner time with linear space """
         subW = [] # subW is a N * 2^K matrix
+        
+        """ Compute coefficients for each sub-functions """
         for i in range(self.c):
-            """ Compute coefficients for each sub-functions """
             subWone = wal.computeW(self.Kbits, self.func[i])
             subW.append(subWone)
+            
         """ use dict to represent all non-zero Walsh Coefficients"""
         w = dict()
         for i in range(self.c): # i: index of sub-function
@@ -306,10 +313,10 @@ cdef class NKLandscape:
                     w[indexW] = w[indexW] + subW[i][j]
                 else:
                     w[indexW] = subW[i][j]
-
+                    
         # for k in w.keys():
         #     w[k] = w[k]/float(self.n)
-
+        
         self.w = w
         return w
 
@@ -329,6 +336,10 @@ cdef class NKLandscape:
                         a.append(i)
                 self.WA.append( Struct(arr = a, w = self.w[k]) )
 
+        # # density of Non-Zero Walsh terms
+        # print len(self.WA), self.n * 2**(self.k+1), (len(self.WA)+0.)/(self.n * 2**(self.k+1))
+
+        
     def genHyperVote(self):
         """
         using the voting strategy where only best hyperplane have the chance to vote
