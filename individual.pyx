@@ -347,9 +347,10 @@ cdef class Individual:
             print '***************'
         
     cpdef initBfUpdate(self,old,eval,minimize,model):
-        """ 
-        initialize data structures for performing partial update
         """
+        initialize data structures for performing partial update with S vector maintained
+        """
+        
         cdef int i
         self.model = model
         # print 'initBf'
@@ -608,8 +609,8 @@ cdef class Individual:
         cdef int i
         cdef set[int].iterator it
         
-        if p in self.improveA:
-            self.improveA.remove(p)
+        # if p in self.improveA:
+        #     self.improveA.remove(p)
 
             # while it!=self.model.Inter[p].arr.end():
         # if p in self.model.Inter:
@@ -629,13 +630,15 @@ cdef class Individual:
                     self.improveA.remove(i)
                 inc(it)
                 
-    cpdef updateImprSpartialUpdate(self, p, minimize):
+    cpdef updateImprSpartialUpdate(self, int p, minimize):
         cdef int i
         # cdef set[int].iterator it
-        
-        if p in self.improveA:
-            self.improveA.remove(p)
 
+        # if p in self.improveA:
+        #     self.improveA.remove(p)
+
+        self.improveA.remove(p)
+        
             # while it!=self.model.Inter[p].arr.end():
         # if p in self.model.Inter:
         if self.model.Inter[p]!=None:
@@ -1463,7 +1466,7 @@ cdef class Individual:
                 self.sumArr[p] = - self.sumArr[p]
 
 
-    cpdef updateSumArr(self, int q, old):
+    cpdef updateSumArr(self, int q, list old):
         """
         for the partial update implementation:
         update the first derivative according to second derivative
@@ -1478,7 +1481,7 @@ cdef class Individual:
                 # manipulate on the length-k extracted string
                 for i in self.model.getU(p,q):
                     # print 'before', old.bit
-                    self.sumArr[p] = self.sumArr[p] + self.model.sumTerm(old.bit, i, p, q)
+                    self.sumArr[p] = self.sumArr[p] + self.sumTerm(old, i, p, q)
                     # print 'after ', old.bit
                     # print
                 # indivpq = Individual(oldIndiv = old)
@@ -1493,6 +1496,65 @@ cdef class Individual:
                 #     self.sumArr[p] = self.sumArr[p] +  self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i)  -  self.model.compSubFit(indivp.bit, i) + self.model.compSubFit(old.bit, i) 
             
         self.sumArr[q] = - self.sumArr[q]
+
+        
+    cdef float sumTerm(self, list bitStr, int i, int p, int q):
+        """
+        compute the inner summation term 
+        
+        f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
+        """
+        cdef float s
+        cdef int j
+        cdef list bits
+        # cdef str pb, qb
+
+        """ extract corresponding bits """
+        # x
+        
+        # O(k), according to %timeit
+        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        # print bits
+        # O(k), %timeit int(''.join(['1']*10000),2)
+        s = self.model.func[i][int(''.join(bits),2)]   
+        
+        # p
+        if bitStr[p] == '0':
+            bitStr[p] = '1'
+            pb = '0'
+        else:
+            bitStr[p] = '0'
+            pb = '1'
+        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        s = s - self.model.func[i][int(''.join(bits),2)] 
+        
+        # pq
+        if bitStr[q] == '0':
+            bitStr[q] = '1'
+            qb = '0'
+        else:
+            bitStr[q] = '0'
+            qb = '1'
+        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        s = s + self.model.func[i][int(''.join(bits),2)] 
+
+        # q
+        bitStr[p] = pb
+        # if bitStr[p] == '0':
+        #     bitStr[p] = '1'
+        # else:
+        #     bitStr[p] = '0'
+        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        s = s - self.model.func[i][int(''.join(bits),2)] 
+        
+        # back to x
+        bitStr[q] = qb
+        # if bitStr[q] == '0':
+        #     bitStr[q] = '1'
+        # else:
+        #     bitStr[q] = '0'
+        
+        return s
 
                 
     cpdef printSumArr(self):

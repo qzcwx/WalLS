@@ -39,7 +39,7 @@ cdef class NKLandscape:
     cdef public int k                            
     cdef public int c                            # number of clauses
     cdef public list neighs
-    cdef list func
+    cdef public list func
     cdef list Kbits
     cdef public dict w
     cdef public list WA
@@ -62,9 +62,8 @@ cdef class NKLandscape:
         else:
             # print fileName
             self.readFile(fileName)
-
+            
         self.Kbits = tl.genSeqBits(self.k+1)
-
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.n)
         for i in xrange(self.n):
             self.lookup[i] = NULL
@@ -94,14 +93,21 @@ cdef class NKLandscape:
         
         self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.c, autostrip=True, usecols = range(self.k+1)).tolist()
         # sort the neighs, and overwrite self.neighs 
-        for i in range(self.c):
+        for i in xrange(self.c):
             interbit = self.neighs[i][:]
             # interbit.sort()
             self.neighs[i][:] = interbit
         
         self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
 
-    # def readFileDict(self)
+    def genFuncDict(self):
+        """
+        the second dimension of self.func is a dict with the indices for subfunction input
+
+        convert self.func into its dict() representation
+        """
+        print 'readFileDict'
+        
     
     def genNeigh(self):
         """ 
@@ -198,62 +204,63 @@ cdef class NKLandscape:
         
         return self.func[i][int(interStr,2)] 
         
-    cpdef double sumTerm(self, list bitStr, int i, int p, int q):
-        """
-        compute the inner summation term 
+    # cpdef double sumTerm(self, list bitStr, int i, int p, int q):
+    #     """
+    #     compute the inner summation term 
         
-        f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
-        """
-        cdef double s = 0.0
-        cdef int j
-        cdef list bits
-        # cdef str pb, qb
+    #     f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
+    #     """
+    #     cdef double s = 0.0
+    #     cdef int j
+    #     cdef list bits
+    #     # cdef str pb, qb
 
-        """ extract corresponding bits """
-        # x
+    #     """ extract corresponding bits """
+    #     # x
         
-        # O(k), according to %timeit
-        bits = [ bitStr[j] for j in self.neighs[i][:] ]
-        # O(k), %timeit int(''.join(['1']*10000),2)
-        s = s + self.func[i][int(''.join(bits),2)]   
+    #     # O(k), according to %timeit
+    #     bits = [ bitStr[j] for j in self.neighs[i][:] ]
+    #     # print bits
+    #     # O(k), %timeit int(''.join(['1']*10000),2)
+    #     s = s + self.func[i][int(''.join(bits),2)]   
         
-        # p
-        if bitStr[p] == '0':
-            bitStr[p] = '1'
-            pb = '0'
-        else:
-            bitStr[p] = '0'
-            pb = '1'
-        bits = [ bitStr[j] for j in self.neighs[i][:] ]
-        s = s - self.func[i][int(''.join(bits),2)] 
+    #     # p
+    #     if bitStr[p] == '0':
+    #         bitStr[p] = '1'
+    #         pb = '0'
+    #     else:
+    #         bitStr[p] = '0'
+    #         pb = '1'
+    #     bits = [ bitStr[j] for j in self.neighs[i][:] ]
+    #     s = s - self.func[i][int(''.join(bits),2)] 
         
-        # pq
-        if bitStr[q] == '0':
-            bitStr[q] = '1'
-            qb = '0'
-        else:
-            bitStr[q] = '0'
-            qb = '1'
-        bits = [ bitStr[j] for j in self.neighs[i][:] ]
-        s = s + self.func[i][int(''.join(bits),2)] 
+    #     # pq
+    #     if bitStr[q] == '0':
+    #         bitStr[q] = '1'
+    #         qb = '0'
+    #     else:
+    #         bitStr[q] = '0'
+    #         qb = '1'
+    #     bits = [ bitStr[j] for j in self.neighs[i][:] ]
+    #     s = s + self.func[i][int(''.join(bits),2)] 
 
-        # q
-        bitStr[p] = pb
-        # if bitStr[p] == '0':
-        #     bitStr[p] = '1'
-        # else:
-        #     bitStr[p] = '0'
-        bits = [ bitStr[j] for j in self.neighs[i][:] ]
-        s = s - self.func[i][int(''.join(bits),2)] 
+    #     # q
+    #     bitStr[p] = pb
+    #     # if bitStr[p] == '0':
+    #     #     bitStr[p] = '1'
+    #     # else:
+    #     #     bitStr[p] = '0'
+    #     bits = [ bitStr[j] for j in self.neighs[i][:] ]
+    #     s = s - self.func[i][int(''.join(bits),2)] 
         
-        # back to x
-        bitStr[q] = qb
-        # if bitStr[q] == '0':
-        #     bitStr[q] = '1'
-        # else:
-        #     bitStr[q] = '0'
+    #     # back to x
+    #     bitStr[q] = qb
+    #     # if bitStr[q] == '0':
+    #     #     bitStr[q] = '1'
+    #     # else:
+    #     #     bitStr[q] = '0'
         
-        return s
+    #     return s
     
     
         
@@ -304,7 +311,7 @@ cdef class NKLandscape:
 
     # @cython.boundscheck(False)
     def WalshCofLinearLinklist(self):
-        """ compute the Walsh Coefficients in a liner time with linear space """
+        """ compute the Walsh Coefficients in a liner time with linear space using dict() """
 
         # print('WalshCofLinearLinklist')
         # cdef list subW, subWone
@@ -316,7 +323,6 @@ cdef class NKLandscape:
         # t1 = 0.0
         # t2 = 0.0
         # t3 = 0.0
-        
         
         subW = [] # subW is a N * 2^K matrix
 
@@ -766,7 +772,9 @@ cdef class NKLandscape:
     
     cpdef genInter(self):
         """ 
-        initialization of interaction information
+        - initialization of interaction information
+        - generate self.Inter
+        - the list of variables interacting with i if any, other self.Inter[i]==NULL
         """
         cdef list i
         cdef int j
@@ -780,7 +788,7 @@ cdef class NKLandscape:
         for j in xrange(self.n):
             Cinter[j] = NULL
 
-        # merely out the function itself, check every pair of 
+        # merely the function itself, check every pair of 
         for i in self.neighs:
             # generete all possible pairs
             comb = self.genComb(len(i))
@@ -834,7 +842,8 @@ cdef class NKLandscape:
 
     def genListSubFunc(self):
         """
-        generate the list of subfunctions that interact with ith variable
+        - generate the list of subfunctions that interact with ith variable
+        - self.listSubFunc as output
         """
         self.listSubFunc = [None] * self.n
         # go through all subfunction indices
@@ -1047,6 +1056,8 @@ cdef class NonNKLandscape(NKLandscape):
             self.genNonNeigh() # clear from parental class, re-generate
         else:
             self.readFile(fileName)
+
+           
         self.Kbits = tl.genSeqBits(self.k+1)
         # print 'after init', self.neighs
         

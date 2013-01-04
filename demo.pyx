@@ -138,7 +138,8 @@ def main():
     maxFit = opt.e * opt.n
     # runs = 20
 
-    runs = 10
+    runs = 1
+    
     # maxFit = 100000
     
     # maxFit = 10000
@@ -403,14 +404,20 @@ def main():
         if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             # tracking for walsh-based approach
             print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
+            
+            print "All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t" # debug
+            
             for i in range(runs):
                 print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
+                
+                print "%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT']) # debug
 
         else:
             # for the brute force approach
             print >>f,"All\tupdate"
             for i in range(runs):
                 print >>f,"%0.2e\t%0.2e" % (tAll[i], res[i]['updateT'])
+
 
         f.close()
 

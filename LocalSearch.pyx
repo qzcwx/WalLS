@@ -2789,6 +2789,8 @@ cdef class LocalSearch:
     
         with S vector maintained, only consider time to first local optimum
         """
+        print 'runFitUpdateTLO'
+
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
@@ -2796,11 +2798,12 @@ cdef class LocalSearch:
         
         self.model.genInter()
         self.model.genListSubFunc()
-
+        # self.model.genFuncDict()
+        
         self.oldindiv = self.evalPop(self.oldindiv)
         # print 'init', self.oldindiv.fit        
-        self.model.genU() 
-        
+        self.model.genU()
+
         self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         initC = 1
@@ -2811,6 +2814,10 @@ cdef class LocalSearch:
         pertT = 0
         updatePertT = 0
         updateT = 0
+        s1 = 0
+        s2 = 0
+        s3 = 0
+        s4 = 0
 
         # place holder
         traceEval = []
@@ -2827,21 +2834,37 @@ cdef class LocalSearch:
 
             if improveN == False:
                 self.updateBSF(fitName, minimize)
+                print '%.2g\t%.2g\t%.2g\t%.2g' %(s1,s2,s3,s4)
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
             else:
                 start = time.time()
                 # print 'eval'
+
+                start1 = time.time()
                 self.oldindiv.updateEvalPartialUpdate(bestI)
+                s1 = s1+ time.time() - start1
                 # print 'sumArr'
-                self.oldindiv.updateSumArr(bestI, self.oldindiv)
+                
+                start1 = time.time()
+                self.oldindiv.updateSumArr(bestI, self.oldindiv.bit)
+                s2 = s2+ time.time() - start1
+                
                 # print 'imprs'
+                start1 = time.time()
                 self.oldindiv.updateImprSpartialUpdate(bestI, minimize)
-                self.fitEval = self.fitEval + 1
+                s3 = s3 + time.time() - start1
+                
+                start1 = time.time()
                 self.oldindiv.flip(bestI)
+                s4 = s4 + time.time() - start1
+                
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
+                self.fitEval = self.fitEval + 1
+                
 
         self.oldindiv.destructorBfUpdate()
+
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
         
