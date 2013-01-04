@@ -138,7 +138,7 @@ def main():
     maxFit = opt.e * opt.n
     # runs = 20
 
-    runs = 1
+    runs = 10
     # maxFit = 100000
     
     # maxFit = 10000

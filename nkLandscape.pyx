@@ -55,12 +55,10 @@ cdef class NKLandscape:
         
         # self.m = self.n * self.m
         # print 'init NK'
-        # for run experiments
         
         if fileName == None:
             self.genNeigh()
             self.genFunc()
-            # print 'NK', self.neighs
         else:
             # print fileName
             self.readFile(fileName)
@@ -79,13 +77,15 @@ cdef class NKLandscape:
     def exportToFile(self, fileName):
         # print 'fileName', fileName
         # print self.neighs
+        # print len(self.neighs)
         f = open(fileName, 'w')
-        for i in range(self.c):
-            for j in range(len(self.neighs[i])):
+        for i in xrange(self.c):
+            # print i
+            for j in xrange(len(self.neighs[i])):
                 print >>f, self.neighs[i][j], '\t',
             print >>f
-        for i in range(self.c):
-            for j in range(len(self.func[i])):
+        for i in xrange(self.c):
+            for j in xrange(len(self.func[i])):
                 print >>f, self.func[i][j], '\t',
             print >>f
 
@@ -96,45 +96,48 @@ cdef class NKLandscape:
         # sort the neighs, and overwrite self.neighs 
         for i in range(self.c):
             interbit = self.neighs[i][:]
-            interbit.sort()
+            # interbit.sort()
             self.neighs[i][:] = interbit
         
         self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
 
+    # def readFileDict(self)
+    
     def genNeigh(self):
         """ 
         generate neighborhood of K+1 randomly picked positions out of N ones 
         self.neighs include the ith variable itself
         """
         self.neighs = []
+        print 'genNeigh'
         if self.c == self.n:              # strictly NK-landscapses
              # print self.c, self.n
-            for i in range(self.c):
+            for i in xrange(self.c):
                 oneNeigh = random.sample(range(self.n-1),self.k)
                 # print 'before', oneNeigh
-                for j in range(len(oneNeigh)):
+                for j in xrange(len(oneNeigh)):
                     if oneNeigh[j] >= i:
                         oneNeigh[j] = oneNeigh[j] + 1
                 oneNeigh.append(i)
                 # print 'after', oneNeigh
-                # oneNeigh.sort()
-
+                oneNeigh.sort()
+                self.neighs.append(oneNeigh)
         else:                             # MaxSAT instances
             for i in range(self.c):
                 oneNeigh = random.sample(range(self.n), self.k+1)
-                # oneNeigh.sort()
-                # self.neighs.append(aoneNeigh)
-        self.neighs.append(oneNeigh)
+                oneNeigh.sort()
+                self.neighs.append(oneNeigh)
         
     def getNeigh(self):
         return self.neighs
 
     def genFunc(self):
         """ generate function value """
+        print 'genFunc'
         self.func = []
-        for i in range(self.c):
+        for i in xrange(self.c):
             oneFunc = []
-            for j in range(int(math.pow(2,self.k+1))):
+            for j in xrange(int(math.pow(2,self.k+1))):
                 oneFunc.append(random.random())
             self.func.append(oneFunc)
 
@@ -513,7 +516,7 @@ cdef class NKLandscape:
 ##        for i in range(10):
 #            print '%s\t%.3f' %(a[i][0],a[i][1])
         # initialize sumFitA
-
+        
         self.sumFitA = []
         for i in range(self.n):
             self.sumFitA.append(Struct(one=0,zero=0))
