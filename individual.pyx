@@ -5,6 +5,7 @@ import random
 import copy
 import time
 # import tool as tl
+from sets import Set
 
 # import for Cython
 cimport cython
@@ -52,7 +53,9 @@ cdef class Individual:
     cdef double** C
     cdef double** orderC
     cdef Uelem** U
-    cdef public list improveA
+    # cdef public list improveA
+    # cdef set[int] improveA
+    cdef public object improveA
     cdef public list improveSC
     cdef object func
     cdef object model
@@ -609,8 +612,8 @@ cdef class Individual:
         cdef int i
         cdef set[int].iterator it
         
-        # if p in self.improveA:
-        #     self.improveA.remove(p)
+        if p in self.improveA:
+            self.improveA.remove(p)
 
             # while it!=self.model.Inter[p].arr.end():
         # if p in self.model.Inter:
@@ -625,20 +628,22 @@ cdef class Individual:
                 """ NOT equal moves """
                 if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
-                        self.improveA.append(i)
+                    # if self.improveA.empty() == False:
+                        # self.improveA.append(i)
+                        self.improveA.add(i)
                 elif i in self.improveA:
+                # elif i in 
                     self.improveA.remove(i)
                 inc(it)
                 
     cpdef updateImprSpartialUpdate(self, int p, minimize):
         cdef int i
+        
         # cdef set[int].iterator it
 
-        # if p in self.improveA:
-        #     self.improveA.remove(p)
-
-        self.improveA.remove(p)
-        
+        if p in self.improveA:
+            self.improveA.remove(p)
+            
             # while it!=self.model.Inter[p].arr.end():
         # if p in self.model.Inter:
         if self.model.Inter[p]!=None:
@@ -652,7 +657,8 @@ cdef class Individual:
                 """ NOT equal moves """
                 if (minimize == False and self.sumArr[i] > self.threshold) or (minimize == True and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
-                        self.improveA.append(i)
+                        # self.improveA.append(i)
+                        self.improveA.add(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
                 # inc(it)
@@ -833,22 +839,28 @@ cdef class Individual:
         generate the index of best neigh according to sumArr only (surrogate of fitness)
         """
         # check improving move
-        self.improveA = []
+        # self.improveA = []
+        self.improveA = Set()
+
         for i in range(self.dim):
             if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold):            # NOT equal moves
             # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
-                self.improveA.append(i)
+                self.improveA.add(i)
                 
     def genImproveSpartialUpdate(self,minimize):
         """
         generate the index of best neigh according to sumArr only (surrogate of fitness)
         """
         # check improving move
-        self.improveA = []
+        # self.improveA = new set[int]()
+        # self.improveA = []
+        self.improveA = Set()
+        
         for i in range(self.dim):
             if (minimize == True and self.sumArr[i] < - self.threshold) or (minimize == False and self.sumArr[i] >  self.threshold):            # NOT equal moves
             # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
-                self.improveA.append(i)
+                # self.improveA.append(i)
+                self.improveA.add(i)
 
         
 ##     def genFitNext(self,minimize):
@@ -1063,7 +1075,7 @@ cdef class Individual:
         if not self.improveA:
             return False, None
         
-        return True, random.choice(self.improveA)
+        return True, self.improveA.pop()
 
         
     def steepMeanDesc(self, minimize):
@@ -1113,7 +1125,8 @@ cdef class Individual:
             return False, None
 
         # randomly pick an improving move, which takes only constant time
-        bestI = random.choice(self.improveA)
+        # bestI = random.choice(self.improveA)
+        bestI = self.improveA.pop()
         
         # for i in range(self.dim):
         #     print self.sumArr[i]
@@ -1441,6 +1454,27 @@ cdef class Individual:
     cpdef updateEvalPartialUpdate(self, I):
         self.fit = self.fit + self.sumArr[I]
     
+
+
+    cpdef updateSumArr(self, int q, list old):
+        """
+        for the partial update implementation:
+        update the first derivative according to second derivative
+
+        only consider the p setting that possibly interacts with q
+        """
+        cdef int i, p
+        
+        if self.model.Inter[q]!=None:
+            for p in self.model.Inter[q]:
+                # calculate the sum of second derivative
+                # manipulate on the length-k extracted string
+                for i in self.model.getU(p,q):
+                    # print 'before', old.bit
+                    self.sumArr[p] = self.sumArr[p] + self.sumTerm(old, i, p, q)
+                    
+        self.sumArr[q] = - self.sumArr[q]
+
     cpdef updateSumArrOld(self, int q, old):
         """
         for the partial update implementation:
@@ -1464,39 +1498,6 @@ cdef class Individual:
                     self.sumArr[p] = self.sumArr[p] + ( self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i) ) - ( self.model.compSubFit(indivp.bit, i) - self.model.compSubFit(old.bit, i) )
             else:
                 self.sumArr[p] = - self.sumArr[p]
-
-
-    cpdef updateSumArr(self, int q, list old):
-        """
-        for the partial update implementation:
-        update the first derivative according to second derivative
-
-        only consider the p setting that possibly interacts with q
-        """
-        cdef int i, p
-        
-        if self.model.Inter[q]!=None:
-            for p in self.model.Inter[q]:
-                # calculate the sum of second derivative
-                # manipulate on the length-k extracted string
-                for i in self.model.getU(p,q):
-                    # print 'before', old.bit
-                    self.sumArr[p] = self.sumArr[p] + self.sumTerm(old, i, p, q)
-                    # print 'after ', old.bit
-                    # print
-                # indivpq = Individual(oldIndiv = old)
-                # indivpq.flip(p)
-                # indivpq.flip(q)
-                # indivp = Individual(oldIndiv = old)
-                # indivp.flip(p)
-                # indivq = Individual(oldIndiv = old)
-                # indivq.flip(q)
-            
-                # for i in self.model.getU(p,q):
-                #     self.sumArr[p] = self.sumArr[p] +  self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i)  -  self.model.compSubFit(indivp.bit, i) + self.model.compSubFit(old.bit, i) 
-            
-        self.sumArr[q] = - self.sumArr[q]
-
         
     cdef float sumTerm(self, list bitStr, int i, int p, int q):
         """
