@@ -1107,7 +1107,8 @@ cdef class LocalSearch:
             
             if improveN == False:
                 self.updateBSF(fitName, minimize)
-                print '%.2g\t%.2g\t%.2g\t%.2g\t%.2g\t' %(s1,s2,s3,s4,s5)
+                print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
+                print '|%.2g\t|%.2g\t|%.2g\t|%.2g\t|%.2g\t|' %(s1,s2,s3,s4,s5)
                 self.oldindiv.destructorWalU(fitName)
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
             else : # improveN is TRUE
@@ -1136,7 +1137,8 @@ cdef class LocalSearch:
                 self.fitEval = self.fitEval + 1
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
-                print self.fitEval, len(self.improveA)
+                # print self.fitEval, len(self.model.improveA)
+                # print self.dim, self.fitEval, len(self.oldindiv.improveA) 
         # print 'dest'
 
         # print 'init', initC, 'update', updateC
@@ -2854,7 +2856,8 @@ cdef class LocalSearch:
 
             if improveN == False:
                 self.updateBSF(fitName, minimize)
-                print '%.2g\t%.2g\t%.2g\t%.2g' %(s1,s2,s3,s4)
+                print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit 
+                print '|%.2g\t|%.2g\t|%.2g\t|%.2g|' %(s1,s2,s3,s4)
                 self.oldindiv.destructorBfUpdate()
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
             else:
@@ -2882,8 +2885,7 @@ cdef class LocalSearch:
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
                 self.fitEval = self.fitEval + 1
-                print self.fitEval, len(self.improveA) 
-
+                # print self.dim, self.fitEval, len(self.oldindiv.improveA)
 
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 

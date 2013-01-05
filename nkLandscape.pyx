@@ -57,8 +57,10 @@ cdef class NKLandscape:
         # print 'init NK'
         
         if fileName == None:
+            print 'generating problem'
             self.genNeigh()
             self.genFunc()
+            print 'done'
         else:
             # print fileName
             self.readFile(fileName)
