@@ -1063,6 +1063,7 @@ cdef class LocalSearch:
         only considering time to first local optimum
         """
         # print 'runFitrestU'
+        
         start = time.time()
         self.fitEval = 0
         self.model.transWal()
@@ -1080,6 +1081,7 @@ cdef class LocalSearch:
         # self.model.WA = []
         initC = 1
         updateC = 0
+        # self.oldindiv.printSumArr()
                 
         descT = 0
         pertT = 0
@@ -2724,7 +2726,7 @@ cdef class LocalSearch:
         # print 'genU'ppp
         self.model.genU() 
         
-        self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
+        self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         
         # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
@@ -2811,8 +2813,8 @@ cdef class LocalSearch:
     
         with S vector maintained, only consider time to first local optimum
         """
-        print 'runFitUpdateTLO'
-
+        # print 'runFitUpdateTLO'
+        
         self.fitEval = 0
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
@@ -2826,7 +2828,8 @@ cdef class LocalSearch:
         # print 'init', self.oldindiv.fit        
         self.model.genU()
 
-        self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
+        self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
+        # self.oldindiv.printSumArr()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         initC = 1
         updateC = 0
@@ -2922,7 +2925,6 @@ cdef class LocalSearch:
         
         # self.oldindiv.initBfUpdate(self.oldindiv, self.evalPop, minimize, self.model)
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
-        
         # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
         # print 'init SumArr'
         # self.oldindiv.printSumArr()

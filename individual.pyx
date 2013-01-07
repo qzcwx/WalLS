@@ -4,7 +4,6 @@ import math
 import random
 import copy
 import time
-# import tool as tl
 from sets import Set
 
 # import for Cython
@@ -349,68 +348,45 @@ cdef class Individual:
             print self.WAS[i].w
             print '***************'
         
-    cpdef initBfUpdate(self,old,eval,minimize,model):
+    cpdef initBfUpdate(self, old, minimize, model):
         """
         initialize data structures for performing partial update with S vector maintained
         """
-        
         cdef int i
+        cdef str oldI
         self.model = model
-        # print 'initBf'
-
+        
         # initialize S vector, first derivative
         self.sumArr = <double*>malloc(self.dim * sizeof(double))
-
-        # print 'initBf'
+        
         for i in xrange(self.dim):
             self.sumArr[i] = 0
-        # print
-        # print 'neigh'
-        # print self.model.getNeigh()
-        # print
-        
-        # print self.model.compSubFit(old.bit,0)
-        # compute S vector by exploring the partial updates, for the
-        # very first step, we need to actually evaluate the whole vector
-        # print 'initBf'
+
         for i in xrange(self.dim):
-            indiv = Individual(oldIndiv=old)
-            indiv.flip(i)
-            
-            # print 'indiv', indiv.bit
-            # time.sleep(2)
-            
-            # if i == 0:
-            # print 'indiv.bit', indiv.bit
-            # oldbit = old.bit
-            # bit = indiv.bit
-            # print
-            # print 'begin', i
-            # # print
-            # print 'indiv bit', indiv.bit, 'old bit', old.bit
-            
-            # for each subfunctions that touches ith variable, exact the
-            # old and new subfunction fitness
-            # print 'Inter', self.model.listSubFunc[i]
+            # indiv = Individual(oldIndiv=old)
+            # indiv.flip(i)
             
             for j in self.model.listSubFunc[i]:
-                # print 'j', j, 'i', i
-                # print 'sub fit bit', self.model.compSubFit(indiv.bit, j)
-                # print 'sub old bit', self.model.compSubFit(old.bit, j)
-                self.sumArr[i] = self.sumArr[i] + (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))
-                # self.sumArr[i] = self.sumArr[i] - (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))       
+                # get ride of compSubFit completely
+                
+                # subtract the old value
+                bits = [old.bit[k] for k in self.model.neighs[j][:]]
+                self.sumArr[i] = self.sumArr[i] - self.model.func[j][int(''.join(bits),2)]
 
+                # flip i 
+                if old.bit[i] == '0':
+                    old.bit[i] = '1'
+                    oldI = '0'
+                else:
+                    old.bit[i] = '0'
+                    oldI = '1'
+                    
+                bits = [ old.bit[k] for k in self.model.neighs[j][:] ]
+                self.sumArr[i] = self.sumArr[i] + self.model.func[j][int(''.join(bits),2)]
+                old.bit[i] = oldI
+                
+                # self.sumArr[i] = self.sumArr[i] + (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))
 
-            # print 'end', i
-            # print
-
-            
-            # print indiv.bit
-            # print self.model.compSubFit(indiv.bit,0)
-            
-            # indiv = eval(indiv)
-            # self.sumArr[i] = indiv.fit - old.fit
-        # print 'initBf'
         self.genImproveSpartialUpdate(minimize)
 
         
@@ -1474,7 +1450,7 @@ cdef class Individual:
                     self.sumArr[p] = self.sumArr[p] + self.sumTerm(old, i, p, q)
                     
         self.sumArr[q] = - self.sumArr[q]
-
+        
     cpdef updateSumArrOld(self, int q, old):
         """
         for the partial update implementation:
@@ -1507,8 +1483,9 @@ cdef class Individual:
         """
         cdef float s
         cdef int j
+        # cdef int pi, qi # pi and qi are the indices of p and q in
+        #                 # extracted substring
         cdef list bits
-        # cdef str pb, qb
 
         """ extract corresponding bits """
         # x
