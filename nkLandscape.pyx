@@ -34,18 +34,20 @@ ctypedef struct InTer:
 cdef class NKLandscape:
     cdef ComArr** lookup
     # cdef InTer** Inter
-    cdef public list Inter                # the list of variables that interact with ith variable
+    cdef public list Inter # the list of variables that interact with
+                                          # ith variable
     cdef public int n                            # number of variables
     cdef public int k                            
     cdef public int c                            # number of clauses
     cdef public list neighs
-    cdef public list func
+    cdef public list f
+    cdef float** func
     cdef list Kbits
     cdef public dict w
     cdef public list WA
     cdef public list U
     cdef public list listSubFunc
-    cdef double* subFit
+    # cdef double* subFit
     
     """ NK-landscape class """
     def __init__(self,inN, inK, inC, fileName = None):
@@ -86,23 +88,43 @@ cdef class NKLandscape:
                 print >>f, self.neighs[i][j], '\t',
             print >>f
         for i in xrange(self.c):
-            for j in xrange(len(self.func[i])):
-                print >>f, self.func[i][j], '\t',
+            for j in xrange(len(self.f[i])):
+                print >>f, self.f[i][j], '\t',
             print >>f
 
     def readFile(self, fName):
         cdef int i
+        cdef list f
         
         self.neighs = np.genfromtxt(fName, delimiter="\t", dtype='int', skip_footer=self.c, autostrip=True, usecols = range(self.k+1)).tolist()
         # sort the neighs, and overwrite self.neighs 
         for i in xrange(self.c):
             interbit = self.neighs[i][:]
-            # interbit.sort()
+            interbit.sort()
             self.neighs[i][:] = interbit
         
-        self.func = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
+        self.f = np.genfromtxt(fName, delimiter="\t", skip_header=self.c, autostrip=True, usecols = range(int(math.pow(2,self.k+1)))).tolist()
+        self.convertFunc()
 
-    def genFuncDict(self):
+
+    cdef convertFunc(self):
+        """
+        convert list of lists f to float matrix self.func
+        """
+        # allocate space for the matrix 
+        self.func = <float **>malloc(sizeof(float *) * len(self.f))
+        for i in xrange(len(self.f)):
+            self.func[i] = <float *> malloc(sizeof(float) * len(self.f[i]) )
+            for j in xrange(len(self.f[i])):
+                self.func[i][j] = self.f[i][j]
+                # print self.func[i][j]
+
+    cpdef float getFuncVal(self,i, j):
+        return self.func[i][j]
+    
+                
+
+    def convertFuncDict(self):
         """
         the second dimension of self.func is a dict with the indices for subfunction input
 
@@ -141,16 +163,17 @@ cdef class NKLandscape:
 
     def genFunc(self):
         """ generate function value """
-        print 'genFunc'
-        self.func = []
+        # print 'genFunc'
+        self.f = []
         for i in xrange(self.c):
             oneFunc = []
             for j in xrange(int(math.pow(2,self.k+1))):
                 oneFunc.append(random.random())
-            self.func.append(oneFunc)
+            self.f.append(oneFunc)
+        self.convertFunc()
 
     def getFunc(self):
-        return self.func
+        return self.f
 
     def getN(self):
         return self.n
@@ -271,7 +294,7 @@ cdef class NKLandscape:
         subW = [] # subW is a N*2^K matrix
         for i in range(self.n):
             """ 1. Compute coefficients for each sub-functions """
-            subWone = wal.computeW(self.Kbits, self.func[i])
+            subWone = wal.computeW(self.Kbits, self.f[i])
             subW.append(subWone)
         w = np.zeros(math.pow(2,self.n))
         for i in range(int(math.pow(2,self.n))): # for every candidate solution
@@ -297,7 +320,7 @@ cdef class NKLandscape:
         subW = [] # subW is a N*2^K matrix
         for i in range(self.n):
             """ Compute coefficients for each sub-functions """
-            subWone = wal.computeW(self.Kbits, self.func[i])
+            subWone = wal.computeW(self.Kbits, self.f[i])
             subW.append(subWone)
         # print 'len', math.pow(2,self.n)
         w = np.zeros(math.pow(2,self.n))
@@ -331,8 +354,8 @@ cdef class NKLandscape:
         # start = time.time() 
         """ Compute coefficients for each sub-functions """
         for i in xrange(self.c):
-            subWone = wal.computeW(self.Kbits, self.func[i])
-            # subWone = fht.fht(np.asarray(self.func[i]))/(2*math.sqrt(2))
+            # subWone = wal.computeW(self.Kbits, self.func[i])
+            subWone = fht.fht(np.asarray(self.f[i]))/(2*math.sqrt(2))
             # print subWone
             # print subWoneF
             # print

@@ -8,6 +8,8 @@ from sets import Set
 
 # import for Cython
 cimport cython
+from libc.math cimport pow
+from cpython cimport bool
 from cython.parallel import prange, parallel, threadid
 from libcpp.vector cimport vector
 from libcpp.set cimport set
@@ -202,6 +204,7 @@ cdef class Individual:
                 self.C[j0][j1] = self.C[j0][j1] + W
 
     def initWalU(self, model):
+        
         self.model = model
 
         cdef int i,j,k,l,j0,j1,pos
@@ -371,7 +374,7 @@ cdef class Individual:
                 
                 # subtract the old value
                 bits = [old.bit[k] for k in self.model.neighs[j][:]]
-                self.sumArr[i] = self.sumArr[i] - self.model.func[j][int(''.join(bits),2)]
+                self.sumArr[i] = self.sumArr[i] - self.model.getFuncVal(j, int(''.join(bits),2))
 
                 # flip i 
                 if old.bit[i] == '0':
@@ -382,7 +385,7 @@ cdef class Individual:
                     oldI = '1'
                     
                 bits = [ old.bit[k] for k in self.model.neighs[j][:] ]
-                self.sumArr[i] = self.sumArr[i] + self.model.func[j][int(''.join(bits),2)]
+                self.sumArr[i] = self.sumArr[i] + self.model.getFuncVal(j, int(''.join(bits),2))
                 old.bit[i] = oldI
                 
                 # self.sumArr[i] = self.sumArr[i] + (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))
@@ -833,11 +836,14 @@ cdef class Individual:
         self.improveA = Set()
         
         for i in range(self.dim):
+            # print self.sumArr[i]
             if (minimize == True and self.sumArr[i] < - self.threshold) or (minimize == False and self.sumArr[i] >  self.threshold):            # NOT equal moves
             # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
                 # self.improveA.append(i)
                 self.improveA.add(i)
+                # print 'add', i
 
+        # print 'set', self.improveA
         
 ##     def genFitNext(self,minimize):
 ##         """
@@ -1420,7 +1426,6 @@ cdef class Individual:
     #     self.bit[self.dim] = '\0'
     #     self.bit[self.dim-1] = 'a'
 
-
     cpdef updateEval(self, I):
         """
         update the evaluation function according to sumArr
@@ -1443,90 +1448,136 @@ cdef class Individual:
         
         if self.model.Inter[q]!=None:
             for p in self.model.Inter[q]:
+                # print 'p', p
                 # calculate the sum of second derivative
                 # manipulate on the length-k extracted string
                 for i in self.model.getU(p,q):
+                    # print 'update subfunc i', i
                     # print 'before', old.bit
                     self.sumArr[p] = self.sumArr[p] + self.sumTerm(old, i, p, q)
                     
         self.sumArr[q] = - self.sumArr[q]
         
-    cpdef updateSumArrOld(self, int q, old):
-        """
-        for the partial update implementation:
-        update the first derivative according to second derivative
-
-        iterate through all p
-        """
-        cdef int i,p
-        for p in xrange(self.dim):
-            if p!=q:
-                # calculate the sum of second derivative
-                indivpq = Individual(oldIndiv = old)
-                indivpq.flip(p)
-                indivpq.flip(q)
-                indivp = Individual(oldIndiv = old)
-                indivp.flip(p)
-                indivq = Individual(oldIndiv = old)
-                indivq.flip(q)
-                
-                for i in self.model.getU(p,q):
-                    self.sumArr[p] = self.sumArr[p] + ( self.model.compSubFit(indivpq.bit, i) - self.model.compSubFit(indivq.bit, i) ) - ( self.model.compSubFit(indivp.bit, i) - self.model.compSubFit(old.bit, i) )
-            else:
-                self.sumArr[p] = - self.sumArr[p]
         
     cdef float sumTerm(self, list bitStr, int i, int p, int q):
         """
-        compute the inner summation term 
+        compute the inner summation term, flip p and q bits for i
+        subfunction
         
         f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
         """
-        cdef float s
-        cdef int j
+        cdef float s, saveDiffp,
+        cdef int j, realI, pI, qI
+        # cdef str pb, qb
         # cdef int pi, qi # pi and qi are the indices of p and q in
         #                 # extracted substring
         cdef list bits
 
+        # print 'old bit', bitStr
+        
         """ extract corresponding bits """
         # x
-        
         # O(k), according to %timeit
-        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        
+        # bits=['0']*(self.model.k+1)
+        bits = []
+        for j in xrange(self.model.k+1):
+            realI = self.model.neighs[i][j]
+            # bits[j] = bitStr[realI]
+            bits.append(bitStr[realI])
+            if  realI == p:
+                pI = j
+            elif realI == q:
+                qI = j
+
         # print bits
         # O(k), %timeit int(''.join(['1']*10000),2)
-        s = self.model.func[i][int(''.join(bits),2)]   
+        I = int(''.join(bits),2)
+        s = self.model.getFuncVal(i, I)
         
-        # p
-        if bitStr[p] == '0':
-            bitStr[p] = '1'
-            pb = '0'
-        else:
-            bitStr[p] = '0'
-            pb = '1'
-        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-        s = s - self.model.func[i][int(''.join(bits),2)] 
-        
-        # pq
-        if bitStr[q] == '0':
-            bitStr[q] = '1'
-            qb = '0'
-        else:
-            bitStr[q] = '0'
-            qb = '1'
-        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-        s = s + self.model.func[i][int(''.join(bits),2)] 
+        # print
+        # print 'before', 'bits',  bits, 'p', p, 'pI', pI, 'q', q, 'qI', qI
+        # print 'bitStr', bitStr
 
+        # p
+        # print  'I', I
+        # print 'plus/minus', (1-2*int(bitStr[p])), 'pow', int(math.pow(2,self.model.k-pI)), 'mul', (1-2*int(bitStr[p])) * int(math.pow(2,self.model.k-pI))
+
+        # print 'p'
+        saveDiffp = (1-2*int(bitStr[p])) * pow(2,self.model.k-pI)
+        I = int(I + saveDiffp)
+        # print 'confirm ', I
+        
+        # if bitStr[p] == '0':
+        #     bitStr[p] = '1'
+        #     pb = '0'
+        # else:
+        #     bitStr[p] = '0'
+        #     pb = '1'
+        
+        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+
+        # print 'real', int(''.join(bits),2)
+
+        # if I!=int(''.join(bits),2):
+        #     print 'p' 
+        #     print 'comp', I
+        #     print 'real', int(''.join(bits),2)
+
+        # print 'bitStr', bitStr        
+        
+        s = s - self.model.getFuncVal(i,I)   
+        
+        # print
+        # print 'pq, flip q'
+
+        
+        # pq, flip q
+
+        I = int(I + (1-2*int(bitStr[q])) * pow(2,self.model.k-qI))
+
+        # if bitStr[q] == '0':
+        #     bitStr[q] = '1'
+        #     qb = '0'
+        # else:
+        #     bitStr[q] = '0'
+        #     qb = '1'
+        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        
+        # if I!=int(''.join(bits),2):
+        #     print 'pq' 
+        #     print 'comp', I
+        #     print 'real', int(''.join(bits),2)
+
+        
+        # s = s + self.model.getFuncVal[i][int(''.join(bits),2)] 
+
+        s = s + self.model.getFuncVal(i,I) 
+        
         # q
-        bitStr[p] = pb
+
+        I = int(I - saveDiffp)
+        
+        # print
+        # print 'comp I', I
+        # bitStr[p] = pb
         # if bitStr[p] == '0':
         #     bitStr[p] = '1'
         # else:
         #     bitStr[p] = '0'
-        bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-        s = s - self.model.func[i][int(''.join(bits),2)] 
+        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
+        # print 'real I', int(''.join(bits),2)
+        # s = s - self.model.getFuncVal[i][int(''.join(bits),2)] 
+        # if I!=int(''.join(bits),2):
+        #     print 'q' 
+        #     print 'comp', I
+        #     print 'real', int(''.join(bits),2)
+        
+        s = s - self.model.getFuncVal(i,I) 
         
         # back to x
-        bitStr[q] = qb
+        # bitStr[q] = qb
         # if bitStr[q] == '0':
         #     bitStr[q] = '1'
         # else:

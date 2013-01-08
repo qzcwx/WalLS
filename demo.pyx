@@ -45,6 +45,7 @@ def main():
                         )
     parser.add_argument('-i',
                         action="store",
+
                         help="Instance ID",
                         dest="inst",
                         type=int,
@@ -231,7 +232,9 @@ def main():
             w = model.WalshCofLinearLinklist()
             walTime = time.time() - start
             # print 'walsh trans\n', "%.4g" %(walTime)
+            
 
+            
             start = time.time()
             if opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch':
                 model.genHyperVote()
@@ -253,8 +256,10 @@ def main():
             f = open(nameOfF, 'w')
             print >>f,"%g\t%g" % (walTime,hyperTime)
             f.close()
-
-
+            
+        # release memory of list f 
+        model.f = []
+        
         if opt.compMeth == 'countFreq':
             freq = model.countFreqInFunc()
             # print sum(freq)

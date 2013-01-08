@@ -1102,7 +1102,12 @@ cdef class LocalSearch:
 
         while self.fitEval < self.MaxFit:
             start = time.time()
+            # print 'improveA',  len(self.oldindiv.improveA)
+            # print self.oldindiv.improveA
+            # self.oldindiv.printSumArr()
             improveN, bestI = self.oldindiv.nextDesc()
+            # print 'bestI', bestI
+            
             # print self.oldindiv.improveA
             # print bestI
             descT = descT + time.time() - start
@@ -2819,13 +2824,17 @@ cdef class LocalSearch:
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-        
+
+        # print 'neigh', self.model.neighs
         self.model.genInter()
         self.model.genListSubFunc()
+        # self.model.printListSubFunc()
         # self.model.genFuncDict()
         
         self.oldindiv = self.evalPop(self.oldindiv)
-        # print 'init', self.oldindiv.fit        
+        
+        # print 'init', self.oldindiv.bit, self.oldindiv.fit        
+        
         self.model.genU()
 
         self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
@@ -2833,7 +2842,8 @@ cdef class LocalSearch:
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         initC = 1
         updateC = 0
-        
+
+
         # track running time
         descT = 0
         pertT = 0
@@ -2852,14 +2862,17 @@ cdef class LocalSearch:
         
         while self.fitEval < self.MaxFit:
             start = time.time()
-            improveN, bestI = self.oldindiv.nextFitDescPartialUpdate()
+            # print 'improveA',  len(self.oldindiv.improveA)
             # print self.oldindiv.improveA
-            # print bestI
+            # self.oldindiv.printSumArr()
+            improveN, bestI = self.oldindiv.nextFitDescPartialUpdate()
+            # print 'bestI', bestI
+            
             descT = descT + time.time() - start
 
             if improveN == False:
                 self.updateBSF(fitName, minimize)
-                print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit 
+                print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
                 print '|%.2g\t|%.2g\t|%.2g\t|%.2g|' %(s1,s2,s3,s4)
                 self.oldindiv.destructorBfUpdate()
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
