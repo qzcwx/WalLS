@@ -181,11 +181,11 @@ cdef class NKLandscape:
     def genK(self):
         return self.k
 
-    cpdef double compFit(self, bitStr):
+    cpdef float compFit(self, bitStr):
         """ compute the fitness value"""
         #       print bitStr
         cdef int  i
-        cdef double s = 0.0
+        cdef float s = 0.0
         
         # self.subFit = np.empty(self.c)
         
@@ -207,7 +207,7 @@ cdef class NKLandscape:
         # print('sum')
         return s
 
-    cpdef double compSubFit(self, bitStr, i):
+    cpdef float compSubFit(self, bitStr, i):
         """
         compute i^th subfunction fitness value according to bitStr
         """ 
@@ -229,13 +229,13 @@ cdef class NKLandscape:
         
         return self.func[i][int(interStr,2)] 
         
-    # cpdef double sumTerm(self, list bitStr, int i, int p, int q):
+    # cpdef float sumTerm(self, list bitStr, int i, int p, int q):
     #     """
     #     compute the inner summation term 
         
     #     f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
     #     """
-    #     cdef double s = 0.0
+    #     cdef float s = 0.0
     #     cdef int j
     #     cdef list bits
     #     # cdef str pb, qb

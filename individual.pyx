@@ -39,7 +39,7 @@ ctypedef struct InTer:
 
 ctypedef struct Was:
     int* arr
-    double w
+    float w
 
 ctypedef struct ComArr:
     int** arr
@@ -49,10 +49,10 @@ cdef class Individual:
     cdef InTer** Inter                    # the list of variables that interact with the ith variable
     cdef vector[InfBit*]** infectBit
     cdef Was* WAS
-    cdef double* SC
-    cdef double* Z
-    cdef double** C
-    cdef double** orderC
+    cdef float* SC
+    cdef float* Z
+    cdef float** C
+    cdef float** orderC
     cdef Uelem** U
     # cdef public list improveA
     # cdef set[int] improveA
@@ -61,13 +61,13 @@ cdef class Individual:
     cdef object func
     cdef object model
     cdef int MaxFit
-    cdef public double threshold
+    cdef public float threshold
     cdef int fitEval
     cdef ComArr** lookup 
-    cdef public double fit
-    cdef public double fitG
+    cdef public float fit
+    cdef public float fitG
     cdef public list bit
-    cdef double* sumArr
+    cdef float* sumArr
     cdef public int dim
     
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
@@ -127,14 +127,14 @@ cdef class Individual:
         self.model = model
 
         cdef int i,j,k
-        cdef double W
+        cdef float W
         # cdef InTer* inter
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
         cdef Was* was
 
-        self.sumArr = <double*>malloc(self.dim * sizeof(double))
+        self.sumArr = <float*>malloc(self.dim * sizeof(float))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
 
@@ -143,9 +143,9 @@ cdef class Individual:
             vectPtr = new vector[InfBit*]()
             self.infectBit[i] = vectPtr
 
-        self.C = <double **>malloc(sizeof(double *) * self.dim)
+        self.C = <float **>malloc(sizeof(float *) * self.dim)
         for i in xrange(self.dim) :
-            self.C[i] = <double *> malloc(sizeof(double) * self.dim)
+            self.C[i] = <float *> malloc(sizeof(float) * self.dim)
             for j in xrange(self.dim):
                 self.C[i][j] = 0
 
@@ -208,14 +208,14 @@ cdef class Individual:
         self.model = model
 
         cdef int i,j,k,l,j0,j1,pos
-        cdef double W
+        cdef float W
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
         cdef Was* was
         cdef Uelem* uelem
 
-        self.sumArr = <double*>malloc(self.dim * sizeof(double))
+        self.sumArr = <float*>malloc(self.dim * sizeof(float))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
             
@@ -360,7 +360,7 @@ cdef class Individual:
         self.model = model
         
         # initialize S vector, first derivative
-        self.sumArr = <double*>malloc(self.dim * sizeof(double))
+        self.sumArr = <float*>malloc(self.dim * sizeof(float))
         
         for i in xrange(self.dim):
             self.sumArr[i] = 0
@@ -409,12 +409,12 @@ cdef class Individual:
         # self.Z = np.zeros(self.dim)
         # self.orderC = np.zeros((self.dim,self.dim))
 
-        self.SC = <double *>malloc(self.dim* sizeof(double))
-        self.Z = <double *>malloc(self.dim* sizeof(double))
+        self.SC = <float *>malloc(self.dim* sizeof(float))
+        self.Z = <float *>malloc(self.dim* sizeof(float))
 
-        self.orderC = <double **>malloc(sizeof(double *) * self.dim)
+        self.orderC = <float **>malloc(sizeof(float *) * self.dim)
         for i in xrange(self.dim) :
-            self.orderC[i] = <double *> malloc(sizeof(double) * self.dim)
+            self.orderC[i] = <float *> malloc(sizeof(float) * self.dim)
 
         for p in range(self.dim):
             phi = np.zeros(self.model.k+1)
@@ -548,7 +548,7 @@ cdef class Individual:
         """
         cdef int i,ii, k0, k1, k, pos
         cdef int len1
-        cdef double s
+        cdef float s
         cdef set[int].iterator it
         cdef vector[int].iterator itt
         cdef vector[int] arr
@@ -1468,120 +1468,32 @@ cdef class Individual:
         """
         cdef float s, saveDiffp,
         cdef int j, realI, pI, qI
-        # cdef str pb, qb
-        # cdef int pi, qi # pi and qi are the indices of p and q in
-        #                 # extracted substring
         cdef list bits
 
-        # print 'old bit', bitStr
-        
         """ extract corresponding bits """
-        # x
-        # O(k), according to %timeit
-        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-        
-        # bits=['0']*(self.model.k+1)
         bits = []
         for j in xrange(self.model.k+1):
             realI = self.model.neighs[i][j]
-            # bits[j] = bitStr[realI]
             bits.append(bitStr[realI])
             if  realI == p:
                 pI = j
             elif realI == q:
                 qI = j
-
-        # print bits
-        # O(k), %timeit int(''.join(['1']*10000),2)
         I = int(''.join(bits),2)
         s = self.model.getFuncVal(i, I)
-        
-        # print
-        # print 'before', 'bits',  bits, 'p', p, 'pI', pI, 'q', q, 'qI', qI
-        # print 'bitStr', bitStr
-
-        # p
-        # print  'I', I
-        # print 'plus/minus', (1-2*int(bitStr[p])), 'pow', int(math.pow(2,self.model.k-pI)), 'mul', (1-2*int(bitStr[p])) * int(math.pow(2,self.model.k-pI))
 
         # print 'p'
         saveDiffp = (1-2*int(bitStr[p])) * pow(2,self.model.k-pI)
         I = int(I + saveDiffp)
-        # print 'confirm ', I
-        
-        # if bitStr[p] == '0':
-        #     bitStr[p] = '1'
-        #     pb = '0'
-        # else:
-        #     bitStr[p] = '0'
-        #     pb = '1'
-        
-        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-
-        # print 'real', int(''.join(bits),2)
-
-        # if I!=int(''.join(bits),2):
-        #     print 'p' 
-        #     print 'comp', I
-        #     print 'real', int(''.join(bits),2)
-
-        # print 'bitStr', bitStr        
-        
         s = s - self.model.getFuncVal(i,I)   
         
-        # print
-        # print 'pq, flip q'
-
-        
         # pq, flip q
-
         I = int(I + (1-2*int(bitStr[q])) * pow(2,self.model.k-qI))
-
-        # if bitStr[q] == '0':
-        #     bitStr[q] = '1'
-        #     qb = '0'
-        # else:
-        #     bitStr[q] = '0'
-        #     qb = '1'
-        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-        
-        # if I!=int(''.join(bits),2):
-        #     print 'pq' 
-        #     print 'comp', I
-        #     print 'real', int(''.join(bits),2)
-
-        
-        # s = s + self.model.getFuncVal[i][int(''.join(bits),2)] 
-
         s = s + self.model.getFuncVal(i,I) 
         
         # q
-
         I = int(I - saveDiffp)
-        
-        # print
-        # print 'comp I', I
-        # bitStr[p] = pb
-        # if bitStr[p] == '0':
-        #     bitStr[p] = '1'
-        # else:
-        #     bitStr[p] = '0'
-        # bits = [ bitStr[j] for j in self.model.neighs[i][:] ]
-        # print 'real I', int(''.join(bits),2)
-        # s = s - self.model.getFuncVal[i][int(''.join(bits),2)] 
-        # if I!=int(''.join(bits),2):
-        #     print 'q' 
-        #     print 'comp', I
-        #     print 'real', int(''.join(bits),2)
-        
         s = s - self.model.getFuncVal(i,I) 
-        
-        # back to x
-        # bitStr[q] = qb
-        # if bitStr[q] == '0':
-        #     bitStr[q] = '1'
-        # else:
-        #     bitStr[q] = '0'
         
         return s
 
@@ -1636,8 +1548,8 @@ cdef int binCount(list arr, list bit):
             s = s + 1
     return s
 
-cdef double sumC(double * a, int d):
-    cdef double s = 0
+cdef float sumC(float * a, int d):
+    cdef float s = 0
 
     for i in xrange(d):
         s = s+a[i]

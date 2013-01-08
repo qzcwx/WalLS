@@ -2853,7 +2853,7 @@ cdef class LocalSearch:
         s2 = 0
         s3 = 0
         s4 = 0
-
+        
         # place holder
         traceEval = []
         traceFit = []
