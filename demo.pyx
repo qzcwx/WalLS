@@ -312,7 +312,7 @@ def main():
 
         tAll = np.zeros(runs)
         for i in range(runs):
-            # print 'run', i 
+            print 'run', i 
             start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))

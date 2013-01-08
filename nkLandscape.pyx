@@ -815,19 +815,29 @@ cdef class NKLandscape:
         cdef ComArr* comb
         cdef InTer** CInter
         cdef set[int].iterator it
-        
+
+        # print 'init'
         Cinter = < InTer** > malloc(sizeof(void *)*self.n)
         for j in xrange(self.n):
             Cinter[j] = NULL
 
+        self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.n)
+        for j in xrange(self.n):
+            self.lookup[j] = NULL
+            
+        # print 'gen CInter'
         # merely the function itself, check every pair of 
         for i in self.neighs:
             # generete all possible pairs
+            # print 'genComb', len(i)
             comb = self.genComb(len(i))
+            # print 'done genComb', len(i)
+                        
             for j in xrange(comb.size):
+                # print 'j'
                 j0 = i[comb.arr[j][0]]
                 j1 = i[comb.arr[j][1]]
-
+                
                 if Cinter[j0] == NULL:
                     inter = <InTer*> malloc(sizeof(InTer))
                     inter[0].arr = new set[int]()
@@ -840,7 +850,8 @@ cdef class NKLandscape:
 
                 Cinter[j0].arr.insert(j1)
                 Cinter[j1].arr.insert(j0)
-        
+
+        # print 'copy'
         # copy data to python variable for future use in other moduler
         # initialize
         self.Inter = [None]*self.n
@@ -851,7 +862,8 @@ cdef class NKLandscape:
                 while it!=Cinter[j].arr.end():
                     self.Inter[j].append(deref(it))
                     inc(it)
-        
+
+        # print 'free'
         # free space associated with Inter
         for j in xrange(self.n):
             if Cinter[j] != NULL:
@@ -996,31 +1008,42 @@ cdef class NKLandscape:
     #                 print i, j, 'not'
             
 
-    cdef ComArr* genComb(self,int N) nogil:
+    # cdef ComArr* genComb(self,int N) nogil:
+    cdef ComArr* genComb(self,int N):
         """
         Generate C_N^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
         """
         cdef int c, j, i, counter
         cdef ComArr* ptr
-        
+
         if self.lookup[N] != NULL: # the key exists before
+            # print 'exist'
             return self.lookup[N]
         else : # the key not found
-            c = biomial(N, 2)
+            # print 'not found', 'N',  N
+
+            # c = biomial(N, 2)
+            c = N*(N-1)/2
+            # print 'biomial', c
             counter = 0
 
+            # print 'allocate'
             ptr = <ComArr*> malloc(sizeof(ComArr))
             ptr.arr = <int**> malloc(sizeof(int*)*c)
             ptr.size = c
-
+            
+            # print 'init'
             for i in xrange(c):
                 ptr.arr[i] = <int*> malloc(sizeof(int)*2)
 
+            # print 'assign'
             for i in xrange(N):
                 for j in xrange(i+1,N):
                     ptr.arr[counter][0] = i
                     ptr.arr[counter][1] = j
                     counter = counter + 1
+                    
+            # print 'ptr'
             self.lookup[N] = ptr
             return ptr
 
@@ -1058,18 +1081,23 @@ cdef class NKLandscape:
         # print 'del nklandscape' 
 
 
-@cython.cdivision(True)
-cdef int biomial(int N, int K) nogil:
-    """ compute the combination of N choose K """
-    return factorial(N)/( factorial(K) * factorial(N-K) )
+# @cython.cdivision(True)
+# # cdef int biomial(int N, int K) nogil:
+# cdef int biomial(long N, long K):
+#     """ compute the combination of N choose K """
+#     print N
+#     print factorial(N)
+#     print factorial(K)
+#     print factorial(N-K)
+#     return factorial(N)/( factorial(K) * factorial(N-K) )
 
 
-cdef int factorial(int N) nogil:
-    """ compute N! """
-    cdef int c, fact = 1
-    for c in xrange(1,N+1):
-        fact = fact*c
-    return fact
+# cdef int factorial(long N) nogil:
+#     """ compute N! """
+#     cdef int c, fact = 1
+#     for c in xrange(1,N+1):
+#         fact = fact*c
+#     return fact
 
         
 class Struct:

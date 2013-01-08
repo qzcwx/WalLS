@@ -1097,7 +1097,7 @@ cdef class LocalSearch:
         
         # traceEval = []
         # traceFit = []
-
+        
         initT = time.time() - start
 
         while self.fitEval < self.MaxFit:
@@ -2833,7 +2833,11 @@ cdef class LocalSearch:
         self.oldindiv.init()
 
         # print 'neigh', self.model.neighs
+
+        # print 'genInter'
         self.model.genInter()
+        
+        # print 'genListSubFunc'
         self.model.genListSubFunc()
         # self.model.printListSubFunc()
         # self.model.genFuncDict()
@@ -2843,7 +2847,8 @@ cdef class LocalSearch:
         # print 'init', self.oldindiv.bit, self.oldindiv.fit        
         
         self.model.genU()
-
+        # print 'initBfUpdate'
+        
         self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
         # self.oldindiv.printSumArr()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
@@ -2860,6 +2865,8 @@ cdef class LocalSearch:
         # s4 = 0
         
         # place holder
+
+        # print 'start search'
         
         initT = time.time() -start
         

@@ -99,8 +99,16 @@ if __name__== "__main__":
     overWrite = 0
 
     # nRange = [20,50,100,150,200,250,300,350,400,450,500]
-    nRange = [10000]
-    kRange = [2,4,6,8,10]
+    
+    # nRange = [10000]
+    # kRange = [2,4,6,8,10]
+
+    # nRange = [2000]
+    # kRange = [2,4,6,8,10,12]
+
+    nRange = [500]
+    kRange = [2,4,6,8,10,12,14]
+    
     
     # nRange = [200]
     # kRange = [2]

@@ -391,7 +391,7 @@ cdef class Individual:
                 # self.sumArr[i] = self.sumArr[i] + (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))
 
         self.genImproveSpartialUpdate(minimize)
-
+        
         
             
     def checkWalshSum(self):
@@ -525,8 +525,8 @@ cdef class Individual:
 
         # update the rest of elements in C matrix
         if self.infectBit[p].size() != 0:
-            for i in prange(self.infectBit[p].size(), nogil=True):
-            # for i in range(self.infectBit[p].size()):
+            # for i in prange(self.infectBit[p].size(), nogil=True):
+            for i in xrange(self.infectBit[p].size()):
                 I = self.infectBit[p][0][i][0]
                 arr = I.arr[0]
                 itt = arr.begin()
@@ -1217,10 +1217,17 @@ cdef class Individual:
             free(self.WAS+i)
         free(self.WAS)
 
-        for i in xrange(self.dim):
-            free(self.lookup[i])
-        free(self.lookup)
+        # for i in xrange(self.dim):
+        #     free(self.lookup[i])
+        # free(self.lookup)
 
+        if self.lookup != NULL:
+            for i in xrange(self.dim):
+                if self.lookup[i] != NULL:
+                    free(self.lookup[i])
+            free(self.lookup)
+
+        
         # for i in xrange(len(self.model.WA)):
         #     for j in self.model.WA[i].arr:
         #         if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
@@ -1264,17 +1271,22 @@ cdef class Individual:
         free(self.sumArr)
 
         for i in xrange(len(self.model.WA)):
-
             free(self.WAS[i].arr)
 
             # free(self.WAS+i)
 
         free(self.WAS)
-        
 
-        for i in xrange(self.dim):
-            free(self.lookup[i])
-        free(self.lookup)
+        if self.lookup != NULL:
+            for i in xrange(self.dim):
+                if self.lookup[i] != NULL:
+                    free(self.lookup[i])
+            free(self.lookup)
+
+
+        # for i in xrange(self.dim):
+        #     free(self.lookup[i])
+        # free(self.lookup)
 
         j = (self.model.c * (self.model.c-1))/2
         for i in xrange(j):
@@ -1298,6 +1310,12 @@ cdef class Individual:
         """
         # free(self.bit)
         free(self.sumArr)
+
+        if self.lookup != NULL:
+            for i in xrange(self.dim):
+                if self.lookup[i] != NULL:
+                    free(self.lookup[i])
+            free(self.lookup)
         
         
     ## def genMeanBest(self,minimize):
@@ -1507,7 +1525,8 @@ cdef class Individual:
         self.fitG = self.fit - 2/ float(self.dim) * (sumC(self.sumArr, self.dim))
 
         
-    cdef ComArr* genComb(self,int N) nogil:
+    # cdef ComArr* genComb(self,int N) nogil:
+    cdef ComArr* genComb(self,int N):
         """
         Generate C_N^2 sequence, index are stored, because they are more general, Implemented in an *incremental* fashion.
         """
@@ -1517,7 +1536,9 @@ cdef class Individual:
         if self.lookup[N] != NULL: # the key exists before
             return self.lookup[N]
         else : # the key not found
-            c = biomial(N, 2)
+            
+            # c = biomial(N, 2)
+            c = N*(N-1)/2
             counter = 0
 
             ptr = <ComArr*> malloc(sizeof(ComArr))
@@ -1556,14 +1577,14 @@ cdef float sumC(float * a, int d):
 
     return s
 
-@cython.cdivision(True)
-cdef int biomial(int N, int K) nogil:
-    """ compute the combination of N choose K """
-    return factorial(N)/( factorial(K) * factorial(N-K) )
+# @cython.cdivision(True)
+# cdef int biomial(int N, int K) nogil:
+#     """ compute the combination of N choose K """
+#     return factorial(N)/( factorial(K) * factorial(N-K) )
 
-cdef int factorial(int N) nogil:
-    """ compute N! """
-    cdef int c, fact = 1
-    for c in xrange(1,N+1):
-        fact = fact*c
-    return fact
+# cdef int factorial(int N) nogil:
+#     """ compute N! """
+#     cdef int c, fact = 1
+#     for c in xrange(1,N+1):
+#         fact = fact*c
+#     return fact
