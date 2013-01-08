@@ -1116,8 +1116,12 @@ cdef class LocalSearch:
                 self.updateBSF(fitName, minimize)
                 # print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
                 # print '|%.2g\t|%.2g\t|%.2g\t|%.2g\t|%.2g\t|' %(s1,s2,s3,s4,s5)
+                # print 'destFunc'
+                # self.model.destFunc()
+                # print 'destructorWal'
                 self.oldindiv.destructorWalU(fitName)
-                self.model.destFunc()
+                # print 'end'
+                
                 # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else : # improveN is TRUE
@@ -1147,6 +1151,7 @@ cdef class LocalSearch:
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
                 # print self.fitEval, len(self.model.improveA)
+                # print self.fitEval
                 # print self.dim, self.fitEval, len(self.oldindiv.improveA) 
         # print 'dest'
 
@@ -2867,12 +2872,16 @@ cdef class LocalSearch:
             # print 'bestI', bestI
             
             descT = descT + time.time() - start
-
+            
             if improveN == False:
                 self.updateBSF(fitName, minimize)
                 # print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
+                # print 'destFunc'
+                # self.model.destFunc()
+                # print 'destructorBfUpdate'
                 self.oldindiv.destructorBfUpdate()
-                self.model.destFunc()
+                # print 'end'
+                
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else:
                 start = time.time()
@@ -2900,8 +2909,8 @@ cdef class LocalSearch:
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
                 self.fitEval = self.fitEval + 1
-                # print self.dim, self.fitEval, len(self.oldindiv.improveA)
-
+                # print self.fitEval, len(self.oldindiv.improveA)
+                # print self.fitEval
 
 
         
