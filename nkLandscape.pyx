@@ -207,6 +207,13 @@ cdef class NKLandscape:
         # print('sum')
         return s
 
+    def destFunc(self):
+        for i in xrange(self.c):
+            free(self.func[i])
+        free(self.func)
+        
+
+    
     cpdef float compSubFit(self, bitStr, i):
         """
         compute i^th subfunction fitness value according to bitStr

@@ -1079,24 +1079,24 @@ cdef class LocalSearch:
         # print 'genImproveS'
         self.oldindiv.genImproveS(minimize)
         # self.model.WA = []
-        initC = 1
+        # initC = 1
         updateC = 0
         # self.oldindiv.printSumArr()
                 
         descT = 0
-        pertT = 0
-        updatePertT = 0
+        # pertT = 0
+        # updatePertT = 0
         updateT = 0
         self.fitEval = 0
 
-        s1 = 0
-        s2 = 0
-        s3 = 0
-        s4 = 0
-        s5 = 0
+        # s1 = 0
+        # s2 = 0
+        # s3 = 0
+        # s4 = 0
+        # s5 = 0
         
-        traceEval = []
-        traceFit = []
+        # traceEval = []
+        # traceFit = []
 
         initT = time.time() - start
 
@@ -1114,32 +1114,34 @@ cdef class LocalSearch:
             
             if improveN == False:
                 self.updateBSF(fitName, minimize)
-                print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
-                print '|%.2g\t|%.2g\t|%.2g\t|%.2g\t|%.2g\t|' %(s1,s2,s3,s4,s5)
+                # print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
+                # print '|%.2g\t|%.2g\t|%.2g\t|%.2g\t|%.2g\t|' %(s1,s2,s3,s4,s5)
                 self.oldindiv.destructorWalU(fitName)
-                return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+                self.model.destFunc()
+                # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+                return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else : # improveN is TRUE
                 start = time.time()
 
-                s0 = time.time()
+                # s0 = time.time()
                 self.oldindiv.updateEval(bestI)
-                s1 = s1 + time.time() - s0
+                # s1 = s1 + time.time() - s0
                 
-                s0 = time.time()
+                # s0 = time.time()
                 self.oldindiv.updateU(bestI)
-                s2 = s2 + time.time() - s0
+                # s2 = s2 + time.time() - s0
                 
-                s0 = time.time()
+                # s0 = time.time()
                 self.oldindiv.updateWAS(bestI)
-                s3 = s3 + time.time() - s0
+                # s3 = s3 + time.time() - s0
                 
-                s0 = time.time()
+                # s0 = time.time()
                 self.oldindiv.updateImprS(bestI, minimize)
-                s4 = s4 + time.time() - s0
+                # s4 = s4 + time.time() - s0
                 
-                s0 = time.time()
+                # s0 = time.time()
                 self.oldindiv.flip(bestI)
-                s5 = s5 + time.time() - s0
+                # s5 = s5 + time.time() - s0
                 
                 self.fitEval = self.fitEval + 1
                 updateT = updateT + time.time() - start
@@ -1149,7 +1151,7 @@ cdef class LocalSearch:
         # print 'dest'
 
         # print 'init', initC, 'update', updateC
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+        # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
     cdef runFitSwalkU(self,fitName, minimize, restart):
         """
@@ -2840,23 +2842,19 @@ cdef class LocalSearch:
         self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
         # self.oldindiv.printSumArr()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
-        initC = 1
-        updateC = 0
 
+        updateC = 0
 
         # track running time
         descT = 0
-        pertT = 0
-        updatePertT = 0
         updateT = 0
-        s1 = 0
-        s2 = 0
-        s3 = 0
-        s4 = 0
+        
+        # s1 = 0
+        # s2 = 0
+        # s3 = 0
+        # s4 = 0
         
         # place holder
-        traceEval = []
-        traceFit = []
         
         initT = time.time() -start
         
@@ -2872,38 +2870,39 @@ cdef class LocalSearch:
 
             if improveN == False:
                 self.updateBSF(fitName, minimize)
-                print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
-                print '|%.2g\t|%.2g\t|%.2g\t|%.2g|' %(s1,s2,s3,s4)
+                # print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
                 self.oldindiv.destructorBfUpdate()
-                return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+                self.model.destFunc()
+                return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else:
                 start = time.time()
                 # print 'eval'
 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateEvalPartialUpdate(bestI)
-                s1 = s1+ time.time() - start1
+                # s1 = s1+ time.time() - start1
+                
                 # print 'sumArr'
                 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateSumArr(bestI, self.oldindiv.bit)
-                s2 = s2+ time.time() - start1
+                # s2 = s2+ time.time() - start1
                 
                 # print 'imprs'
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateImprSpartialUpdate(bestI, minimize)
-                s3 = s3 + time.time() - start1
+                # s3 = s3 + time.time() - start1
                 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.flip(bestI)
-                s4 = s4 + time.time() - start1
+                # s4 = s4 + time.time() - start1
                 
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
                 self.fitEval = self.fitEval + 1
                 # print self.dim, self.fitEval, len(self.oldindiv.improveA)
 
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+
 
         
     cdef runPartEval(self, fitName, minimize, restart):

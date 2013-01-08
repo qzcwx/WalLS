@@ -358,7 +358,7 @@ def main():
                     print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
         f.close()
 
-        print nameOfF
+        # print nameOfF
         if opt.compMeth == 'countFreq':
             exit()
         
@@ -377,11 +377,13 @@ def main():
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
-            f = open(nameOfF, 'w')
-            print >>f,"initC\tupdateC\t"
-            for i in range(runs):
-                print >>f,"%g\t%g\t" % (res[i]['initC'], res[i]['updateC'])
-            f.close()
+
+            if 'TLO' not in opt.compMeth:
+                f = open(nameOfF, 'w')
+                print >>f,"initC\tupdateC\t"
+                for i in range(runs):
+                    print >>f,"%g\t%g\t" % (res[i]['initC'], res[i]['updateC'])
+                f.close()
 
         if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             """ store trace to files: the number of descent steps """
@@ -390,14 +392,15 @@ def main():
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
-                f = open(nameOfF, 'w')
-                if (opt.fitName == 'fit'):
-                    for j in zip(res[i]['traceEval'], res[i]['traceFit']):
-                        print >>f,"%g\t%g" % (j[0], j[1])
-                else :
-                    for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
-                        print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
-                f.close()
+                if 'TLO' not in opt.compMeth :
+                    f = open(nameOfF, 'w')
+                    if (opt.fitName == 'fit'):
+                        for j in zip(res[i]['traceEval'], res[i]['traceFit']):
+                            print >>f,"%g\t%g" % (j[0], j[1])
+                    else :
+                        for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
+                            print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
+                    f.close()
 
         """ store runtime to files """
         if opt.probName == 'NKQ':
@@ -405,18 +408,19 @@ def main():
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
+            
         f = open(nameOfF, 'w')
-        if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
+        if 'TLO' in opt.compMeth:
+            print >>f,"All\t\tinit\t\tdesc\t\tupdate"
+            print "All\t\tinit\t\tdesc\t\tupdate"
+            for i in range(runs):
+                print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
+                print "%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
+        elif opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             # tracking for walsh-based approach
             print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
-            
-            print "All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t" # debug
-            
             for i in range(runs):
                 print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
-                
-                print "%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT']) # debug
-
         else:
             # for the brute force approach
             print >>f,"All\tupdate"
