@@ -1071,7 +1071,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         # print 'init', self.oldindiv.fit
-        # print 'initWalU'
+        # print 'initWkalU'
         self.oldindiv.initWalU(self.model)
         # self.oldindiv.genWalU()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
@@ -2720,11 +2720,14 @@ cdef class LocalSearch:
         start = time.time()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
+
+        
         
         # print 'oldindiv',self.oldindiv.bit
         # time.sleep(2)
         
         # print 'genInter'
+        
         self.model.genInter()
         self.model.genListSubFunc()
 
@@ -2832,29 +2835,45 @@ cdef class LocalSearch:
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
 
+        # t0 = 0
+        # t1 = 0
+        # t2 = 0
+        # t3 = 0 
+        
         # print 'neigh', self.model.neighs
 
         # print 'genInter'
-        self.model.genInter()
         
+        # start1 = time.time()
+        self.model.genInter()
+        # t0 = t0 + time.time() - start1 
+
+        # start1 = time.time()
         # print 'genListSubFunc'
         self.model.genListSubFunc()
         # self.model.printListSubFunc()
         # self.model.genFuncDict()
+        # t1 = t1 + time.time() - start1 
         
         self.oldindiv = self.evalPop(self.oldindiv)
         
         # print 'init', self.oldindiv.bit, self.oldindiv.fit        
+
+        # start1 = time.time()
+        self.model.genUdict()
+        # t2 = t2 + time.time() - start1 
+
         
-        self.model.genU()
+        # start1 = time.time()
         # print 'initBfUpdate'
-        
         self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
+        # t3 = t3 + time.time() - start1 
+        
         # self.oldindiv.printSumArr()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
-
+        
         updateC = 0
-
+        
         # track running time
         descT = 0
         updateT = 0
@@ -2869,6 +2888,8 @@ cdef class LocalSearch:
         # print 'start search'
         
         initT = time.time() -start
+
+        # print t0,t1,t2,t3
         
         while self.fitEval < self.MaxFit:
             start = time.time()

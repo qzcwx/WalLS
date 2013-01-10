@@ -30,8 +30,8 @@ ctypedef struct InfBit:
     vector[int]* arr
     int WI
 
-ctypedef struct Uelem:                      # each element in the U array/matrix is a list
-    vector[int]* arr                      # indices of WAS terms
+# ctypedef struct Uelem:                      # each element in the U array/matrix is a list
+#     vector[int]* arr                      # indices of WAS terms
     
 ctypedef struct InTer:
     set[int]* arr
@@ -53,7 +53,8 @@ cdef class Individual:
     cdef float* Z
     cdef float** C
     cdef float** orderC
-    cdef Uelem** U
+    # cdef Uelem** U
+    cdef dict U
     # cdef public list improveA
     # cdef set[int] improveA
     cdef public object improveA
@@ -213,7 +214,7 @@ cdef class Individual:
         cdef InfBit* strPtr
         cdef ComArr* comb
         cdef Was* was
-        cdef Uelem* uelem
+        # cdef Uelem* uelem
 
         self.sumArr = <float*>malloc(self.dim * sizeof(float))
         for i in xrange(self.dim):
@@ -232,13 +233,15 @@ cdef class Individual:
         self.Inter = < InTer** > malloc(sizeof(void *)*self.dim)
         for i in xrange(self.dim):
             self.Inter[i] = NULL
-
+            
         # initialize U array
-        l = (self.model.c * (self.model.c-1))/2
-        self.U = < Uelem** > malloc( sizeof(void *) * l )
-        for i in xrange(l):
-            self.U[i] = NULL
-
+        
+        # l = (self.model.c * (self.model.c-1))/2
+        # self.U = < Uelem** > malloc( sizeof(void *) * l )
+        # for i in xrange(l):
+        #     self.U[i] = NULL
+        self.U = dict()
+        
         for i in xrange(len(self.model.WA)):
             W = int(math.pow(-1, binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w
 
@@ -271,27 +274,25 @@ cdef class Individual:
                 comb = self.genComb(len(self.model.WA[i].arr)) 
                 
                 # print self.model.WA[i].arr   
-                
                 for j in xrange(comb.size):
                     j0 = self.model.WA[i].arr[comb.arr[j][0]] 
                     j1 = self.model.WA[i].arr[comb.arr[j][1]] 
 
-                                        
                     # calculate the position in U
                     if j0<=j1:
-                        pos = j1*(j1 - 1)/2 + j0
-                    else:
-                        pos = j0*(j0 - 1)/2 + j1
+                        if (j0,j1) not in self.U:
+                            self.U[(j0,j1)] = [i]
+                        else:
+                            self.U[(j0,j1)].append(i)
+                    else:                 # j0>j1
+                        if (j1,j0) not in self.U:
+                            self.U[(j1,j0)] = [i]
+                        else:
+                            self.U[(j1,j0)].append(i)
+                        
                         # print 'pos', pos
                     # print '(j0, j1)', j0, j1
                     # print 'pos',pos
-                    
-                    if self.U[pos] == NULL:
-                        uelem = <Uelem*> malloc(sizeof(Uelem))
-                        uelem[0].arr = new vector[int]()
-                        self.U[pos] = uelem
-
-                    self.U[pos].arr.push_back(i)   # store the index of Walsh term
                 
         # print 'finish initWalU'
     
@@ -312,29 +313,29 @@ cdef class Individual:
             #     self.C[j0][j1] = self.C[j0][j1] + W
 
 
-    def printWalU(self):
-        """
-        print the U matrix associated with indices of Walsh terms
-        """
-        cdef vector[int].iterator it
-        print 'printWalU'
-
-        for i in xrange(self.dim):
-            for j in xrange(i):
-                pos = i*(i - 1)/2 + j
-                print '*********'
-                print 'i', i, 'j', j, 'pos', pos
-
-                if self.U[pos] != NULL:
-                    # for k in self.U[pos].arr:
-                    #     print k
-                    it = self.U[pos].arr.begin()
-                    while it != self.U[pos].arr.end():
-                        ii = deref(it)
-                        print ii
-                        inc(it)
-                else:
-                    print i, j, 'not'
+    # def printWalU(self):
+    #     """
+    #     print the U matrix associated with indices of Walsh terms
+    #     """
+    #     cdef vector[int].iterator it
+    #     print 'printWalU'
+        
+    #     for i in xrange(self.dim):
+    #         for j in xrange(i):
+    #             pos = i*(i - 1)/2 + j
+    #             print '*********'
+    #             print 'i', i, 'j', j, 'pos', pos
+                
+    #             if self.U[pos] != NULL:
+    #                 # for k in self.U[pos].arr:
+    #                 #     print k
+    #                 it = self.U[pos].arr.begin()
+    #                 while it != self.U[pos].arr.end():
+    #                     ii = deref(it)
+    #                     print ii
+    #                     inc(it)
+    #             else:
+    #                 print i, j, 'not'
             
     def printWAS(self):
         """
@@ -351,27 +352,30 @@ cdef class Individual:
             print self.WAS[i].w
             print '***************'
         
-    cpdef initBfUpdate(self, old, minimize, model):
+    cpdef initBfUpdate(self, old, bool minimize, object model):
         """
         initialize data structures for performing partial update with S vector maintained
         """
-        cdef int i
+        cdef int i,j
         cdef str oldI
         self.model = model
-        
+         
+
+        # start = time.time() 
         # initialize S vector, first derivative
         self.sumArr = <float*>malloc(self.dim * sizeof(float))
-        
         for i in xrange(self.dim):
             self.sumArr[i] = 0
-
+        # print time.time() - start
+            
+        # start = time.time()
         for i in xrange(self.dim):
             # indiv = Individual(oldIndiv=old)
             # indiv.flip(i)
             
             for j in self.model.listSubFunc[i]:
                 # get ride of compSubFit completely
-                
+
                 # subtract the old value
                 bits = [old.bit[k] for k in self.model.neighs[j][:]]
                 self.sumArr[i] = self.sumArr[i] - self.model.getFuncVal(j, int(''.join(bits),2))
@@ -389,8 +393,11 @@ cdef class Individual:
                 old.bit[i] = oldI
                 
                 # self.sumArr[i] = self.sumArr[i] + (self.model.compSubFit(indiv.bit, j) - self.model.compSubFit(old.bit, j))
+        # print time.time() - start
 
+        # start = time.time() 
         self.genImproveSpartialUpdate(minimize)
+        # print time.time() - start
         
         
             
@@ -541,20 +548,17 @@ cdef class Individual:
                     k1 = arr[int(comb.arr[k][1])]
                     self.C[k0][k1] = self.C[k0][k1] - 2 * self.WAS[I.WI].w
 
+
+                    
     cpdef updateU(self,int p):
         """
-        partially update the sum array directly by refering to U array,
+        partially update the sum array directly by refering to U _dict_,
         without C matrix
         """
-        cdef int i,ii, k0, k1, k, pos
-        cdef int len1
+        cdef int i,ii
         cdef float s
         cdef set[int].iterator it
-        cdef vector[int].iterator itt
-        cdef vector[int] arr
-        cdef InfBit I
-        cdef ComArr* comb
-        cdef vector[int].iterator itWI
+        cdef list wList
 
         self.sumArr[p] = - self.sumArr[p]
         if self.Inter[p]!=NULL:
@@ -565,17 +569,14 @@ cdef class Individual:
                 ii = deref(it)
                 # compute the sum of walsh terms that touches both ii and p
                 if ii<=p:
-                    pos = p*(p - 1)/2 + ii
+                    wList = self.U[(ii,p)]
                 else:
-                    pos = ii*(ii - 1)/2 + p
+                    wList = self.U[(p,ii)]
 
-                if self.U[pos] != NULL:
-                    s = 0.0
-                    itWI = self.U[pos].arr.begin()
-                    while itWI != self.U[pos].arr.end():
-                        s = s + self.WAS[deref(itWI)].w
-                        inc(itWI)
-                        
+                s = 0
+                for i in wList:
+                    s = s + self.WAS[i].w
+                    
                 self.sumArr[ii] = self.sumArr[ii] - 2 * s
                 inc(it)
                 # if ii < p:
@@ -1288,12 +1289,12 @@ cdef class Individual:
         #     free(self.lookup[i])
         # free(self.lookup)
 
-        j = (self.model.c * (self.model.c-1))/2
-        for i in xrange(j):
-            if self.U[i] != NULL:
-                free(self.U[i].arr)
-                free(self.U[i])
-        free(self.U)
+        # j = (self.model.c * (self.model.c-1))/2
+        # for i in xrange(j):
+        #     if self.U[i] != NULL:
+        #         free(self.U[i].arr)
+        #         free(self.U[i])
+        # free(self.U)
 
         if fitName == 'mean':
             """ release extra memory for performing local search using mean """
@@ -1452,9 +1453,7 @@ cdef class Individual:
 
     cpdef updateEvalPartialUpdate(self, I):
         self.fit = self.fit + self.sumArr[I]
-    
-
-
+        
     cpdef updateSumArr(self, int q, list old):
         """
         for the partial update implementation:

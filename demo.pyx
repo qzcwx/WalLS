@@ -139,7 +139,7 @@ def main():
     maxFit = opt.e * opt.n
     # runs = 20
 
-    runs = 10
+    runs = 1
     
     # maxFit = 100000
     
@@ -414,10 +414,10 @@ def main():
         f = open(nameOfF, 'w')
         if 'TLO' in opt.compMeth:
             print >>f,"All\t\tinit\t\tdesc\t\tupdate"
-            # print "All\t\tinit\t\tdesc\t\tupdate"
+            print "All\t\tinit\t\tdesc\t\tupdate"
             for i in range(runs):
                 print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
-                # print "%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
+                print "%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
         elif opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             # tracking for walsh-based approach
             print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"

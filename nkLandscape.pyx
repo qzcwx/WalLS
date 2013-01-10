@@ -45,7 +45,8 @@ cdef class NKLandscape:
     cdef list Kbits
     cdef public dict w
     cdef public list WA
-    cdef public list U
+    # cdef public list U
+    cdef public dict U
     cdef public list listSubFunc
     # cdef double* subFit
     
@@ -360,9 +361,12 @@ cdef class NKLandscape:
 
         # start = time.time() 
         """ Compute coefficients for each sub-functions """
+        # print self.k+1
+        # print math.pow(2,(self.k+1)/2.0)
         for i in xrange(self.c):
-            # subWone = wal.computeW(self.Kbits, self.func[i])
-            subWone = fht.fht(np.asarray(self.f[i]))/(2*math.sqrt(2))
+            # subWoneF = wal.computeW(self.Kbits, self.f[i])
+            # subWone = fht.fht(np.asarray(self.f[i]))/(2*math.sqrt(2))
+            subWone = fht.fht(np.asarray(self.f[i]))/math.pow(2,(self.k+1)/2.0)
             # print subWone
             # print subWoneF
             # print
@@ -902,88 +906,105 @@ cdef class NKLandscape:
         print 'listSubFunc'
         for i in self.listSubFunc:
             print i
-            
 
-    cpdef genU(self):
+    cpdef genUdict(self):
         """
-        construct a matrix U for updating purposes. where only i<=j
-        entries are non-empty. Each non-empty entry is a list of indices
-        of subfunctions that includes both i and j. The list can be
-        constructed on the basis of 'neighs' data structur. Using
-        one-dimensional representation to avoid the odds of generating
-        matrix.
-        
-        Note: need an analogy implementation for Walsh-based search
+        U array will be sparse, initializing the whole U is a huge
+        waste. The indices of subfunction that contains both i and j.
+        Assume i<=j.
         """
-        cdef int i, j, l, j0, j1, pos
-        cdef list neigh
-        cdef ComArr* comb
-        cdef InTer* inter
-        cdef InTer** u
-        cdef set[int].iterator it
-        
-        # initialize U matrix (in 1-D representation)
-        l = (self.c * (self.c-1))/2
-        # print 'l', l, 'c', self.c
-        u = < InTer** > malloc( sizeof(void *) * l )
-        
-        for i in xrange(l):
-            u[i] = NULL
-
-        # print 'init'
-        # generate entries for U matrix based on neighs
+        cdef int i,j,j0,j1
+        self.U = dict()
         for i in xrange(len(self.neighs)):
             comb = self.genComb(len(self.neighs[i]))
             for j in xrange(comb.size):
                 j0 = self.neighs[i][comb.arr[j][0]] 
                 j1 = self.neighs[i][comb.arr[j][1]] 
-                # calculate the position in U
-                if j0<=j1:
-                    pos = j1*(j1 - 1)/2 + j0
+                if (j0,j1) not in self.U:
+                    self.U[(j0,j1)] = [i]
                 else:
-                    pos = j0*(j0 - 1)/2 + j1
-                # print 'pos', pos
-                
-                if u[pos] == NULL:
-                    inter = <InTer*> malloc(sizeof(InTer))
-                    inter[0].arr = new set[int]()
-                    u[pos] = inter
-
-                #  variable j0 and j1 appear in ith subfunction
-                u[pos].arr.insert(i)
-                
-        # print 'copy'        
-        # copy data C space to Python space        
-        self.U = [None]*l
-        for i in xrange(l):
-            self.U[i] = []
-            if u[i] != NULL:
-                it = u[i].arr.begin()  
-                while it != u[i].arr.end():
-                    self.U[i].append(deref(it))  
-                    inc(it)
-
-        # print 'free'
-        # free memory
-        for i in xrange(l):
-            if u[i] != NULL:
-                free(u[i].arr)
-                free(u[i])
-        free(u)
+                    self.U[(j0,j1)].append(i)
+                    
+    # cpdef genU(self):
+    #     """
+    #     construct a matrix U for updating purposes. where only i<=j
+    #     entries are non-empty. Each non-empty entry is a list of indices
+    #     of subfunctions that includes both i and j. The list can be
+    #     constructed on the basis of 'neighs' data structur. Using
+    #     one-dimensional representation to avoid the odds of generating
+    #     matrix.
         
-    def getU(self, i, j):
+    #     Note: need an analogy implementation for Walsh-based search, the
+    #     initialization is stupid
+
+    #     should probably use (i,j) as dictionary key
+    #     """
+    #     cdef int i, j, l, j0, j1, pos
+    #     cdef list neigh
+    #     cdef ComArr* comb
+    #     cdef InTer* inter
+    #     cdef InTer** u
+    #     cdef set[int].iterator it
+        
+    #     # initialize U matrix (in 1-D representation)
+    #     l = (self.c * (self.c-1))/2
+    #     # print 'l', l, 'c', self.c
+    #     u = < InTer** > malloc( sizeof(void *) * l )
+        
+    #     for i in xrange(l):
+    #         u[i] = NULL
+
+    #     # print 'init'
+    #     # generate entries for U matrix based on neighs
+    #     for i in xrange(len(self.neighs)):
+    #         comb = self.genComb(len(self.neighs[i]))
+    #         for j in xrange(comb.size):
+    #             j0 = self.neighs[i][comb.arr[j][0]] 
+    #             j1 = self.neighs[i][comb.arr[j][1]] 
+    #             # calculate the position in U
+    #             if j0<=j1:
+    #                 pos = j1*(j1 - 1)/2 + j0
+    #             else:
+    #                 pos = j0*(j0 - 1)/2 + j1
+    #             # print 'pos', pos
+                
+    #             if u[pos] == NULL:
+    #                 inter = <InTer*> malloc(sizeof(InTer))
+    #                 inter[0].arr = new set[int]()
+    #                 u[pos] = inter
+
+    #             #  variable j0 and j1 appear in ith subfunction
+    #             u[pos].arr.insert(i)
+                
+    #     # print 'copy'        
+    #     # copy data C space to Python space        
+    #     self.U = [None]*l
+    #     for i in xrange(l):
+    #         self.U[i] = []
+    #         if u[i] != NULL:
+    #             it = u[i].arr.begin()  
+    #             while it != u[i].arr.end():
+    #                 self.U[i].append(deref(it))  
+    #                 inc(it)
+
+    #     # print 'free'
+    #     # free memory
+    #     for i in xrange(l):
+    #         if u[i] != NULL:
+    #             free(u[i].arr)
+    #             free(u[i])
+    #     free(u)
+        
+    cpdef list getU(self, int i, int j):
         """
         return the list of clause indices that touches both i and j
         """
         cdef int pos
         if i<=j:
-            pos = j*(j - 1)/2 + i
+            return self.U[(i,j)]            
         else:
-            pos = i*(i - 1)/2 + j
-        # print i,j, pos, (self.c * (self.c-1))/2
-            
-        return self.U[pos]
-            
+            return self.U[(j,i)]            
+        
     # def printU(self):
     #     """
     #      print self.U for verifying purposes
