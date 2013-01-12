@@ -286,7 +286,7 @@ def main():
 
         # c = 0
         # for i in (zip(bit,fit)):
-        #     print c,'\t', i[0], '%.2f' %(i[1])
+        #     print c,'\t', i[0], '%.4f' %(i[1])
         #     c = c + 1
 
 
@@ -410,25 +410,24 @@ def main():
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'.txt'
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
-
             
         f = open(nameOfF, 'w')
         if 'TLO' in opt.compMeth:
             print >>f,"All\t\tinit\t\tdesc\t\tupdate"
             # print "All\t\tinit\t\tdesc\t\tupdate"
             for i in range(runs):
-                print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
-                # print "%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
+                print >>f,"%0.4e\t%0.4e\t%0.4e\t%0.4e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
+                # print "%0.4e\t%0.4e\t%0.4e\t%0.4e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['updateT']) 
         elif opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             # tracking for walsh-based approach
             print >>f,"All\t\tinit\t\tdesc\t\tpert\t\tupdate\t\tupdatePert\t"
             for i in range(runs):
-                print >>f,"%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e\t%0.2e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
+                print >>f,"%0.4e\t%0.4e\t%0.4e\t%0.4e\t%0.4e\t%0.4e" % (tAll[i], res[i]['init'],res[i]['descT'], res[i]['pertT'], res[i]['updateT'], res[i]['updatePertT'])
         else:
             # for the brute force approach
             print >>f,"All\tupdate"
             for i in range(runs):
-                print >>f,"%0.2e\t%0.2e" % (tAll[i], res[i]['updateT'])
+                print >>f,"%0.4e\t%0.4e" % (tAll[i], res[i]['updateT'])
 
 
         f.close()

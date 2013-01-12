@@ -2992,7 +2992,6 @@ cdef class LocalSearch:
         traceEval = []
         traceFit = []
 
-        touchCount = 0                    # counter for investigation purpose
         
         initT = time.time() -start
         
@@ -3001,15 +3000,22 @@ cdef class LocalSearch:
             bestFit = self.oldindiv.fit
             
             for i in xrange(self.dim):
-                self.indiv = individual.Individual(oldIndiv= self.oldindiv)
-                self.indiv.flip(i)
+                for j in self.model.listSubFunc[i]:
+                    self.oldindiv.fit = self.oldindiv.fit - self.model.compSubFit(self.oldindiv.bit, j) 
+                
+                # flip attempt
+                self.oldindiv.flip(i)
+                # self.indiv = individual.Individual(oldIndiv= self.oldindiv)
+                # self.indiv.flip(i)
+                
                 # self.indiv = self.evalPop(self.indiv) 
                 # partial evaluation, only evaluate the affected subfunctions
                 for j in self.model.listSubFunc[i]:
-                    self.indiv.fit = self.indiv.fit - self.model.compSubFit(self.oldindiv.bit, j) + self.model.compSubFit(self.indiv.bit, j)
-                    touchCount = touchCount + 1
+                    self.oldindiv.fit = self.oldindiv.fit + self.model.compSubFit(self.indiv.bit, j)
                 
-                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i)
+                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i, self.oldindiv.fit)
+                # flip back
+                self.oldindiv.flip(i)
                 
             if len(improveA)==0: # issue restart
                 # print 'restart'
@@ -3038,7 +3044,6 @@ cdef class LocalSearch:
         
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'initC':initC, 'updateC':updateC,  'updateT':updateT}
 
-
     cdef runPartEvalTLO(self, fitName, minimize, restart):
         """
         run local search using fit function for NK-landscape, using partial evalutation method
@@ -3046,11 +3051,11 @@ cdef class LocalSearch:
         there is no extra data structures 
 
         only consider time to first local optimum
+        
+        first-improve move
         """
-        # print('partEvalTLO')
         start = time.time()
         cdef object improveA
-        # print 'runPartEval'
         self.fitEval = 0
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
@@ -3062,41 +3067,40 @@ cdef class LocalSearch:
         updateT = 0
         descT = 0
 
+        randseq = range(self.dim)
         initT = time.time() -start
 
         start = time.time()
         while self.fitEval < self.MaxFit:
-            improveA = Set()
             bestFit = self.oldindiv.fit
-            
-            for i in xrange(self.dim):
-                self.indiv = individual.Individual(oldIndiv= self.oldindiv)
-                self.indiv.flip(i)
-                # self.indiv = self.evalPop(self.indiv) 
+            random.shuffle(randseq)
+            improve = False
+            for i in randseq:
+                diffFit = 0
+                for j in self.model.listSubFunc[i]:
+                    diffFit = diffFit - self.model.compSubFit(self.oldindiv.bit, j) 
+                # flip attempt
+                self.oldindiv.flip(i)
                 # partial evaluation, only evaluate the affected subfunctions
                 for j in self.model.listSubFunc[i]:
-                    self.indiv.fit = self.indiv.fit - self.model.compSubFit(self.oldindiv.bit, j) + self.model.compSubFit(self.indiv.bit, j)
-                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i)
-                
-            if not improveA: # issue restart
+                    diffFit = diffFit + self.model.compSubFit(self.oldindiv.bit, j)
+
+                # print diffFit, '\t'
+                if (minimize==True and diffFit < - self.oldindiv.threshold) or (minimize == False and diffFit > self.oldindiv.threshold): 
+                    # found an improving move
+                    bestI = i
+                    self.oldindiv.fit = bestFit + diffFit
+                    self.fitEval = self.fitEval + 1
+                    updateC = updateC + 1
+                    improve = True
+                    break 
+                else: # not an improving move, flip back
+                    self.oldindiv.flip(i)
+
+            if not improve: # issue restart
                 # print 'restart'
                 updateT = updateT + time.time() - start
                 return {'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit, 'updateC':updateC,  'updateT':updateT, 'init':initT, 'descT':descT}
-            else: # randomly take an best-improvement move
-                updateC = updateC + 1
-                # print 'improveA', improveA
-                bestI = improveA.pop()
-                # print 'bestI', bestI
-                self.oldindiv.flip(bestI)
-                self.oldindiv.fit = bestFit
-                # print self.oldindiv.fit
-                self.fitEval = self.fitEval + 1
-                # print 'bestFit', bestFit
-                
-        # print 'bestI', bestI, 'eval', self.fitEval
-        # time.sleep(4)
-        
-        
 
     cdef runBeamFitSwalkNext(self,fitName, minimize, restart, beamWidth):
         """
@@ -3674,15 +3678,23 @@ cdef class LocalSearch:
         return indiv
         # return copy.deepcopy(indiv)
 
-    def selectionFit(self, minimize, improveA, bestFit, i):
-        threshold = self.indiv.threshold
+    # def firstSelectionFit(self, minimize, i, diffFit):
+    #     """
+    #     selection for first-improving move
 
-        if (minimize == True and bestFit - threshold > self.indiv.fit) or (minimize==False and bestFit + threshold < self.indiv.fit ): # no equal moves, new best move
-            bestFit = self.indiv.fit
+    #     if it is a improving move, return bestI and updated bestFit
+    #     otherwise, 
+    #     """
+    #     threshold = self.oldindiv.threshold
+        
+        
+    def selectionFit(self, minimize, improveA, bestFit, i, curFit):
+        threshold = self.oldindiv.threshold
+
+        if (minimize == True and bestFit - threshold > curFit) or (minimize==False and bestFit + threshold < curFit ): # no equal moves, new best move
+            bestFit = curFit
             improveA.clear()
             improveA.add(i)
-        # elif (abs(bestFit - self.indiv.fit)<threshold): # equally good solution
-        #     improveA.add(i)
         
         return improveA, bestFit
         # if minimize == True:
