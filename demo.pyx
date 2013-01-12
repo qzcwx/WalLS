@@ -311,8 +311,9 @@ def main():
             algo = chc.CHC()
 
         tAll = np.zeros(runs)
+        # print
         for i in range(runs):
-            print 'run', i 
+            # print 'run', i 
             start = time.time()
             if opt.algoName.find('GA') != -1:
                 res.append(algo.run(crossoverR, mutationR, opt.fitName))
@@ -342,6 +343,7 @@ def main():
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'.txt'
 
+        # print nameOfF     # print result
     #    """ print the mean over multiple runs """
     #    r = np.zeros(runs)
     #    for i in range(runs):

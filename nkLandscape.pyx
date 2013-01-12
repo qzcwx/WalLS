@@ -914,17 +914,41 @@ cdef class NKLandscape:
         Assume i<=j.
         """
         cdef int i,j,j0,j1
+        
+        cdef int c=0
+
+        # t0 = 0
+        # t1 = 0 
+        # t2 = 0
+        # t3 = 0
+        
         self.U = dict()
-        for i in xrange(len(self.neighs)):
+        for i in xrange(len(self.neighs)):   # for each subfunction $O(n)$
             comb = self.genComb(len(self.neighs[i]))
             for j in xrange(comb.size):
+                
+                # start = time.time()
+                c = c + 1
                 j0 = self.neighs[i][comb.arr[j][0]] 
                 j1 = self.neighs[i][comb.arr[j][1]] 
+                # t0 = t0 + time.time() - start
+
+                # start = time.time()
+                (j0,j1) not in self.U
+                # t1 = t1 + time.time() - start
+                
                 if (j0,j1) not in self.U:
+                    # start = time.time()
                     self.U[(j0,j1)] = [i]
+                    # t2 = t2 + time.time() - start
                 else:
+                    # start = time.time()
                     self.U[(j0,j1)].append(i)
+                    # t3 = t3 + time.time() - start
                     
+        # print 'c', c, 't0', t0, 't1', t1, 't2', t2, 't3', t3
+
+        
     # cpdef genU(self):
     #     """
     #     construct a matrix U for updating purposes. where only i<=j
@@ -1042,7 +1066,7 @@ cdef class NKLandscape:
             return self.lookup[N]
         else : # the key not found
             # print 'not found', 'N',  N
-
+            
             # c = biomial(N, 2)
             c = N*(N-1)/2
             # print 'biomial', c

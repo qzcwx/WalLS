@@ -33,6 +33,7 @@ def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track):
         fileName = open(fName, 'a')
         # fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t '+str(t)+' -e '+str(e)+' '+'&\n')
         fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+'\n')
+        # fileName.write('nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+'\n')
         fileName.close()
 
         track[scriptNo].jobs = track[scriptNo].jobs + 1
@@ -100,8 +101,11 @@ if __name__== "__main__":
 
     # nRange = [20,50,100,150,200,250,300,350,400,450,500]
 
-    nRange = [50000]
-    kRange = [2,4,6,8]
+    nRange = [500,2000,10000,50000]
+    kRange = [6]
+    
+    # nRange = [50000]
+    # kRange = [2,4,6,8]
     
     # nRange = [10000]
     # kRange = [2,4,6,8,10]
@@ -129,7 +133,8 @@ if __name__== "__main__":
     aRange = ['rLS']
     fRange = ['fit']
     # mRange = ['walTLONextU','bfUpdateTLO']
-    mRange = ['partEvalTLO']
+    # mRange = ['partEvalTLO']
+    mRange = ['bfUpdateTLO']    
     
     pRange = ['NK']
 

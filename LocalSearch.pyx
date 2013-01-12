@@ -1126,6 +1126,7 @@ cdef class LocalSearch:
                 # print 'end'
                 
                 # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+                # print updateT/self.fitEval
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else : # improveN is TRUE
                 start = time.time()
@@ -2838,39 +2839,38 @@ cdef class LocalSearch:
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
 
-        # t0 = 0
-        # t1 = 0
-        # t2 = 0
-        # t3 = 0 
+        t0 = 0
+        t1 = 0
+        t2 = 0
+        t3 = 0 
         
         # print 'neigh', self.model.neighs
 
         # print 'genInter'
         
-        # start1 = time.time()
+        start1 = time.time()
         self.model.genInter()
-        # t0 = t0 + time.time() - start1 
+        t0 = t0 + time.time() - start1 
 
-        # start1 = time.time()
         # print 'genListSubFunc'
+        start1 = time.time()
         self.model.genListSubFunc()
         # self.model.printListSubFunc()
         # self.model.genFuncDict()
-        # t1 = t1 + time.time() - start1 
+        t1 = t1 + time.time() - start1 
         
         self.oldindiv = self.evalPop(self.oldindiv)
         
         # print 'init', self.oldindiv.bit, self.oldindiv.fit        
 
-        # start1 = time.time()
-        self.model.genUdict()
-        # t2 = t2 + time.time() - start1 
+        start1 = time.time()
+        self.model.genUdict()            
+        t2 = t2 + time.time() - start1 
 
-        
-        # start1 = time.time()
+        start1 = time.time()
         # print 'initBfUpdate'
         self.oldindiv.initBfUpdate(self.oldindiv, minimize, self.model)
-        # t3 = t3 + time.time() - start1 
+        t3 = t3 + time.time() - start1 
         
         # self.oldindiv.printSumArr()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
@@ -2892,7 +2892,7 @@ cdef class LocalSearch:
         
         initT = time.time() -start
 
-        # print t0,t1,t2,t3
+        # print "%.2e\t%.2e\t%.2e\t%.2e" %(t0,t1,t2,t3)
         
         while self.fitEval < self.MaxFit:
             start = time.time()
@@ -2912,7 +2912,7 @@ cdef class LocalSearch:
                 # print 'destructorBfUpdate'
                 self.oldindiv.destructorBfUpdate()
                 # print 'end'
-                
+                # print updateT/self.fitEval
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else:
                 start = time.time()
