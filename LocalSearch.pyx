@@ -3084,7 +3084,7 @@ cdef class LocalSearch:
                 # partial evaluation, only evaluate the affected subfunctions
                 for j in self.model.listSubFunc[i]:
                     diffFit = diffFit + self.model.compSubFit(self.oldindiv.bit, j)
-
+                    
                 # print diffFit, '\t'
                 if (minimize==True and diffFit < - self.oldindiv.threshold) or (minimize == False and diffFit > self.oldindiv.threshold): 
                     # found an improving move
