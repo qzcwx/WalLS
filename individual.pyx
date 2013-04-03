@@ -70,6 +70,7 @@ cdef class Individual:
     cdef public list bit
     cdef float* sumArr
     cdef public int dim
+    cdef public int addC
     
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         # self.bit = NULL
@@ -87,7 +88,8 @@ cdef class Individual:
             # self.copyBit(oldIndiv.bit)
             self.bit = oldIndiv.bit[:]
         self.threshold = 1e-15
-
+        self.addC = 0
+        
     # def __del__(self):
     #     # free(self.bit)
         
@@ -576,6 +578,7 @@ cdef class Individual:
                 s = 0
                 for i in wList:
                     s = s + self.WAS[i].w
+                    self.addC = self.addC + 1
                     
                 self.sumArr[ii] = self.sumArr[ii] - 2 * s
                 inc(it)

@@ -1013,7 +1013,6 @@ cdef class LocalSearch:
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
 
-
             if improveN == False:
                 initC = initC + 1
                 if restart == True:
@@ -1127,6 +1126,8 @@ cdef class LocalSearch:
                 
                 # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
                 # print updateT/self.fitEval
+                # print 'exit'
+                print '|',self.oldindiv.addC
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else : # improveN is TRUE
                 start = time.time()
@@ -1156,8 +1157,9 @@ cdef class LocalSearch:
                 updateC = updateC + 1
                 # print self.fitEval, len(self.model.improveA)
                 # print self.fitEval
-                # print self.dim, self.fitEval, len(self.oldindiv.improveA) 
-        # print 'dest'
+                # print self.dim, self.fitEval, len(self.oldindiv.improveA)
+                
+        print 'dest'
 
         # print 'init', initC, 'update', updateC
         # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}

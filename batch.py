@@ -133,7 +133,8 @@ if __name__== "__main__":
     fRange = ['fit']
     # mRange = ['walTLONextU','bfUpdateTLO']
     # mRange = ['partEvalTLO']
-    mRange = ['bfUpdateTLO']    
+    # mRange = ['bfUpdateTLO']
+    mRange = ['walTLONextU']    
     
     pRange = ['NK']
 

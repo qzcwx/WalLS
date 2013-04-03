@@ -381,7 +381,7 @@ cdef class NKLandscape:
             # print(type(interBits))
             
             masks = np.array([False]*(self.k+1), dtype=bool)   # initialize mask array 
-
+            
             # print
             # print interBits
             for j in xrange(int(math.pow(2, self.k+1))): # j: index of substrings
