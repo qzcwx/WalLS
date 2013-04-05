@@ -222,11 +222,6 @@ cdef class Individual:
         for i in xrange(self.dim):
             self.sumArr[i] = 0
             
-        # self.infectBit = < vector[InfBit*]** > malloc(sizeof(void *) * self.dim)
-        # for i in xrange(self.dim):
-        #     vectPtr = new vector[InfBit*]()
-        #     self.infectBit[i] = vectPtr
-
         self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
         for i in xrange(self.dim):
@@ -272,9 +267,7 @@ cdef class Individual:
                     self.Inter[j].WI.insert(i)
                     
                 # add entries in U matrix 
-
                 comb = self.genComb(len(self.model.WA[i].arr)) 
-                
                 # print self.model.WA[i].arr   
                 for j in xrange(comb.size):
                     j0 = self.model.WA[i].arr[comb.arr[j][0]] 
@@ -1276,10 +1269,14 @@ cdef class Individual:
 
         for i in xrange(len(self.model.WA)):
             free(self.WAS[i].arr)
-
-            # free(self.WAS+i)
-
         free(self.WAS)
+        
+        for i in xrange(self.dim):
+
+            if self.Inter[i] != NULL:
+                free(self.Inter[i].arr)
+                free(self.Inter[i].WI)
+                free(self.Inter[i])
 
         if self.lookup != NULL:
             for i in xrange(self.dim):
@@ -1287,17 +1284,6 @@ cdef class Individual:
                     free(self.lookup[i])
             free(self.lookup)
 
-
-        # for i in xrange(self.dim):
-        #     free(self.lookup[i])
-        # free(self.lookup)
-
-        # j = (self.model.c * (self.model.c-1))/2
-        # for i in xrange(j):
-        #     if self.U[i] != NULL:
-        #         free(self.U[i].arr)
-        #         free(self.U[i])
-        # free(self.U)
 
         if fitName == 'mean':
             """ release extra memory for performing local search using mean """

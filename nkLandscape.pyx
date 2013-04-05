@@ -434,18 +434,24 @@ cdef class NKLandscape:
         """
         translate bitstring represented Walsh terms into arrays of bits that they touches
         """
+        # t=time.time()
         self.WA = [] # array representing Walsh terms
+        # print time.time()-t
+
+        # print 'WA len', len(self.WA)
+        # t=time.time()
         for k in self.w.keys():
             if self.w[k] != 0:
-                # a = []
-                # for i in range(self.n):
-                #     if k[i] == '1':
-                #         a.append(i)
-                self.WA.append( Struct(arr = list(k), w = self.w[k]) )
-
+                self.WA.append( Struct(arr = list(k), w = self.w[k]))
+                
+        # print time.time()-t
+        # print 'dict len', len(self.w), 'WA len', len(self.WA)
         # # density of Non-Zero Walsh terms
         # print len(self.WA), self.n * 2**(self.k+1), (len(self.WA)+0.)/(self.n * 2**(self.k+1))
 
+        
+    def clearWalModel(self):
+        del self.WA[:]
         
     def genHyperVote(self):
         """
