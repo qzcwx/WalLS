@@ -34,8 +34,8 @@ ctypedef struct InfBit:
 #     vector[int]* arr                      # indices of WAS terms
     
 ctypedef struct InTer:
-    set[int]* arr
-    set[int]* WI
+    set[int]* arr                         # list of variables that are interacting with p
+    set[int]* WI                          # list of the addresses of Walsh terms that include p bit
 
 ctypedef struct Was:
     int* arr
@@ -71,6 +71,8 @@ cdef class Individual:
     cdef float* sumArr
     cdef public int dim
     cdef public int addC
+    cdef public int addWAS
+        
     
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         # self.bit = NULL
@@ -89,6 +91,7 @@ cdef class Individual:
             self.bit = oldIndiv.bit[:]
         self.threshold = 1e-15
         self.addC = 0
+        self.addWAS = 0
         
     # def __del__(self):
     #     # free(self.bit)
@@ -157,7 +160,7 @@ cdef class Individual:
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
         for i in xrange(self.dim):
             self.lookup[i] = NULL
-
+            
         self.Inter = < InTer** > malloc(sizeof(void *)*self.dim)
         for i in xrange(self.dim):
             self.Inter[i] = NULL
@@ -240,8 +243,9 @@ cdef class Individual:
         self.U = dict()
         
         for i in xrange(len(self.model.WA)):
+            # |Q|*n operation should be at least n^2
             W = int(math.pow(-1, binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w
-
+            
             was = <Was *>malloc(sizeof(Was))
             was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
             for j in xrange(len(self.model.WA[i].arr)):
@@ -253,20 +257,20 @@ cdef class Individual:
                 self.sumArr[j] = self.sumArr[j] + W
 
             if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
-                for j in self.model.WA[i].arr:
+                for j in self.model.WA[i].arr:   # 
                     #if not self.Inter[j]: # the entry of i doesn't exist yet
-                    if self.Inter[j] == NULL:
+                    if self.Inter[j] == NULL: 
                         inter = <InTer*> malloc(sizeof(InTer))
                         inter[0].arr = new set[int]()
                         inter[0].WI = new set[int]()
                         self.Inter[j] = inter
-
-                    for k in self.model.WA[i].arr:
+                        
+                    for k in self.model.WA[i].arr:   # k^2 part
                         if k != j :
                             self.Inter[j].arr.insert(k)
                     self.Inter[j].WI.insert(i)
                     
-                # add entries in U matrix 
+                # add entries in U matrix, k^2 part 
                 comb = self.genComb(len(self.model.WA[i].arr)) 
                 # print self.model.WA[i].arr   
                 for j in xrange(comb.size):
@@ -549,6 +553,8 @@ cdef class Individual:
         """
         partially update the sum array directly by refering to U _dict_,
         without C matrix
+
+        complexity of ck(k-1)2^{k-2}
         """
         cdef int i,ii
         cdef float s
@@ -567,7 +573,7 @@ cdef class Individual:
                     wList = self.U[(ii,p)]
                 else:
                     wList = self.U[(p,ii)]
-
+                    
                 s = 0
                 for i in wList:
                     s = s + self.WAS[i].w
@@ -590,7 +596,7 @@ cdef class Individual:
         
         if p in self.improveA:
             self.improveA.remove(p)
-
+            
             # while it!=self.model.Inter[p].arr.end():
         # if p in self.model.Inter:
         # if self.model.Inter[p]:
@@ -718,7 +724,8 @@ cdef class Individual:
                 else:
                     self.sumArrFake[i] = self.sumArrFake[i] - 2*self.Cfake[p,i]
                     
-    cpdef updateWAS(self,p):
+    cpdef updateWAS(self,int p):
+        # complexity of k*2^{k-1}
         cdef int ii
 
         cdef set[int].iterator it
@@ -730,7 +737,9 @@ cdef class Individual:
             while it != self.Inter[p].WI.end():
                 ii = deref(it)
                 self.WAS[ii].w = - self.WAS[ii].w
+                self.addWAS = self.addWAS + 1
                 inc(it)
+                
 
     def updateSC(self, p):
         cdef int i,ii, k0, k1

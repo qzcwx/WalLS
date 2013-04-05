@@ -1127,7 +1127,7 @@ cdef class LocalSearch:
             if improveN == False:
                 self.updateBSF(fitName, minimize)
                 # print 'n',self.model.n,'k', self.model.k, self.fitEval, self.bsf.fit
-                # print '|%.2g\t|%.2g\t|%.2g\t|%.2g\t|%.2g\t|' %(s1,s2,s3,s4,s5)
+                print '|%.2g\t|%.2g\t|%.2g\t|%.2g\t|%.2g\t|' %(s1,s2,s3,s4,s5)
                 # print 'destFunc'
                 # self.model.destFunc()
                 # print 'destructorWal'
@@ -1138,31 +1138,31 @@ cdef class LocalSearch:
                 # return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
                 # print updateT/self.fitEval
                 # print 'exit'
-                # print '|',self.oldindiv.addC
+                print '|',self.oldindiv.addC, '|', self.oldindiv.addWAS
 
                 return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit,'init':initT, 'descT':descT, 'updateT':updateT, 'updateC':updateC}
             else : # improveN is TRUE
                 start = time.time()
 
-                # s0 = time.time()
+                s0 = time.time()
                 self.oldindiv.updateEval(bestI)
-                # s1 = s1 + time.time() - s0
+                s1 = s1 + time.time() - s0
                 
-                # s0 = time.time() 
+                s0 = time.time() 
                 self.oldindiv.updateU(bestI)
-                # s2 = s2 + time.time() - s0
+                s2 = s2 + time.time() - s0
                 
-                # s0 = time.time()
+                s0 = time.time()
                 self.oldindiv.updateWAS(bestI)
-                # s3 = s3 + time.time() - s0
+                s3 = s3 + time.time() - s0
                 
-                # s0 = time.time()
+                s0 = time.time()
                 self.oldindiv.updateImprS(bestI, minimize)
-                # s4 = s4 + time.time() - s0
+                s4 = s4 + time.time() - s0
                 
-                # s0 = time.time()
+                s0 = time.time()
                 self.oldindiv.flip(bestI)
-                # s5 = s5 + time.time() - s0
+                s5 = s5 + time.time() - s0
                 
                 self.fitEval = self.fitEval + 1
                 updateT = updateT + time.time() - start
