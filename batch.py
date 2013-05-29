@@ -98,7 +98,8 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    # nRange = [20,50,100,150,200,250,300,350,400,450,500]
+    nRange = [20,50,100,150,200,250,300,350,400,450,500]
+    kRange = [2,4]
 
     # nRange = [500,2000,10000,50000]
     # kRange = [6]
@@ -112,8 +113,8 @@ if __name__== "__main__":
     # nRange = [2000]
     # kRange = [2,4,6,8,10,12]
 
-    nRange = [500]
-    kRange = [2,4,6,8,10,12,14]
+    # nRange = [500]
+    # kRange = [2,4,6,8,10,12,14]
     
     
     # nRange = [200]
@@ -134,9 +135,10 @@ if __name__== "__main__":
     # mRange = ['walTLONextU','bfUpdateTLO']
     # mRange = ['partEvalTLO']
     # mRange = ['bfUpdateTLO']
-    mRange = ['walTLONextU']    
+    # mRange = ['walTLONextU']
+    mRange = ['walRestNextU']
     
-    pRange = ['NK']
+    pRange = ['NK','NonNK']
 
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)

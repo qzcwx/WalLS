@@ -100,16 +100,16 @@ cdef class LocalSearch:
         elif compM == 'walRestU':                       # exact-Walsh-LS
             if fitName == 'fit':
                 return self.runFitSrestU(fitName, minimize, restart)
-        elif compM == 'walRestNextU':                       # exact-Walsh-LS
+        elif compM == 'walRestNextU':                       # next-Walsh-LS
             if fitName == 'fit':
                 return self.runFitSrestNextU(fitName, minimize, restart)
-        elif compM == 'walTLONextU':                       # exact-Walsh-LS
+        elif compM == 'walTLONextU':                       # next-Walsh-LS to first local optima
             if fitName == 'fit':
                 return self.runFitSTLONextU(fitName, minimize, restart)
         elif compM == 'walWalkU':                        # walk-Walsh-LS
             if fitName == 'fit':         
                 return self.runFitSwalkU(fitName, minimize, restart)
-        elif compM == 'walRestUDist':              # exact-Walsh-LS dist
+        elif compM == 'walRestUDist':              # exact-Walsh-LS dist, fitness distribution of local optima
             if fitName == 'fit':
                 return self.runFitSrestUDist(fitName, minimize, restart)
         elif compM == 'walWalkUDist':               # walk-Walsh-LS dist
@@ -961,7 +961,7 @@ cdef class LocalSearch:
     cdef runFitSrestNextU(self,fitName, minimize, restart):
         """
         next descent local search running on S, without using C matrix, instead, using the U
-
+        
         with random restart
         """
         # print 'runFitrestU'

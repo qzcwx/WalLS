@@ -663,7 +663,7 @@ cdef class Individual:
                 """ NOT equal moves """
                 if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
-                        self.improveA.append(i)
+                        self.improveA.add(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
                 inc(it)
@@ -673,7 +673,7 @@ cdef class Individual:
         """ NOT equal move """
         if (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p] < - self.threshold ):
             if p not in self.improveA:
-                self.improveA.append(p)
+                self.improveA.add(p)
         elif p in self.improveA:
             self.improveA.remove(p)
 
