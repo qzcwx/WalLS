@@ -146,7 +146,8 @@ def main():
     # maxFit = 10000
     
     # runs = 1
-    maxFit = 1000000
+    maxFit = 1000000                      # 1 million
+    # maxFit = 100000                      # 100 k
     
     # maxFit = 1 
 
@@ -392,13 +393,16 @@ def main():
 
         if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
             """ store trace to files: the number of descent steps """
+
             for i in range(runs):
                 if opt.probName == 'NKQ':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
+
                 if 'TLO' not in opt.compMeth :
                     f = open(nameOfF, 'w')
+                    print >>f,"step\tbest\t"
                     if (opt.fitName == 'fit'):
                         for j in zip(res[i]['traceEval'], res[i]['traceFit']):
                             print >>f,"%g\t%g" % (j[0], j[1])

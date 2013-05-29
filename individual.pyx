@@ -1014,23 +1014,34 @@ cdef class Individual:
     ##     return True, bestI
 
     def steepFitDesc(self, minimize):
+        # pick take the move that yields the most improvement in evaluation
         if not self.improveA:
             return False, None
         bestList = []
 
         # random.shuffle(self.improveA)
 
+        init = False
+        # find the best evaluation
         for i in self.improveA:
-            if i == self.improveA[0]:
-                best = self.sumArr[i]
-                # bestI = i
-            #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+            if init == False:
+                best = i
+                init = True
             elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
-                best = self.sumArr[i]
-                # bestI = i
+                best = i
+            
+            # if i == self.improveA[0]:
+            #     best = self.sumArr[i]
+            #     # bestI = i
+            # #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+            # elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
+            #     best = self.sumArr[i]
+            #     # bestI = i
 
+        # locate equally good best-moves
         for i in self.improveA:
-            if (abs(best - self.sumArr[i])<self.threshold):
+            # if (abs(best - self.sumArr[i])<self.threshold):
+            if (abs(best - i)<self.threshold):
                 bestList.append(i)
         # bestList.sort()
 

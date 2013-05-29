@@ -136,7 +136,8 @@ if __name__== "__main__":
     # mRange = ['partEvalTLO']
     # mRange = ['bfUpdateTLO']
     # mRange = ['walTLONextU']
-    mRange = ['walRestNextU']
+    # mRange = ['walRestNextU']
+    mRange = ['walRestU','walWalkU']
     
     pRange = ['NK','NonNK']
 

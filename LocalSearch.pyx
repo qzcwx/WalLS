@@ -1193,13 +1193,14 @@ cdef class LocalSearch:
         self.oldindiv.genImproveS(minimize)
         initC = 1
         updateC = 0
-                
+        
         descT = 0
         pertT = 0
         updatePertT = 0
         updateT = 0
         self.fitEval = 0
         walkLen = 10
+        step = 0
 
         traceEval = []
         traceFit = []
@@ -1227,6 +1228,9 @@ cdef class LocalSearch:
                         self.oldindiv.updatePertImprS(i, minimize)
                         
                     updatePertT = updatePertT + time.time() - start
+                    traceEval.append(step)
+                    traceFit.append(self.bsf.fit)
+                    step = 0
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
@@ -1242,6 +1246,7 @@ cdef class LocalSearch:
                 # print 'updateImprS'
                 self.oldindiv.updateImprS(bestI, minimize)
                 self.fitEval = self.fitEval + 1
+                step = step + 1 
                 self.oldindiv.flip(bestI)
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
@@ -1394,7 +1399,7 @@ cdef class LocalSearch:
 
         traceEval = []
         traceFit = []
-
+        
         traceEval.append(len(self.oldindiv.improveA))
         traceFit.append(self.oldindiv.fit)
         
