@@ -125,7 +125,7 @@ if __name__== "__main__":
     vRange = [1]
 
     # eRange = [10,20,100]
-    eRange = [1]
+    eRange = [0]
 
     tRange = [7]
 

@@ -896,7 +896,8 @@ cdef class LocalSearch:
         traceFit = []
 
         # print self.MaxFit
-        
+
+        step = 0
         initT = time.time() - start
 
         while self.fitEval < self.MaxFit:
@@ -934,6 +935,9 @@ cdef class LocalSearch:
                         # self.oldindiv.printSumArr()
                         self.oldindiv.updatePertImprS(i, minimize)
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
+                    traceEval.append(step)
+                    traceFit.append(self.bsf.fit)
+                    step = 0
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
@@ -952,6 +956,7 @@ cdef class LocalSearch:
                 self.oldindiv.flip(bestI)
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
+                step = step + 1
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
@@ -1246,10 +1251,10 @@ cdef class LocalSearch:
                 # print 'updateImprS'
                 self.oldindiv.updateImprS(bestI, minimize)
                 self.fitEval = self.fitEval + 1
-                step = step + 1 
                 self.oldindiv.flip(bestI)
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
+                step = step + 1 
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
