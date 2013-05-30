@@ -137,7 +137,7 @@ if __name__== "__main__":
     # mRange = ['bfUpdateTLO']
     # mRange = ['walTLONextU']
     # mRange = ['walRestNextU']
-    mRange = ['walRestU','walWalkU', 'walRestNextU']
+    mRange = ['walRestU','walWalkU']
     
     pRange = ['NK','NonNK']
 
