@@ -146,8 +146,8 @@ def main():
     # maxFit = 10000
     
     # runs = 1
-    maxFit = 1000000                      # 1 million
-    # maxFit = 100000                      # 100 k
+    # maxFit = 1000000                      # 1 million
+    maxFit = 100000                      # 100 k
     
     # maxFit = 1 
 
