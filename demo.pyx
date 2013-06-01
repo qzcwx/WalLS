@@ -138,11 +138,11 @@ def main():
     maxFit = opt.e * opt.n
     # runs = 20
 
-    runs = 10
-    maxFit = 100000
+    # runs = 10
+    # maxFit = 100000
     
-    # runs = 1
-    # maxFit = 1000000
+    runs = 1
+    maxFit = 200
     
     # maxFit = 100
 
@@ -383,11 +383,14 @@ def main():
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
+                
                 f = open(nameOfF, 'w')
+                
                 if (opt.fitName == 'fit'):
                     for j in zip(res[i]['traceEval'], res[i]['traceFit']):
+                        # print j
                         print >>f,"%g\t%g" % (j[0], j[1])
-                else :
+                else:
                     for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                         print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
                 f.close()
