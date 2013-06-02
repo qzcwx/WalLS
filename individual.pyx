@@ -1527,7 +1527,7 @@ cdef class Individual:
                 
     cpdef printSumArr(self):
         for i in range(self.dim):
-            print self.sumArr[i]
+            print i, self.sumArr[i]
         print
 
     cpdef compFitG(self):
