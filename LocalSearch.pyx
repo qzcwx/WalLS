@@ -978,6 +978,9 @@ cdef class LocalSearch:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             print bestI, self.oldindiv.improveA
+            # print 'sumArr', self.oldindiv.sumArr
+            print 'sumarr',
+            self.oldindiv.printSumArr()
             descT = descT + time.time() - start
 
             if improveN == False:
