@@ -1018,17 +1018,17 @@ cdef class Individual:
         if not self.improveA:
             return False, None
         bestList = []
-
+        
         # random.shuffle(self.improveA)
 
         init = False
         # find the best evaluation
         for i in self.improveA:
             if init == False:
-                best = i
+                best = self.sumArr[i] 
                 init = True
             elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
-                best = i
+                best = self.sumArr[i]
             
             # if i == self.improveA[0]:
             #     best = self.sumArr[i]
@@ -1041,7 +1041,7 @@ cdef class Individual:
         # locate equally good best-moves
         for i in self.improveA:
             # if (abs(best - self.sumArr[i])<self.threshold):
-            if (abs(best - i)<self.threshold):
+            if (abs(best - self.sumArr[i])<self.threshold):
                 bestList.append(i)
                 
         # bestList.sort()
