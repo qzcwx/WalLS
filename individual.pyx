@@ -1045,7 +1045,7 @@ cdef class Individual:
                 bestList.append(i)
                 
         # bestList.sort()
-        print 'bestList', bestList
+        # print 'bestList', bestList
         return True, random.choice(bestList)
 
     def steepFitDescPartialUpdate(self, minimize):

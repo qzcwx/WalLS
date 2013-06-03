@@ -147,8 +147,8 @@ def main():
     
     # maxFit = 10000
     
-    runs = 1
-    maxFit = 200
+    # runs = 1
+    # maxFit = 200
 
     t = opt.t
 
@@ -385,9 +385,10 @@ def main():
 
             if 'TLO' not in opt.compMeth:
                 f = open(nameOfF, 'w')
-                print >>f,"initC\tupdateC\t"
+                # print >>f,"initC\tupdateC\t"
+                print >>f,"initC\tupdateC\tbackC\t"
                 for i in range(runs):
-                    print >>f,"%g\t%g\t" % (res[i]['initC'], res[i]['updateC'])
+                    print >>f,"%g\t%g\t%g\t" % (res[i]['initC'], res[i]['updateC'], res[i]['backC'])
                 f.close()
 
         if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
