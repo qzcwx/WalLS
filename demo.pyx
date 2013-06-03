@@ -125,7 +125,7 @@ def main():
 
     #tl.checkParam(sys.argv)
     opt.s = opt.popSize
-
+    
     nameOfDir = './result/'
     runtimeDir = './runtime/'
     waltimeDir = './walshtime/'
@@ -141,7 +141,7 @@ def main():
     
     runs = 10
     # maxFit = 1000000                      # 1 million
-    maxFit = 100000                      # 100 k
+    maxFit = 100000                      # 100 k, submit for running experiment
 
     # maxFit = 100000
     
@@ -149,7 +149,7 @@ def main():
     
     # runs = 1
     # maxFit = 200
-
+    
     t = opt.t
 
     crossoverR = 0.8 # typically in (0.6, 0.9)
