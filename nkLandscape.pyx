@@ -6,7 +6,7 @@ import random
 import time 
 import sys
 # sys.path.append("../fht/build/lib.linux-x86_64-2.7/fht/")
-
+import os
 import fht
 
 import numpy as np
@@ -80,18 +80,20 @@ cdef class NKLandscape:
         
     def exportToFile(self, fileName):
         # print 'fileName', fileName
+        # print fileName
         # print self.neighs
         # print len(self.neighs)
-        f = open(fileName, 'w')
-        for i in xrange(self.c):
-            # print i
-            for j in xrange(len(self.neighs[i])):
-                print >>f, self.neighs[i][j], '\t',
-            print >>f
-        for i in xrange(self.c):
-            for j in xrange(len(self.f[i])):
-                print >>f, self.f[i][j], '\t',
-            print >>f
+        if not os.path.isfile(fileName):
+            f = open(fileName, 'w')
+            for i in xrange(self.c):
+                # print i
+                for j in xrange(len(self.neighs[i])):
+                    print >>f, self.neighs[i][j], '\t',
+                print >>f
+            for i in xrange(self.c):
+                for j in xrange(len(self.f[i])):
+                    print >>f, self.f[i][j], '\t',
+                print >>f
 
     def readFile(self, fName):
         cdef int i
