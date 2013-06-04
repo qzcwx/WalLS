@@ -139,8 +139,8 @@ def main():
     # maxFit = opt.e * opt.n
     # runs = 20
     
-    runs = 10
-    # maxFit = 1000000                      # 1 million
+    runs = 1
+    # # maxFit = 1000000                      # 1 million
     maxFit = 100000                      # 100 k, submit for running experiment
 
     # maxFit = 100000
@@ -148,17 +148,17 @@ def main():
     # maxFit = 10000
     
     # runs = 1
-    # maxFit = 200
+    # maxFit = 20000
     
     t = opt.t
-
+    
     crossoverR = 0.8 # typically in (0.6, 0.9)
     mutationR = 1.0/float(opt.n) # typically between 1/popSize and 1/dim
     # for CHC
     D = opt.n/4.0
     DR = 0.35
     M = 1
-
+    
     if opt.algoName.find('LS') != -1:
         popSize = 1
 
@@ -265,12 +265,12 @@ def main():
             freq = model.countFreqInFunc()
             # print sum(freq)
 
-        # print 'enumerating all solutions'
-        # if opt.fitName == 'fit':
-        #     bit,fit = tl.compFit(model)
+        print 'enumerating all solutions'
+        if opt.fitName == 'fit':
+            bit,fit = tl.compFit(model)
         # elif opt.fitName == 'mean':
         #     bit, fit = tl.compMean(model)
-
+        print max(fit)
         # bitF,fitF = tl.compFit(model)
         # for i in zip(bitF,fitF):
         #     print i[0],i[1]
@@ -405,7 +405,8 @@ def main():
                     print >>f,"step\tbest\t"
                     if (opt.fitName == 'fit'):
                         for j in zip(res[i]['traceEval'], res[i]['traceFit']):
-                            print >>f,"%g\t%g" % (j[0], j[1])
+                            # print >>f,"%g\t%g" % (j[0], j[1])
+                            print >>f,"%.6f\t%.6f" % (j[0], j[1])
                     else :
                         for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                             print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
