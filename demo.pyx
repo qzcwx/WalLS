@@ -139,15 +139,15 @@ def main():
     # maxFit = opt.e * opt.n
     # runs = 20
     
-    runs = 1
+    # runs = 10
     # # maxFit = 1000000                      # 1 million
     # maxFit = 100000                      # 100 k, submit for running experiment
     
-    # maxFit = 100000
+    maxFit = 100000
     
-    maxFit = 100
+    # maxFit = 2000
     
-    # runs = 1
+    runs = 1
     # maxFit = 20000
     
     t = opt.t
