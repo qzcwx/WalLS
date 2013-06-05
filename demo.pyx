@@ -139,10 +139,10 @@ def main():
     # runs = 20
 
     # runs = 10
-    # maxFit = 100000
+    maxFit = 100000
     
     runs = 1
-    maxFit = 200
+    # maxFit = 200
     
     # maxFit = 100
 
