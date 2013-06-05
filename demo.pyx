@@ -141,11 +141,11 @@ def main():
     
     runs = 1
     # # maxFit = 1000000                      # 1 million
-    maxFit = 100000                      # 100 k, submit for running experiment
-
+    # maxFit = 100000                      # 100 k, submit for running experiment
+    
     # maxFit = 100000
     
-    # maxFit = 10000
+    maxFit = 100
     
     # runs = 1
     # maxFit = 20000
@@ -265,12 +265,12 @@ def main():
             freq = model.countFreqInFunc()
             # print sum(freq)
 
-        print 'enumerating all solutions'
-        if opt.fitName == 'fit':
-            bit,fit = tl.compFit(model)
+        # print 'enumerating all solutions'
+        # if opt.fitName == 'fit':
+        #     bit,fit = tl.compFit(model)
         # elif opt.fitName == 'mean':
         #     bit, fit = tl.compMean(model)
-        print max(fit)
+        # print max(fit)
         # bitF,fitF = tl.compFit(model)
         # for i in zip(bitF,fitF):
         #     print i[0],i[1]
@@ -406,7 +406,7 @@ def main():
                     if (opt.fitName == 'fit'):
                         for j in zip(res[i]['traceEval'], res[i]['traceFit']):
                             # print >>f,"%g\t%g" % (j[0], j[1])
-                            print >>f,"%.6f\t%.6f" % (j[0], j[1])
+                            print >>f,"%g\t%g" % (j[0], j[1])
                     else :
                         for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                             print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
