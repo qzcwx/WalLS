@@ -944,7 +944,7 @@ cdef class LocalSearch:
                         self.oldindiv.updatePertImprS(i, minimize)
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
                     # print 'step TLO', step, 'bsf', self.bsf.fit, '\n'
-                    print step, '\t', self.bsf.fit 
+                    # print step, '\t', self.bsf.fit 
                     traceEval.append(step)
                     traceFit.append(self.bsf.fit)
                     step = 0
@@ -1260,7 +1260,7 @@ cdef class LocalSearch:
                         
                     updatePertT = updatePertT + time.time() - start
                     # print 'step TLO', step, 'bsf', self.bsf.fit, '\n'
-                    print step, '\t', self.bsf.fit 
+                    # print step, '\t', self.bsf.fit 
                     traceEval.append(step)
                     traceFit.append(self.bsf.fit)
                     step = 0
