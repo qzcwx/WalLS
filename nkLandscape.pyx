@@ -41,7 +41,7 @@ cdef class NKLandscape:
     cdef public int c                            # number of clauses
     cdef public list neighs
     cdef public list f
-    cdef float** func
+    cdef double** func
     cdef list Kbits
     cdef public dict w
     cdef public list WA
@@ -115,14 +115,14 @@ cdef class NKLandscape:
         convert list of lists f to float matrix self.func
         """
         # allocate space for the matrix 
-        self.func = <float **>malloc(sizeof(float *) * len(self.f))
+        self.func = <double **>malloc(sizeof(double *) * len(self.f))
         for i in xrange(len(self.f)):
-            self.func[i] = <float *> malloc(sizeof(float) * len(self.f[i]) )
+            self.func[i] = <double *> malloc(sizeof(double) * len(self.f[i]) )
             for j in xrange(len(self.f[i])):
                 self.func[i][j] = self.f[i][j]
                 # print self.func[i][j]
 
-    cpdef float getFuncVal(self,i, j):
+    cpdef double getFuncVal(self,i, j):
         return self.func[i][j]
     
                 
@@ -184,11 +184,11 @@ cdef class NKLandscape:
     def genK(self):
         return self.k
 
-    cpdef float compFit(self, bitStr):
+    cpdef double compFit(self, bitStr):
         """ compute the fitness value"""
         #       print bitStr
         cdef int  i
-        cdef float s = 0.0
+        cdef double s = 0.0
         
         # self.subFit = np.empty(self.c)
         
@@ -217,7 +217,7 @@ cdef class NKLandscape:
         
 
     
-    cpdef float compSubFit(self, bitStr, i):
+    cpdef double compSubFit(self, bitStr, i):
         """
         compute i^th subfunction fitness value according to bitStr
         """ 
@@ -239,13 +239,13 @@ cdef class NKLandscape:
         
         return self.func[i][int(interStr,2)] 
         
-    # cpdef float sumTerm(self, list bitStr, int i, int p, int q):
+    # cpdef double sumTerm(self, list bitStr, int i, int p, int q):
     #     """
     #     compute the inner summation term 
         
     #     f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
     #     """
-    #     cdef float s = 0.0
+    #     cdef double s = 0.0
     #     cdef int j
     #     cdef list bits
     #     # cdef str pb, qb
