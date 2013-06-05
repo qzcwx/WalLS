@@ -142,7 +142,7 @@ def main():
     # maxFit = 100000
     
     runs = 1
-    maxFit = 200
+    maxFit = 1000
     
     # maxFit = 100
 
@@ -385,11 +385,11 @@ def main():
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'.txt'
                 
                 f = open(nameOfF, 'w')
-                
+                print >>f, 'step\tbest\t'
                 if (opt.fitName == 'fit'):
                     for j in zip(res[i]['traceEval'], res[i]['traceFit']):
                         # print j
-                        print >>f,"%g\t%g" % (j[0], j[1])
+                        print >>f,"%g\t%.8f" % (j[0], j[1])
                 else:
                     for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                         print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
