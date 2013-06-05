@@ -142,7 +142,7 @@ def main():
     # maxFit = 100000
     
     runs = 1
-    maxFit = 1000
+    maxFit = 200
     
     # maxFit = 100
 
@@ -351,7 +351,7 @@ def main():
                     print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
         f.close()
 
-        print nameOfF
+        # print nameOfF
         if opt.compMeth == 'countFreq':
             exit()
         

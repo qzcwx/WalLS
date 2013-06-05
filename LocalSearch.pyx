@@ -877,10 +877,11 @@ cdef class LocalSearch:
         updatePertT = 0
         updateT = 0
         self.fitEval = 0
-
+        
         traceEval = []
         traceFit = []
-
+        step = 0
+        
         # print self.MaxFit
         
         initT = time.time() - start
@@ -896,7 +897,6 @@ cdef class LocalSearch:
             # print 'steep', self.fitEval, improveN
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
-
 
             if improveN == False:
                 initC = initC + 1
@@ -921,6 +921,8 @@ cdef class LocalSearch:
                         self.oldindiv.updatePertImprS(i, minimize)
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
                     # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
+                    print step, '\t', self.bsf.fit
+                    step = 0                    
                 else:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
@@ -938,6 +940,7 @@ cdef class LocalSearch:
                 self.oldindiv.flip(bestI)
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
+                step = step + 1
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
@@ -977,18 +980,18 @@ cdef class LocalSearch:
         while self.fitEval < self.MaxFit:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
-            print bestI, self.oldindiv.improveA
-            print 'SumArr'
-            self.oldindiv.printSumArr()
+            # print bestI, self.oldindiv.improveA
+            # print 'SumArr'
+            # self.oldindiv.printSumArr()
             descT = descT + time.time() - start
 
             if improveN == False:
                 initC = initC + 1
                 if restart == True:
-                    print 'fit', self.oldindiv.fit
+                    # print 'fit', self.oldindiv.fit
                     diff, self.oldindiv = self.walk(fitName, minimize,False, walkLen, self.oldindiv)
                     pertT = pertT + time.time() - start
-                    print diff
+                    # print diff
                     
                     start = time.time()
                     for i in diff:
@@ -998,7 +1001,8 @@ cdef class LocalSearch:
                         self.oldindiv.updatePertImprS(i, minimize)
                         
                     updatePertT = updatePertT + time.time() - start
-                    print 'step', step, 'bsf', self.bsf.fit
+                    # print 'step', step, 'bsf', self.bsf.fit
+                    print step, '\t', self.bsf.fit
                     traceEval.append(step)
                     traceFit.append(self.bsf.fit)
                     step = 0

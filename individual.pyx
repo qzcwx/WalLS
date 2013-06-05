@@ -1030,7 +1030,7 @@ cdef class Individual:
             if (abs(best - self.sumArr[i])<self.threshold):
                 bestList.append(i)
         # bestList.sort()
-        print 'bestList', bestList
+        # print 'bestList', bestList
         return True, random.choice(bestList)
 
     def steepFitDescPartialUpdate(self, minimize):
