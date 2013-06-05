@@ -39,7 +39,7 @@ ctypedef struct InTer:
 
 ctypedef struct Was:
     int* arr
-    float w
+    double w
 
 ctypedef struct ComArr:
     int** arr
@@ -49,10 +49,10 @@ cdef class Individual:
     cdef InTer** Inter                    # the list of variables that interact with the ith variable
     cdef vector[InfBit*]** infectBit
     cdef Was* WAS
-    cdef float* SC
-    cdef float* Z
-    cdef float** C
-    cdef float** orderC
+    cdef double* SC
+    cdef double* Z
+    cdef double** C
+    cdef double** orderC
     # cdef Uelem** U
     cdef dict U
     # cdef public list improveA
@@ -62,13 +62,13 @@ cdef class Individual:
     cdef object func
     cdef object model
     cdef int MaxFit
-    cdef public float threshold
+    cdef public double threshold
     cdef int fitEval
     cdef ComArr** lookup 
-    cdef public float fit
-    cdef public float fitG
+    cdef public double fit
+    cdef public double fitG
     cdef public list bit
-    cdef float* sumArr
+    cdef double* sumArr
     cdef public int dim
     cdef public int addC
     cdef public int addWAS
@@ -133,14 +133,14 @@ cdef class Individual:
         self.model = model
 
         cdef int i,j,k
-        cdef float W
+        cdef double W
         # cdef InTer* inter
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
         cdef Was* was
 
-        self.sumArr = <float*>malloc(self.dim * sizeof(float))
+        self.sumArr = <double*>malloc(self.dim * sizeof(double))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
 
@@ -149,9 +149,9 @@ cdef class Individual:
             vectPtr = new vector[InfBit*]()
             self.infectBit[i] = vectPtr
 
-        self.C = <float **>malloc(sizeof(float *) * self.dim)
+        self.C = <double **>malloc(sizeof(double *) * self.dim)
         for i in xrange(self.dim) :
-            self.C[i] = <float *> malloc(sizeof(float) * self.dim)
+            self.C[i] = <double *> malloc(sizeof(double) * self.dim)
             for j in xrange(self.dim):
                 self.C[i][j] = 0
 
@@ -214,14 +214,14 @@ cdef class Individual:
         self.model = model
 
         cdef int i,j,k,l,j0,j1,pos
-        cdef float W
+        cdef double W
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
         cdef Was* was
         # cdef Uelem* uelem
 
-        self.sumArr = <float*>malloc(self.dim * sizeof(float))
+        self.sumArr = <double*>malloc(self.dim * sizeof(double))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
             
@@ -362,7 +362,7 @@ cdef class Individual:
 
         # start = time.time() 
         # initialize S vector, first derivative
-        self.sumArr = <float*>malloc(self.dim * sizeof(float))
+        self.sumArr = <double*>malloc(self.dim * sizeof(double))
         for i in xrange(self.dim):
             self.sumArr[i] = 0
         # print time.time() - start
@@ -415,12 +415,12 @@ cdef class Individual:
         # self.Z = np.zeros(self.dim)
         # self.orderC = np.zeros((self.dim,self.dim))
 
-        self.SC = <float *>malloc(self.dim* sizeof(float))
-        self.Z = <float *>malloc(self.dim* sizeof(float))
+        self.SC = <double *>malloc(self.dim* sizeof(double))
+        self.Z = <double *>malloc(self.dim* sizeof(double))
 
-        self.orderC = <float **>malloc(sizeof(float *) * self.dim)
+        self.orderC = <double **>malloc(sizeof(double *) * self.dim)
         for i in xrange(self.dim) :
-            self.orderC[i] = <float *> malloc(sizeof(float) * self.dim)
+            self.orderC[i] = <double *> malloc(sizeof(double) * self.dim)
 
         for p in range(self.dim):
             phi = np.zeros(self.model.k+1)
@@ -557,7 +557,7 @@ cdef class Individual:
         complexity of ck(k-1)2^{k-2}
         """
         cdef int i,ii
-        cdef float s
+        cdef double s
         cdef set[int].iterator it
         cdef list wList
 
@@ -1486,14 +1486,14 @@ cdef class Individual:
         self.sumArr[q] = - self.sumArr[q]
         
         
-    cdef float sumTerm(self, list bitStr, int i, int p, int q):
+    cdef double sumTerm(self, list bitStr, int i, int p, int q):
         """
         compute the inner summation term, flip p and q bits for i
         subfunction
         
         f_i(x^{qp}) - f_i(x^{q}) - f_i(x^{p}) + f_i(x)
         """
-        cdef float s, saveDiffp,
+        cdef double s, saveDiffp,
         cdef int j, realI, pI, qI
         cdef list bits
 
@@ -1578,8 +1578,8 @@ cdef int binCount(list arr, list bit):
             s = s + 1
     return s
 
-cdef float sumC(float * a, int d):
-    cdef float s = 0
+cdef double sumC(double * a, int d):
+    cdef double s = 0
 
     for i in xrange(d):
         s = s+a[i]
