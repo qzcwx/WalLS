@@ -8,30 +8,30 @@ class Struct:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w,m,t,e):
+def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w,m,t,e,l):
     """ check whether the results have been produced or not """
     if probName == 'NKQ':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-M'+m+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-Q'+str(q)+'-T'+str(t)+'-E'+str(e)+'.txt'
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-M'+m+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-Q'+str(q)+'-T'+str(t)+'-E'+str(e)+'-L'+str(l)+'.txt'
     elif probName == 'NK' or probName == 'NonNK':
-        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+str(c)+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-E'+str(e)+'.txt'
+        nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+str(c)+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-E'+str(e)+'-L'+str(l)+'.txt'
 
     if os.path.isfile(nameOfF)==True:
         print nameOfF, 'exists!!!'
     return os.path.isfile(nameOfF)
 
-def countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,count):
-    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t,e) == False:
+def countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,l,count):
+    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t,e,l) == False:
         return count + 1
     else:
         return count
 
-def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track):
-    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t,e) == False:
+def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,e,l,chunkSize, track):
+    if resultExist(p,a,f,i,s,c,n,k,q,w,m,t,e,l) == False:
         scriptNo = random.randint(0,len(track)-1)
         fName = 'run-'+str(track[scriptNo].num)+'.sh'
         fileName = open(fName, 'a')
         # fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m'+m+' -t '+str(t)+' -e '+str(e)+' '+'&\n')
-        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+'\n')
+        fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+' -l '+str(l)+' '+'\n')
         # fileName.write('nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+'\n')
         fileName.close()
 
@@ -98,8 +98,10 @@ if __name__== "__main__":
     rseed = 0
     overWrite = 0
 
-    nRange = [20,50,100,150,200,250,300,350,400,450,500]
-    kRange = [2,4]
+    # nRange = [20,50,100,150,200,250,300,350,400,450,500]
+    nRange = [500]
+    # kRange = [2,4]
+    kRange = [4]
     # kRange = [6]
 
     # nRange = [500,2000,10000,50000]
@@ -138,49 +140,54 @@ if __name__== "__main__":
     # mRange = ['bfUpdateTLO']
     # mRange = ['walTLONextU']
     # mRange = ['walRestNextU']
-    mRange = ['walRestU','walWalkU']
-    
-    pRange = ['NK','NonNK']
+    # mRange = ['walRestU','walWalkU']
+    mRange = ['walWalkU']
 
+    # pRange = ['NK','NonNK']
+    pRange = ['NonNK']
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)
     # wRange = temp  # [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     #wRange = [1, 5]
     wRange = [1]
 
+    lRange = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500]
+
+    # print len(lRange)
     random.seed(rseed)
 
     """ the first pass count the number of jobs needed to be run """
     for k in kRange:
         for n in nRange :
-            for i in iRange :
-                for e in eRange:
-                    for a in aRange :
-                        for m in mRange:
-                            for f in fRange :
-                                for t in tRange:
-                                    # for c in cRange :
-                                    for v in vRange:
-                                        c = int(n*v)
-                                        for p in pRange :
-                                            if p == 'NKQ':
-                                                for q in [2]:
+            for l in lRange:
+                for i in iRange :
+                    for e in eRange:
+                        for a in aRange :
+                            for m in mRange:
+                                for f in fRange :
+                                    for t in tRange:
+                                        # for c in cRange :
+                                        for v in vRange:
+                                            c = int(n*v)
+                                            for p in pRange :
+                                                if p == 'NKQ':
+                                                    for q in [2]:
+                                                        if a == 'LS' or a == 'rLS':
+                                                            for w in wRange :
+                                                                s = 1
+                                                                count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,l,count)
+                                                        else: # if the algorithm is population-based, for GA and CHC
+                                                           for s in [30]:
+                                                               count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,l,count)
+                                                elif p == 'NK' or p == 'NonNK': # for NK problem
+                                                    q = 0
                                                     if a == 'LS' or a == 'rLS':
                                                         for w in wRange :
                                                             s = 1
-                                                            count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,count)
+                                                            count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,l,count)
                                                     else: # if the algorithm is population-based, for GA and CHC
-                                                       for s in [30]:
-                                                           count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,count)
-                                            elif p == 'NK' or p == 'NonNK': # for NK problem
-                                                q = 0
-                                                if a == 'LS' or a == 'rLS':
-                                                    for w in wRange :
-                                                        s = 1
-                                                        count =  countJobs(p,a,f,i,s,c,n,k,q,w,m,t,e,count)
-                                                else: # if the algorithm is population-based, for GA and CHC
-                                                    for s in [30]:
-                                                        count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,count)
+                                                        for s in [30]:
+                                                            count = countJobs(p,a,f,i,s,c,n,k,q,1,m,t,e,l,count)
 
     totalJobs = count
 
@@ -194,34 +201,35 @@ if __name__== "__main__":
 
     for k in kRange:
         for n in nRange :
-            for i in iRange :
-                for e in eRange:
-                    for a in aRange :
-                        for m in mRange:
-                            for f in fRange :
-                                for t in tRange:
-                                    # for c in cRange :
-                                    for v in vRange:
-                                        c = int(n*v)
-                                        for p in pRange :
-                                            if p == 'NKQ':
-                                                for q in [2]:
+            for l in lRange:
+                for i in iRange :
+                    for e in eRange:
+                        for a in aRange :
+                            for m in mRange:
+                                for f in fRange :
+                                    for t in tRange:
+                                        # for c in cRange :
+                                        for v in vRange:
+                                            c = int(n*v)
+                                            for p in pRange :
+                                                if p == 'NKQ':
+                                                    for q in [2]:
+                                                        if a == 'LS' or a == 'rLS':
+                                                            for w in wRange :
+                                                                s = 1
+                                                                writeScript(p,a,f,i,s,c,n,k,q,w,m,t,e,l,chunkSize, track)
+                                                        else: # if the algorithm is population-based, for GA and CHC
+                                                            for s in [30]:
+                                                                writeScript(p,a,f,i,s,c,n,k,q,1,m,t,e,l,chunkSize, track)
+                                                elif p == 'NK' or p == 'NonNK': # for NK problem
+                                                    q = 0
                                                     if a == 'LS' or a == 'rLS':
                                                         for w in wRange :
                                                             s = 1
-                                                            writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track)
+                                                            writeScript(p,a,f,i,s,c,n,k,q,w,m,t,e,l,chunkSize, track)
                                                     else: # if the algorithm is population-based, for GA and CHC
                                                         for s in [30]:
-                                                            writeScript(p,a,f,i,s,c,n,k,q,1,m,t,chunkSize, track)
-                                            elif p == 'NK' or p == 'NonNK': # for NK problem
-                                                q = 0
-                                                if a == 'LS' or a == 'rLS':
-                                                    for w in wRange :
-                                                        s = 1
-                                                        writeScript(p,a,f,i,s,c,n,k,q,w,m,t,chunkSize, track)
-                                                else: # if the algorithm is population-based, for GA and CHC
-                                                    for s in [30]:
-                                                        writeScript(p,a,f,i,s,c,n,k,q,1,m,t,chunkSize, track)
+                                                            writeScript(p,a,f,i,s,c,n,k,q,1,m,t,e,l,chunkSize, track)
 
     # writeFooter(totalJobs, chunkSize)
 
