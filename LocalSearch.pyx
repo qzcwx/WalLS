@@ -54,7 +54,7 @@ cdef class LocalSearch:
         self.MaxFit = MaxFit
         self.dim = dim
         
-    cpdef run(self, fitName, minimize, restart, compM, beamWidth=1):
+    cpdef run(self, fitName, minimize, restart, compM, beamWidth=1, walklen = 10):
         if compM == 'bf':
             if fitName =='fit':
                 return self.runFit(minimize,restart)
@@ -109,6 +109,9 @@ cdef class LocalSearch:
         elif compM == 'walWalkU':                        # walk-Walsh-LS
             if fitName == 'fit':         
                 return self.runFitSwalkU(fitName, minimize, restart)
+        elif compM == 'walWalkULen':                        # walk-Walsh-LS with variable length
+            if fitName == 'fit':         
+                return self.runFitSwalkULen(fitName, minimize, restart, walklen)
         elif compM == 'walRestUDist':              # exact-Walsh-LS dist, fitness distribution of local optima
             if fitName == 'fit':
                 return self.runFitSrestUDist(fitName, minimize, restart)
@@ -1289,7 +1292,105 @@ cdef class LocalSearch:
         # print 'init', initC, 'update', updateC
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
 
+    cdef runFitSwalkULen(self,fitName, minimize, restart, walklen):
+        """
+        walk-Walsh-LS
+        steepest descent local search running on S, without using C matrix, instead, using the U
 
+        replace random restart with random walk
+        """
+        start = time.time()
+        self.fitEval = 0
+        self.model.transWal()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        self.oldindiv = self.evalPop(self.oldindiv)
+        self.oldindiv.initWalU(self.model)
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        self.oldindiv.genImproveS(minimize)
+        initC = 1
+        updateC = 0
+        
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+        walkLen = walklen
+        
+        traceEval = []
+        traceFit = []
+        flip = []
+        diff = []
+        backC = 0
+        step =0 
+        
+        initT = time.time() - start
+        
+        while self.fitEval < self.MaxFit:
+            start = time.time()
+            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            # print 'flip', bestI, 'Impr', self.oldindiv.improveA
+            
+            # print 'SumArr'
+            # self.oldindiv.printSumArr()
+            descT = descT + time.time() - start
+            
+            if improveN == False:
+                initC = initC + 1
+                # print 'diff', Set(diff)
+                # print 'flip', Set(flip)
+                if Set(diff) == Set(flip):
+                    # print 'fall back'
+                    backC = backC + 1
+                    
+                flip = []
+                if restart == True:
+                    # print 'local optima', self.oldindiv.fit
+                    diff, self.oldindiv = self.walk(fitName, minimize,False, walkLen, self.oldindiv)
+                    pertT = pertT + time.time() - start
+                    
+                    start = time.time()
+                    # print 'random walk', diff
+                    for i in diff:
+                        self.oldindiv.updateEval(i)
+                        self.oldindiv.updateU(i)
+                        self.oldindiv.updateWAS(i)
+                        self.oldindiv.updatePertImprS(i, minimize)
+                        
+                    updatePertT = updatePertT + time.time() - start
+                    # print 'step TLO', step, 'bsf', self.bsf.fit, '\n'
+                    # print step, '\t', self.bsf.fit 
+                    traceEval.append(step)
+                    traceFit.append(self.bsf.fit)
+                    step = 0
+                    # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE
+                flip.append(bestI)
+                start = time.time()
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                # print 'updateEval'
+                self.oldindiv.updateEval(bestI)
+                # print 'update'
+                self.oldindiv.updateU(bestI)
+                # print 'updateWAS'
+                self.oldindiv.updateWAS(bestI)
+                # print 'updateImprS'
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+                step = step + 1 
+        # print 'dest'
+        self.oldindiv.destructorWalU(fitName)
+        # print 'init', initC, 'update', updateC
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
+
+
+    
     cdef runFitSrestUDist(self,fitName, minimize, restart):
         """
         steepest descent local search running on S, without using C
