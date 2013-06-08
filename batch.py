@@ -129,9 +129,7 @@ if __name__== "__main__":
 
     # eRange = [10,20,100]
     eRange = [0]
-
     tRange = [7]
-
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
@@ -141,8 +139,7 @@ if __name__== "__main__":
     # mRange = ['walTLONextU']
     # mRange = ['walRestNextU']
     # mRange = ['walRestU','walWalkU']
-    mRange = ['walWalkU']
-
+    mRange = ['walWalkULen']
     # pRange = ['NK','NonNK']
     pRange = ['NonNK']
     # temp = [5*a for a in range(1,11)]
@@ -150,7 +147,6 @@ if __name__== "__main__":
     # wRange = temp  # [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     #wRange = [1, 5]
     wRange = [1]
-
     lRange = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500]
 
     # print len(lRange)
