@@ -100,7 +100,7 @@ cdef class LocalSearch:
         elif compM == 'walRestU':                       # exact-Walsh-LS
             if fitName == 'fit':
                 return self.runFitSrestU(fitName, minimize, restart)
-        elif compM == 'walRestNextU':                       # next-Walsh-LS
+        elif compM == 'walRestNextU':                       # Walsh-FILS
             if fitName == 'fit':
                 return self.runFitSrestNextU(fitName, minimize, restart)
         elif compM == 'walTLONextU':                       # next-Walsh-LS to first local optima
@@ -888,7 +888,7 @@ cdef class LocalSearch:
         # self.oldindiv.printSumArr()        
         # self.oldindiv.printWAS()
         # self.oldindiv.printWalU()
-                
+
         descT = 0
         pertT = 0
         updatePertT = 0
@@ -1013,10 +1013,11 @@ cdef class LocalSearch:
         updatePertT = 0
         updateT = 0
         self.fitEval = 0
-
+        backC = 0
+        
         traceEval = []
         traceFit = []
-
+        
         # print self.MaxFit
         
         initT = time.time() - start
@@ -1032,7 +1033,7 @@ cdef class LocalSearch:
             # print 'steep', self.fitEval, improveN
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
-
+            
             if improveN == False:
                 initC = initC + 1
                 if restart == True:
@@ -1076,7 +1077,7 @@ cdef class LocalSearch:
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
-        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
 
     cdef runFitSTLONextU(self,fitName, minimize, restart):
         """
