@@ -5,6 +5,7 @@ import random
 import copy
 import time
 # import tool as tl
+from sets import Set
 
 # import for Cython
 cimport cython
@@ -52,7 +53,7 @@ cdef class Individual:
     cdef double** C
     cdef double** orderC
     cdef Uelem** U
-    cdef public list improveA
+    cdef public object improveA
     cdef public list improveSC
     cdef object func
     cdef object model
@@ -624,7 +625,7 @@ cdef class Individual:
                 """ NOT equal moves """
                 if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
-                        self.improveA.append(i)
+                        self.improveA.add(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
                 inc(it)
@@ -672,7 +673,7 @@ cdef class Individual:
                 """ NOT equal moves """
                 if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold ):
                     if i not in self.improveA:
-                        self.improveA.append(i)
+                        self.improveA.add(i)
                 elif i in self.improveA:
                     self.improveA.remove(i)
                 inc(it)
@@ -682,7 +683,7 @@ cdef class Individual:
         """ NOT equal move """
         if (minimize == True and self.sumArr[p] > self.threshold) or (minimize == False and self.sumArr[p] < - self.threshold ):
             if p not in self.improveA:
-                self.improveA.append(p)
+                self.improveA.add(p)
         elif p in self.improveA:
             self.improveA.remove(p)
 
@@ -830,11 +831,12 @@ cdef class Individual:
         generate the index of best neigh according to sumArr only (surrogate of fitness)
         """
         # check improving move
-        self.improveA = []
+        # self.improveA = []
+        self.improveA = Set()
         for i in range(self.dim):
             if (minimize == True and self.sumArr[i] > self.threshold) or (minimize == False and self.sumArr[i]< - self.threshold):            # NOT equal moves
             # if (minimize == True and self.sumArr[i] > - self.threshold) or (minimize == False and self.sumArr[i] < self.threshold):              equal move
-                self.improveA.append(i)
+                self.improveA.add(i)
                 
     def genImproveSpartialUpdate(self,minimize):
         """
@@ -1011,27 +1013,62 @@ cdef class Individual:
     ##     return True, bestI
 
     def steepFitDesc(self, minimize):
+        # pick take the move that yields the most improvement in evaluation
         if not self.improveA:
             return False, None
         bestList = []
-
+        
         # random.shuffle(self.improveA)
 
+        init = False
+        # find the best evaluation
         for i in self.improveA:
-            if i == self.improveA[0]:
-                best = self.sumArr[i]
-                # bestI = i
-            #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+            if init == False:
+                best = self.sumArr[i] 
+                init = True
             elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
                 best = self.sumArr[i]
-                # bestI = i
+            
+            # if i == self.improveA[0]:
+            #     best = self.sumArr[i]
+            #     # bestI = i
+            # #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+            # elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
+            #     best = self.sumArr[i]
+            #     # bestI = i
 
+        # locate equally good best-moves
         for i in self.improveA:
+            # if (abs(best - self.sumArr[i])<self.threshold):
             if (abs(best - self.sumArr[i])<self.threshold):
                 bestList.append(i)
+                
         # bestList.sort()
+        # print 'bestList', bestList
+        return True, random.choice(bestList)    
+    
+    # def steepFitDesc(self, minimize):
+    #     if not self.improveA:
+    #         return False, None
+    #     bestList = []
 
-        return True, random.choice(bestList)
+    #     # random.shuffle(self.improveA)
+
+    #     for i in self.improveA:
+    #         if i == self.improveA[0]:
+    #             best = self.sumArr[i]
+    #             # bestI = i
+    #         #elif (best<self.sumArr[i] - self.threshold and minimize == True) or (best>self.sumArr[i] + self.threshold and minimize == False):
+    #         elif (best<self.sumArr[i] + self.threshold and minimize == True) or (best > self.sumArr[i] - self.threshold and minimize == False):
+    #             best = self.sumArr[i]
+    #             # bestI = i
+
+    #     for i in self.improveA:
+    #         if (abs(best - self.sumArr[i])<self.threshold):
+    #             bestList.append(i)
+    #     # bestList.sort()
+
+    #     return True, random.choice(bestList)
 
     def steepFitDescPartialUpdate(self, minimize):
         if not self.improveA:
@@ -1096,6 +1133,21 @@ cdef class Individual:
 
     ##     return True, bestI, evalCount
 
+    # def nextDesc(self):
+    #     """
+    #     find the next improving move by the similar update trick
+    #     """
+    #     if not self.improveA:
+    #         return False, None
+
+    #     # randomly pick an improving move, which takes only constant time
+    #     bestI = random.choice(self.improveA)
+
+    #     # for i in range(self.dim):
+    #     #     print self.sumArr[i]
+
+    #     return True, bestI
+
     def nextDesc(self):
         """
         find the next improving move by the similar update trick
@@ -1104,13 +1156,13 @@ cdef class Individual:
             return False, None
 
         # randomly pick an improving move, which takes only constant time
-        bestI = random.choice(self.improveA)
-
+        # bestI = random.choice(self.improveA)
+        bestI = self.improveA.pop()
+        
         # for i in range(self.dim):
         #     print self.sumArr[i]
-
+        
         return True, bestI
-
 ##     def updateFitBest2(self, P, minimize):
 ##         """
 ##         generate the index of best distance 2 neighborhoods according to sumArr only (surrogate of fitness), by performing partial updates
