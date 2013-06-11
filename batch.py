@@ -116,7 +116,7 @@ if __name__== "__main__":
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']
-    mRange = ['walWalkU','walRestU']
+    mRange = ['walRestNextU']
     
     pRange = ['NK','NonNK']
 

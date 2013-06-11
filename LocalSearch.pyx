@@ -984,11 +984,11 @@ cdef class LocalSearch:
         traceEval = []
         traceFit = []
 
-        s1 = 0
-        s2 = 0
-        s3 = 0
-        s4 = 0
-        s5 = 0
+        # s1 = 0
+        # s2 = 0
+        # s3 = 0
+        # s4 = 0
+        # s5 = 0
         # print self.MaxFit
         
         initT = time.time() - start
@@ -1035,26 +1035,25 @@ cdef class LocalSearch:
             else : # improveN is TRUE
                 start = time.time()
 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateEval(bestI)
-                s1 = s1 + time.time() - start1  
+                # s1 = s1 + time.time() - start1  
 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateU(bestI)
-                s2 = s2 + time.time() - start1  
+                # s2 = s2 + time.time() - start1  
 
-                
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateWAS(bestI)
-                s3 = s3 + time.time() - start1  
+                # s3 = s3 + time.time() - start1  
 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.updateImprS(bestI, minimize)
-                s4 = s4 + time.time() - start1  
+                # s4 = s4 + time.time() - start1  
                 
-                start1 = time.time()
+                # start1 = time.time()
                 self.oldindiv.flip(bestI)
-                s5 = s5 + time.time() - start1  
+                # s5 = s5 + time.time() - start1  
                 
                 updateT = updateT + time.time() - start
                 
@@ -1064,7 +1063,7 @@ cdef class LocalSearch:
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
-        print '%g\t%g\t%g\t%g\t%g' %(s1, s2, s3, s4, s5)
+        # print '%g\t%g\t%g\t%g\t%g' %(s1, s2, s3, s4, s5)
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit}
 
     

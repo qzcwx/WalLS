@@ -351,7 +351,7 @@ def main():
                     print >>f,"%g\t%g" % (res[i]['sol'], res[i]['nEvals'])
         f.close()
 
-        print nameOfF
+        # print nameOfF
         if opt.compMeth == 'countFreq':
             exit()
         
