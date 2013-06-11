@@ -1017,7 +1017,13 @@ cdef class LocalSearch:
         
         traceEval = []
         traceFit = []
-        
+
+        s1 = 0
+        s2 = 0
+        s3 = 0
+        s4 = 0
+        s5 = 0
+                
         # print self.MaxFit
         
         initT = time.time() - start
@@ -1061,22 +1067,36 @@ cdef class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
                 start = time.time()
-                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
-                # print 'updateEval'
+                
+                start1 = time.time()
                 self.oldindiv.updateEval(bestI)
-                # print 'update'
+                s1 = s1 + time.time() - start1
+
+                start1 = time.time()
                 self.oldindiv.updateU(bestI)
-                # print 'updateWAS'
+                s2 = s2 + time.time() - start1
+    
+                start1 = time.time()
                 self.oldindiv.updateWAS(bestI)
-                # print 'updateImprS'
+                s3 = s3 + time.time() - start1
+
+                start1 = time.time()
                 self.oldindiv.updateImprS(bestI, minimize)
-                self.fitEval = self.fitEval + 1
+                s4 = s4 + time.time() - start1
+
+                start1 = time.time()
                 self.oldindiv.flip(bestI)
+                s5 = s5 + time.time() - start1
+                
                 updateT = updateT + time.time() - start
                 updateC = updateC + 1
+                self.fitEval = self.fitEval + 1
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
+
+        print "%.2e\t%.2e\t%.2e\t%.2e\t%.2e" %(s1,s2,s3,s4, s5)
+
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
 
     cdef runFitSTLONextU(self,fitName, minimize, restart):
@@ -3035,15 +3055,11 @@ cdef class LocalSearch:
         descT = 0
         updateT = 0
         
-        # s1 = 0
-        # s2 = 0
-        # s3 = 0
-        # s4 = 0
-        
-        # place holder
+        s1 = 0
+        s2 = 0
+        s3 = 0
+        s4 = 0
 
-        # print 'start search'
-        
         initT = time.time() -start
 
         # print "%.2e\t%.2e\t%.2e\t%.2e" %(t0,t1,t2,t3)
