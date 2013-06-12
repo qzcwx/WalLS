@@ -35,8 +35,6 @@ ctypedef struct Uelem:                      # each element in the U array/matrix
 ctypedef struct InTer:
     set[int]* arr
     set[int]* WI
-    # object arr
-    # object WI
 
 ctypedef struct Was:
     int* arr
@@ -749,7 +747,7 @@ cdef class Individual:
                 ii = deref(it)
                 self.WAS[ii].w = - self.WAS[ii].w
                 inc(it)
-                self.updateWAScount = self.updateWAScount + 1
+                # self.updateWAScount = self.updateWAScount + 1
                 # count = count + 1
                 
         # print count
@@ -1246,12 +1244,11 @@ cdef class Individual:
             if (minimize == True and self.SC[i] > - self.threshold) or (minimize == False and self.SC[i] < self.threshold):
                 self.improveSC.append(i)
 
-    cpdef flip(self, i):
+    cpdef flip(self, int i):
         if self.bit[i]=='0':
             self.bit[i]='1'
         else:
             self.bit[i]='0'
-        # print self.bit
             
     cpdef destructorWal(self,fitName):
         """ 
