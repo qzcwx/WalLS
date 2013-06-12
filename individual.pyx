@@ -35,6 +35,8 @@ ctypedef struct Uelem:                      # each element in the U array/matrix
 ctypedef struct InTer:
     set[int]* arr
     set[int]* WI
+    # object arr
+    # object WI
 
 ctypedef struct Was:
     int* arr

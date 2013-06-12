@@ -25,7 +25,7 @@ import individual
 cimport cython
 from cython.parallel import prange, parallel, threadid
 from libcpp.vector cimport vector
-from libcpp.set cimport set
+# from libcpp.set cimport set
 from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref, preincrement as inc
 
