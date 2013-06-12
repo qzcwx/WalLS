@@ -66,6 +66,7 @@ cdef class Individual:
     cdef public list bit
     cdef double* sumArr
     cdef public int dim
+    cdef public int updateWAScount
     
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         # self.bit = NULL
@@ -565,7 +566,6 @@ cdef class Individual:
         without C matrix
         """
         cdef int i,ii, k0, k1, k, pos
-        cdef int len1
         cdef double s
         cdef set[int].iterator it
         cdef vector[int].iterator itt
@@ -734,9 +734,9 @@ cdef class Individual:
                 else:
                     self.sumArrFake[i] = self.sumArrFake[i] - 2*self.Cfake[p,i]
                     
-    cpdef updateWAS(self,p):
+    cpdef updateWAS(self, p):
         cdef int ii
-
+        # cdef int count = 0
         cdef set[int].iterator it
         
         # if p in self.model.Inter:
@@ -747,7 +747,11 @@ cdef class Individual:
                 ii = deref(it)
                 self.WAS[ii].w = - self.WAS[ii].w
                 inc(it)
-
+                self.updateWAScount = self.updateWAScount + 1
+                # count = count + 1
+                
+        # print count
+                
     def updateSC(self, p):
         cdef int i,ii, k0, k1
         cdef int len1
