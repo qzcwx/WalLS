@@ -83,6 +83,13 @@ def main():
                         default=0,
                         type=int,
                         )
+    parser.add_argument('-d',
+                        action="store",
+                        help="Radius of Hamming Spheres/Balls",
+                        dest="radius",
+                        default=1,
+                        type=int,
+                        )
     parser.add_argument('-w',
                         action="store",
                         help="Width of Beam",
@@ -141,6 +148,8 @@ def main():
     prefixNK = './benchmark/NK/'
     prefixNKQ = './benchmark/NKQ/'
 
+    print 'radius', opt.radius
+    
     # print opt.rseed
     random.seed(opt.rseed)
 
