@@ -148,7 +148,7 @@ def main():
     prefixNK = './benchmark/NK/'
     prefixNKQ = './benchmark/NKQ/'
 
-    print 'radius', opt.radius
+    # print 'radius', opt.radius
     
     # print opt.rseed
     random.seed(opt.rseed)
@@ -242,7 +242,7 @@ def main():
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
             
         # Walsh analysis
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walWalkULen' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU':
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walWalkULen' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU' or opt.compMeth == 'walHS' or opt.compMeth == 'walBS':
             start = time.time()
             w = model.WalshCofLinearLinklist()
             walTime = time.time() - start
@@ -335,7 +335,7 @@ def main():
             elif opt.algoName == 'LS':
                 res.append(algo.run(opt.fitName, minimize = False, restart = False,compM = opt.compMeth, beamWidth=opt.w ))
             elif opt.algoName == 'rLS':
-                res.append(algo.run(opt.fitName, minimize = False, restart = True,compM = opt.compMeth, beamWidth=opt.w, walklen = opt.l))
+                res.append(algo.run(opt.fitName, minimize = False, restart = True,compM = opt.compMeth, beamWidth=opt.w, walklen = opt.l, radius = opt.radius))
             elif opt.algoName.find('CHC') != -1:
                 res.append(algo.run(model.compFit, maxFit,  opt.popSize, opt.n, D, DR, M, opt.fitName))
             tAll[i] = time.time() - start
