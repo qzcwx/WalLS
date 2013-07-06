@@ -5,6 +5,7 @@ import random
 import copy
 import time
 from sets import Set
+import scipy.misc
 
 # import for Cython
 cimport cython
@@ -246,6 +247,8 @@ cdef class Individual:
             # |Q|*n operation should be at least n^2
             W = int(math.pow(-1, binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w
             
+            print W
+            
             was = <Was *>malloc(sizeof(Was))
             was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
             for j in xrange(len(self.model.WA[i].arr)):
@@ -335,7 +338,96 @@ cdef class Individual:
     #                     inc(it)
     #             else:
     #                 print i, j, 'not'
+
+    def initWalUHS(self, model, radius):
+
+        print radius
+        self.model = model
+
+        cdef int i,j,k,l,j0,j1,pos, chooseFactor, bc
+        cdef double W
+        cdef vector[InfBit*]* vectPtr
+        cdef InfBit* strPtr
+        cdef ComArr* comb
+        cdef Was* was
+        # cdef Uelem* uelem
+        
+        self.sumArr = <double*>malloc(self.dim * sizeof(double))
+        for i in xrange(self.dim):
+            self.sumArr[i] = 0
             
+        self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
+        self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
+        for i in xrange(self.dim):
+            self.lookup[i] = NULL
+
+        self.Inter = < InTer** > malloc(sizeof(void *)*self.dim)
+        for i in xrange(self.dim):
+            self.Inter[i] = NULL
+            
+        # initialize U array
+        
+        # l = (self.model.c * (self.model.c-1))/2
+        # self.U = < Uelem** > malloc( sizeof(void *) * l )
+        # for i in xrange(l):
+        #     self.U[i] = NULL
+        self.U = dict()
+
+        chooseFactor = scipy.misc.comb(self.dim, radius, exact=True)
+        print 'choose', chooseFactor
+        for i in xrange(len(self.model.WA)):
+            # |Q|*n operation should be at least n^2
+            bc = binCount(self.model.WA[i].arr, self.bit)
+            W = int(math.pow(-1, bc)) * self.model.WA[i].w / chooseFactor * gamma(self.dim, bc, radius)
+            # W = int(math.pow(-1, bc)) * self.model.WA[i].w 
+
+            print W
+            
+            was = <Was *>malloc(sizeof(Was))
+            was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
+            for j in xrange(len(self.model.WA[i].arr)):
+                was[0].arr[j] = self.model.WA[i].arr[j]
+            was[0].w = W
+            self.WAS[i] = was[0]
+
+            for j in self.model.WA[i].arr:
+                self.sumArr[j] = self.sumArr[j] + W
+
+            if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
+                for j in self.model.WA[i].arr:   # 
+                    #if not self.Inter[j]: # the entry of i doesn't exist yet
+                    if self.Inter[j] == NULL: 
+                        inter = <InTer*> malloc(sizeof(InTer))
+                        inter[0].arr = new set[int]()
+                        inter[0].WI = new set[int]()
+                        self.Inter[j] = inter
+                        
+                    for k in self.model.WA[i].arr:   # k^2 part
+                        if k != j :
+                            self.Inter[j].arr.insert(k)
+                    self.Inter[j].WI.insert(i)
+                    
+                # add entries in U matrix, k^2 part 
+                comb = self.genComb(len(self.model.WA[i].arr)) 
+                # print self.model.WA[i].arr   
+                for j in xrange(comb.size):
+                    j0 = self.model.WA[i].arr[comb.arr[j][0]] 
+                    j1 = self.model.WA[i].arr[comb.arr[j][1]] 
+
+                    # calculate the position in U
+                    if j0<=j1:
+                        if (j0,j1) not in self.U:
+                            self.U[(j0,j1)] = [i]
+                        else:
+                            self.U[(j0,j1)].append(i)
+                    else:                 # j0>j1
+                        if (j1,j0) not in self.U:
+                            self.U[(j1,j0)] = [i]
+                        else:
+                            self.U[(j1,j0)].append(i)
+                        
+
+    
     def printWAS(self):
         """
         print WAS array, all Walsh terms
@@ -1585,6 +1677,17 @@ cdef double sumC(double * a, int d):
         s = s+a[i]
 
     return s
+
+cdef gamma(int n, int j, int r):
+    # calculate Krawtchouk polynomials
+    # \sum_{i=0}^{r} {j\choose i}{n-j\choose r-i}(-1)^{i}
+    cdef int i
+    cdef int s = 0
+    for i in xrange(0,r+1):
+        s = s + scipy.misc.comb(j, i, exact=True) * scipy.misc.comb(n-j, r-i, exact=True) * pow(-1, i)
+    print s
+    return s
+    
 
 # @cython.cdivision(True)
 # cdef int biomial(int N, int K) nogil:

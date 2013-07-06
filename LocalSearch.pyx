@@ -54,7 +54,7 @@ cdef class LocalSearch:
         self.MaxFit = MaxFit
         self.dim = dim
         
-    cpdef run(self, fitName, minimize, restart, compM, beamWidth=1, walklen = 10, radius = 1):
+    cpdef run(self, fitName, minimize, restart, compM, beamWidth=1, walklen = 10, radius = 0):
         if compM == 'bf':
             if fitName =='fit':
                 return self.runFit(minimize,restart)
@@ -1003,7 +1003,7 @@ cdef class LocalSearch:
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
         # print 'initWalU'
-        self.oldindiv.initWalU(self.model)
+        self.oldindiv.initWalUHS(self.model, radius)
         # self.oldindiv.genWalU()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         # print 'initWal'
