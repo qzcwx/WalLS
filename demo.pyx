@@ -356,7 +356,7 @@ def main():
         if opt.probName == 'NKQ':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
 
         # print nameOfF     # print result
     #    """ print the mean over multiple runs """
@@ -385,18 +385,18 @@ def main():
         if (opt.compMeth != 'bf'  and opt.compMeth!='partEval') and (opt.fitName == 'switchF' or opt.fitName == 'switchAvg' or opt.fitName == 'combF' or opt.fitName == 'combAvg'):
             """ store trace to files: 1. the number of descent steps """
             if opt.probName == 'NKQ':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
             f = open(nameOfF, 'w')
             for i in range(runs):
                 print >>f,"%g\t%g\t%g" % (res[i]['platC'], res[i]['restC'], res[i]['updateC'])
             f.close()
         else:
             if opt.probName == 'NKQ':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
-                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+                nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
 
             if 'TLO' not in opt.compMeth:
                 f = open(nameOfF, 'w')
@@ -411,9 +411,9 @@ def main():
 
             for i in range(runs):
                 if opt.probName == 'NKQ':
-                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
-                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+                    nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
 
                 if 'TLO' not in opt.compMeth :
                     f = open(nameOfF, 'w')
@@ -429,9 +429,9 @@ def main():
 
         """ store runtime to files """
         if opt.probName == 'NKQ':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
-            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+            nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
             
         f = open(nameOfF, 'w')
         if 'TLO' in opt.compMeth:
@@ -458,9 +458,9 @@ def main():
             """ store trace of bit-flips to files """
             for i in range(runs):
                 if opt.probName == 'NKQ' :
-                    nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-R'+str(i)+'-L'+str(opt.l)+'.txt'
+                    nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-R'+str(i)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
-                    nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-R'+str(i)+'-L'+str(opt.l)+'.txt'
+                    nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-R'+str(i)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
                 f = open(nameOfF, 'w')
                 for j in res[i]['traceFlip']:
                     print >>f, "%d" %(j)

@@ -1685,7 +1685,7 @@ cdef gamma(int n, int j, int r):
     cdef int s = 0
     for i in xrange(0,r+1):
         s = s + scipy.misc.comb(j, i, exact=True) * scipy.misc.comb(n-j, r-i, exact=True) * pow(-1, i)
-    print s
+    # print s
     return s
     
 
