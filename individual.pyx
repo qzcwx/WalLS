@@ -372,20 +372,21 @@ cdef class Individual:
         self.U = dict()
 
         chooseFactor = scipy.misc.comb(self.dim, radius, exact=True)
-        print 'choose', chooseFactor
-        print 'radius', radius
+        # print 'choose', chooseFactor
+        # print 'radius', radius
         s = 0
+
 
         for i in xrange(len(self.model.WA)):
             # |Q|*n operation should be at least n^2
             o = len(self.model.WA[i].arr)
-            print self.model.WA[i].arr, self.bit
-            print 'order', o, 'gamma', gamma(self.dim, o, radius)
-            print 'expect gamma', self.dim  * (self.dim - 1) /2 + 2*o*(o-self.dim)
+            # print self.model.WA[i].arr, self.bit
+            # print 'order', o, 'gamma', gamma(self.dim, o, radius)
+            # print 'expect gamma', self.dim  * (self.dim - 1) /2 + 2*o*(o-self.dim)
             # n*n/2 - 2*n*p - n/2 + 2*p*p 
             # , 'n-2p', self.dim - 2*o
-            print 'factor',  gamma(self.dim, o, radius) / float(chooseFactor)
-            print 'sign', int(math.pow(-1, o)), 'ori w', self.model.WA[i].w 
+            # print 'factor',  gamma(self.dim, o, radius) / float(chooseFactor)
+            # print 'sign', int(math.pow(-1, o)), 'ori w', self.model.WA[i].w 
             W = int(math.pow(-1,  binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w  * gamma(self.dim, o, radius) / chooseFactor
             # W = int(math.pow(-1, o)) * self.model.WA[i].w 
             # print 'obsorb', W
@@ -399,49 +400,53 @@ cdef class Individual:
             was[0].w = W
             self.WAS[i] = was[0]
 
-            print i, self.WAS[i].w
-            s = s + self.WAS[i].w
+            # print i, self.WAS[i].w
+            
             for j in self.model.WA[i].arr:
                 # print j, 
                 self.sumArr[j] = self.sumArr[j] + W
+            # print 'WI',i, self.model.WA[i].arr
             if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
                 for j in self.model.WA[i].arr:   # 
                     #if not self.Inter[j]: # the entry of i doesn't exist yet
-                    if self.Inter[j] == NULL: 
+                    if self.Inter[j] == NULL:
+                        # print 'new', j
                         inter = <InTer*> malloc(sizeof(InTer))
                         inter[0].arr = new set[int]()
                         inter[0].WI = new set[int]()
                         self.Inter[j] = inter
-                        
                     for k in self.model.WA[i].arr:   # k^2 part
                         if k != j :
                             self.Inter[j].arr.insert(k)
-    
-            for j in self.model.WA[i].arr:   #
-                # print 'j', j, 'WI', i        
-                self.Inter[j].WI.insert(i)
-                    
-                # add entries in U matrix, k^2 part 
-                comb = self.genComb(len(self.model.WA[i].arr)) 
-                # print self.model.WA[i].arr   
-                for j in xrange(comb.size):
-                    j0 = self.model.WA[i].arr[comb.arr[j][0]] 
-                    j1 = self.model.WA[i].arr[comb.arr[j][1]] 
+                # print self.model.WA[i].arr                
+                for j in self.model.WA[i].arr:   #
+                    # print 'j', j
+                    self.Inter[j].WI.insert(i)
+                    # print 'insert'
+                    # add entries in U matrix, k^2 part
+                    comb = self.genComb(len(self.model.WA[i].arr)) 
+                    # print self.model.WA[i].arr
 
-                    # calculate the position in U
-                    if j0<=j1:
-                        if (j0,j1) not in self.U:
-                            self.U[(j0,j1)] = Set()
-                        else:
+                    for k in xrange(comb.size):
+                        # print 'k',k, comb.arr[k][0], comb.arr[k][1]
+                        j0 = self.model.WA[i].arr[comb.arr[k][0]] 
+                        j1 = self.model.WA[i].arr[comb.arr[k][1]] 
+
+                        # calculate the position in U
+                        if j0<=j1:
+                            if (j0,j1) not in self.U:
+                                self.U[(j0,j1)] = Set()
+                            # else:
                             self.U[(j0,j1)].add(i)
-                    else:                 # j0>j1
-                        if (j1,j0) not in self.U:
-                            self.U[(j1,j0)] = Set(i)
-                        else:
+                        else:                 # j0>j1
+                            if (j1,j0) not in self.U:
+                                self.U[(j1,j0)] = Set()
+                            # else:
                             self.U[(j1,j0)].add(i)
-            print 
+                            
+            # print 
         # self.printSumArr()
-        print 's',s
+        # print 's',s
 
     def curFitFromWalsh(self):
         # compute the current fitness from Walsh terms with signs
@@ -681,7 +686,7 @@ cdef class Individual:
         cdef set[int].iterator it
         cdef object wList
 
-        print 'flip', p
+        # print 'flip', p
         self.sumArr[p] = - self.sumArr[p]
         if self.Inter[p]!=NULL:
             """ iterative over self.Inter[p].arr """

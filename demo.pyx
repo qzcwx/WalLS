@@ -248,9 +248,7 @@ def main():
             w = model.WalshCofLinearLinklist()
             walTime = time.time() - start
             # print 'walsh trans\n', "%.4g" %(walTime)
-            
-
-            print 'w\n', w, '\n'
+            # print 'w\n', w, '\n'
             
             start = time.time()
             if opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch':
@@ -283,10 +281,6 @@ def main():
             # print sum(freq)
 
         print 'enumerating all solutions'
-        # if opt.fitName == 'fit':
-        #     bit,fit = tl.compFit(model)
-        # elif opt.fitName == 'mean':
-        #     bit, fit = tl.compMean(model)
         print 'fit'
         bit, fit = tl.compFit(model)
         print max(fit)

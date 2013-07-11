@@ -1006,13 +1006,15 @@ cdef class LocalSearch:
         #     self.oldindiv.bit[i] = '1'
         # print self.oldindiv.bit
         
-        self.oldindiv = self.evalPop(self.oldindiv)
+        # self.oldindiv = self.evalPop(self.oldindiv)
+        # print 'initWalUHS'
         self.oldindiv.initWalUHS(self.model, radius)
+        # print 'initWalUHS'
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
         self.oldindiv.genImproveS(minimize)
-
-        print 'init SumArr'
-        self.oldindiv.printSumArr()
+        self.oldindiv.fit = self.oldindiv.curFitFromWalsh()
+        # print 'init SumArr'
+        # self.oldindiv.printSumArr()
         
         initC = 1
         updateC = 0
@@ -1038,7 +1040,7 @@ cdef class LocalSearch:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             print '\nbit', self.oldindiv.bit, 'ori.fit', self.oldindiv.fit
-            print 'curFitFromWalsh', self.oldindiv.curFitFromWalsh()
+            # print 'curFitFromWalsh', self.oldindiv.curFitFromWalsh()
             # self.oldindiv.printWAS()
             self.oldindiv.printSumArr()
             print 'bestI', bestI
@@ -1067,7 +1069,8 @@ cdef class LocalSearch:
 
                     start = time.time()
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
-                    print 'diff',diff
+                    # print 'restart'
+                    # print 'diff',diff
                     self.oldindiv.fit = oldfit
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
@@ -1076,8 +1079,8 @@ cdef class LocalSearch:
                         self.oldindiv.updateWAS(i)
                         # self.oldindiv.printSumArr()
                         self.oldindiv.updatePertImprS(i, minimize)
-                        print i
-                        self.oldindiv.printSumArr()
+                        # print i
+                        # self.oldindiv.printSumArr()
 
                     print 'restart end'
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
