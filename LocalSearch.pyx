@@ -917,7 +917,7 @@ cdef class LocalSearch:
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
             # self.oldindiv.printSumArr()
-            # print 'bestI', bestI
+            print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
             
             # print 'steep', self.fitEval, improveN
@@ -963,7 +963,6 @@ cdef class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
                 flip.append(bestI)
-
                 start = time.time()
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # print 'updateEval'
@@ -1001,23 +1000,22 @@ cdef class LocalSearch:
         self.model.transWal()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
+
+        # # to be removed
+        # for i in xrange(self.dim):
+        #     self.oldindiv.bit[i] = '1'
+        # print self.oldindiv.bit
+        
         self.oldindiv = self.evalPop(self.oldindiv)
-        # print 'initWalU'
         self.oldindiv.initWalUHS(self.model, radius)
-        # self.oldindiv.genWalU()
         self.bsf = individual.Individual(oldIndiv=self.oldindiv)
-        # print 'initWal'
-        # print 'genImproveS'
         self.oldindiv.genImproveS(minimize)
-        # self.model.WA = []
+
+        print 'init SumArr'
+        self.oldindiv.printSumArr()
+        
         initC = 1
         updateC = 0
-        # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
-        # print 'init improve', self.oldindiv.improveA
-        # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
-        # self.oldindiv.printSumArr()        
-        # self.oldindiv.printWAS()
-        # self.oldindiv.printWalU()
 
         descT = 0
         pertT = 0
@@ -1034,19 +1032,21 @@ cdef class LocalSearch:
 
         # print self.MaxFit
         initT = time.time() - start
-        
+
+        print '\nstart'
         while self.fitEval < self.MaxFit:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
-            # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
-            # self.oldindiv.printSumArr()
-            # print 'bestI', bestI
+            print '\nbit', self.oldindiv.bit, 'ori.fit', self.oldindiv.fit
+            print 'curFitFromWalsh', self.oldindiv.curFitFromWalsh()
+            # self.oldindiv.printWAS()
+            self.oldindiv.printSumArr()
+            print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
             
             # print 'steep', self.fitEval, improveN
             descT = descT + time.time() - start
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
-
 
             if improveN == False:
                 initC = initC + 1
@@ -1067,6 +1067,7 @@ cdef class LocalSearch:
 
                     start = time.time()
                     diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    print 'diff',diff
                     self.oldindiv.fit = oldfit
                     for i in diff:
                         # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
@@ -1075,6 +1076,10 @@ cdef class LocalSearch:
                         self.oldindiv.updateWAS(i)
                         # self.oldindiv.printSumArr()
                         self.oldindiv.updatePertImprS(i, minimize)
+                        print i
+                        self.oldindiv.printSumArr()
+
+                    print 'restart end'
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
                     # print 'step TLO', step, 'bsf', self.bsf.fit, '\n'
                     # print step, '\t', self.bsf.fit 
@@ -1086,7 +1091,6 @@ cdef class LocalSearch:
                     return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
             else : # improveN is TRUE
                 flip.append(bestI)
-
                 start = time.time()
                 # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
                 # print 'updateEval'
@@ -1105,6 +1109,10 @@ cdef class LocalSearch:
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
+        print 'bsf', self.bsf.bit
+        print 'before',self.bsf.fit
+        self.bsf = self.evalPop(self.bsf)
+        print 'after',self.bsf.fit
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
 
     cdef runFitSrestNextU(self,fitName, minimize, restart):

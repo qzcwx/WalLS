@@ -71,9 +71,8 @@ cdef class Individual:
     cdef public list bit
     cdef double* sumArr
     cdef public int dim
-    cdef public int addC
-    cdef public int addWAS
-        
+    # cdef public int addC
+    # cdef public int addWAS
     
     def __init__( self, n=0, neigh=False, oldIndiv=False ):
         # self.bit = NULL
@@ -91,8 +90,8 @@ cdef class Individual:
             # self.copyBit(oldIndiv.bit)
             self.bit = oldIndiv.bit[:]
         self.threshold = 1e-15
-        self.addC = 0
-        self.addWAS = 0
+        # self.addC = 0
+        # self.addWAS = 0
         
     # def __del__(self):
     #     # free(self.bit)
@@ -211,7 +210,6 @@ cdef class Individual:
                 self.C[j0][j1] = self.C[j0][j1] + W
 
     def initWalU(self, model):
-        
         self.model = model
 
         cdef int i,j,k,l,j0,j1,pos
@@ -247,7 +245,7 @@ cdef class Individual:
             # |Q|*n operation should be at least n^2
             W = int(math.pow(-1, binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w
             
-            print W
+            # print W
             
             was = <Was *>malloc(sizeof(Was))
             was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
@@ -340,12 +338,12 @@ cdef class Individual:
     #                 print i, j, 'not'
 
     def initWalUHS(self, model, radius):
-
-        print radius
+        # print radius
         self.model = model
 
-        cdef int i,j,k,l,j0,j1,pos, chooseFactor, bc
+        cdef int i,j,k,l,j0,j1,pos, o
         cdef double W
+        cdef int chooseFactor
         cdef vector[InfBit*]* vectPtr
         cdef InfBit* strPtr
         cdef ComArr* comb
@@ -356,7 +354,7 @@ cdef class Individual:
         for i in xrange(self.dim):
             self.sumArr[i] = 0
             
-        self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
+        self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.WA))
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
         for i in xrange(self.dim):
             self.lookup[i] = NULL
@@ -375,13 +373,24 @@ cdef class Individual:
 
         chooseFactor = scipy.misc.comb(self.dim, radius, exact=True)
         print 'choose', chooseFactor
+        print 'radius', radius
+        s = 0
+
         for i in xrange(len(self.model.WA)):
             # |Q|*n operation should be at least n^2
-            bc = binCount(self.model.WA[i].arr, self.bit)
-            W = int(math.pow(-1, bc)) * self.model.WA[i].w / chooseFactor * gamma(self.dim, bc, radius)
-            # W = int(math.pow(-1, bc)) * self.model.WA[i].w 
+            o = len(self.model.WA[i].arr)
+            print self.model.WA[i].arr, self.bit
+            print 'order', o, 'gamma', gamma(self.dim, o, radius)
+            print 'expect gamma', self.dim  * (self.dim - 1) /2 + 2*o*(o-self.dim)
+            # n*n/2 - 2*n*p - n/2 + 2*p*p 
+            # , 'n-2p', self.dim - 2*o
+            print 'factor',  gamma(self.dim, o, radius) / float(chooseFactor)
+            print 'sign', int(math.pow(-1, o)), 'ori w', self.model.WA[i].w 
+            W = int(math.pow(-1,  binCount(self.model.WA[i].arr, self.bit))) * self.model.WA[i].w  * gamma(self.dim, o, radius) / chooseFactor
+            # W = int(math.pow(-1, o)) * self.model.WA[i].w 
+            # print 'obsorb', W
 
-            print W
+            # print W
             
             was = <Was *>malloc(sizeof(Was))
             was[0].arr = <int *>malloc(sizeof(int)*len(self.model.WA[i].arr))
@@ -390,9 +399,11 @@ cdef class Individual:
             was[0].w = W
             self.WAS[i] = was[0]
 
+            print i, self.WAS[i].w
+            s = s + self.WAS[i].w
             for j in self.model.WA[i].arr:
+                # print j, 
                 self.sumArr[j] = self.sumArr[j] + W
-
             if len(self.model.WA[i].arr)>1: # for at least order Walsh terms
                 for j in self.model.WA[i].arr:   # 
                     #if not self.Inter[j]: # the entry of i doesn't exist yet
@@ -405,7 +416,10 @@ cdef class Individual:
                     for k in self.model.WA[i].arr:   # k^2 part
                         if k != j :
                             self.Inter[j].arr.insert(k)
-                    self.Inter[j].WI.insert(i)
+    
+            for j in self.model.WA[i].arr:   #
+                # print 'j', j, 'WI', i        
+                self.Inter[j].WI.insert(i)
                     
                 # add entries in U matrix, k^2 part 
                 comb = self.genComb(len(self.model.WA[i].arr)) 
@@ -417,22 +431,36 @@ cdef class Individual:
                     # calculate the position in U
                     if j0<=j1:
                         if (j0,j1) not in self.U:
-                            self.U[(j0,j1)] = [i]
+                            self.U[(j0,j1)] = Set()
                         else:
-                            self.U[(j0,j1)].append(i)
+                            self.U[(j0,j1)].add(i)
                     else:                 # j0>j1
                         if (j1,j0) not in self.U:
-                            self.U[(j1,j0)] = [i]
+                            self.U[(j1,j0)] = Set(i)
                         else:
-                            self.U[(j1,j0)].append(i)
-                        
+                            self.U[(j1,j0)].add(i)
+            print 
+        # self.printSumArr()
+        print 's',s
 
-    
+    def curFitFromWalsh(self):
+        # compute the current fitness from Walsh terms with signs
+        fit = 0
+        print 'curFit\n*****';
+        for i in xrange(len(self.model.WA)):
+            # print i,self.WAS[i].w
+            # print self.WAS[i].w
+            fit = fit + self.WAS[i].w
+        # print '*****'
+        return fit
+        
+                            
     def printWAS(self):
         """
         print WAS array, all Walsh terms
         """
         print 'WAS'
+        print '***************'
         # print len(self.model.WA)
         for i in xrange(len(self.model.WA)):
             print 'i',i
@@ -651,8 +679,9 @@ cdef class Individual:
         cdef int i,ii
         cdef double s
         cdef set[int].iterator it
-        cdef list wList
+        cdef object wList
 
+        print 'flip', p
         self.sumArr[p] = - self.sumArr[p]
         if self.Inter[p]!=NULL:
             """ iterative over self.Inter[p].arr """
@@ -660,16 +689,17 @@ cdef class Individual:
             it = self.Inter[p].arr.begin()
             while it != self.Inter[p].arr.end():
                 ii = deref(it)
+                # print 'ii', ii
                 # compute the sum of walsh terms that touches both ii and p
                 if ii<=p:
                     wList = self.U[(ii,p)]
                 else:
                     wList = self.U[(p,ii)]
-                    
+                # print 'wList',wList
                 s = 0
                 for i in wList:
                     s = s + self.WAS[i].w
-                    self.addC = self.addC + 1
+                    # self.addC = self.addC + 1
                     
                 self.sumArr[ii] = self.sumArr[ii] - 2 * s
                 inc(it)
@@ -828,8 +858,9 @@ cdef class Individual:
             it = self.Inter[p].WI.begin()
             while it != self.Inter[p].WI.end():
                 ii = deref(it)
+                # print 'update', ii
                 self.WAS[ii].w = - self.WAS[ii].w
-                self.addWAS = self.addWAS + 1
+                # self.addWAS = self.addWAS + 1
                 inc(it)
                 
 
@@ -1618,9 +1649,9 @@ cdef class Individual:
 
                 
     cpdef printSumArr(self):
+        print 'SumArr'
         for i in range(self.dim):
             print i, self.sumArr[i]
-        print
 
     cpdef compFitG(self):
         self.fitG = self.fit - 2/ float(self.dim) * (sumC(self.sumArr, self.dim))
@@ -1687,8 +1718,17 @@ cdef gamma(int n, int j, int r):
         s = s + scipy.misc.comb(j, i, exact=True) * scipy.misc.comb(n-j, r-i, exact=True) * pow(-1, i)
     # print s
     return s
-    
 
+# cdef int order(list x):
+#     # calculate the order of bit string x
+#     cdef int o
+#     print 'x', x
+#     for i in x:
+#         if i == '1':
+#             o = o + 1
+#     print 'order', o
+#     return o
+    
 # @cython.cdivision(True)
 # cdef int biomial(int N, int K) nogil:
 #     """ compute the combination of N choose K """

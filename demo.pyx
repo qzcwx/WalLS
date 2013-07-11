@@ -153,6 +153,7 @@ def main():
     # print opt.rseed
     random.seed(opt.rseed)
 
+    # print 'Instance', opt.inst
     # maxFit = opt.e * opt.n
     # runs = 20
     
@@ -163,7 +164,7 @@ def main():
     # maxFit = 2000
     
     runs = 1
-    maxFit = 100
+    maxFit = 20
     
     t = opt.t
     
@@ -188,7 +189,7 @@ def main():
         res = []
 
         model.setInstance(opt.inst)
-        print 'Instance', opt.inst
+
 
         if opt.algoName.find('LS') != -1:
             algo = ls.LocalSearch(model.compFit, maxFit, opt.n)
@@ -249,6 +250,7 @@ def main():
             # print 'walsh trans\n', "%.4g" %(walTime)
             
 
+            print 'w\n', w, '\n'
             
             start = time.time()
             if opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch':
@@ -280,16 +282,21 @@ def main():
             freq = model.countFreqInFunc()
             # print sum(freq)
 
-        # print 'enumerating all solutions'
+        print 'enumerating all solutions'
         # if opt.fitName == 'fit':
         #     bit,fit = tl.compFit(model)
         # elif opt.fitName == 'mean':
         #     bit, fit = tl.compMean(model)
-        # print max(fit)
-        # bitF,fitF = tl.compFit(model)
-        # for i in zip(bitF,fitF):
-        #     print i[0],i[1]
-
+        print 'fit'
+        bit, fit = tl.compFit(model)
+        print max(fit)
+        for i in zip(bit,fit):
+            print i[0],i[1]
+        print 'mean'
+        bit, fit = tl.compMean(model)
+        print max(fit)
+        for i in zip(bit,fit):
+            print i[0],i[1]
 
         # bitA,fitA = tl.compMean(model)
         # for i in zip(bitF,fitF, bitA, fitA):

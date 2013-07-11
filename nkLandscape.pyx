@@ -366,8 +366,7 @@ cdef class NKLandscape:
         # print self.k+1
         # print math.pow(2,(self.k+1)/2.0)
         for i in xrange(self.c):
-            # subWoneF = wal.computeW(self.Kbits, self.f[i])
-            # subWone = fht.fht(np.asarray(self.f[i]))/(2*math.sqrt(2))
+            # subWone = wal.computeW(self.Kbits, self.f[i])
             subWone = fht.fht(np.asarray(self.f[i]))/math.pow(2,(self.k+1)/2.0)
             # print subWone
             # print subWoneF
