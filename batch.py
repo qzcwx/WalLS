@@ -32,8 +32,8 @@ def writeScript(p,a,f,i,s,c,n,k,q,w,m,t,e,l,d,chunkSize, track):
         fileName = open(fName, 'a')
         STR =  'python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+' -l '+str(l)+' '+' -d '+str(d)
         # fileName.write('cd ~/sched/workspace/SumSat; nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+' -l '+str(l)+' '+' -d '+str(d)+'\n')
-        # fileName.write('echo \''+STR+'\'; '+STR+'\n')
-        fileName.write('cd ~/sched/SumSat; '+STR+'\n')
+        fileName.write('echo \''+STR+'\'; '+STR+'\n')
+        # fileName.write('cd ~/sched/SumSat; '+STR+'\n')
         # fileName.write('nice -n 19 python run.py -c '+str(c)+' -p '+p+' -a '+a+' -f '+f+' -i '+str(i)+' -s '+str(s)+' -w '+str(w)+' -n '+str(n)+' -k '+str(k)+' -q '+str(q)+' -m '+m+' -t '+str(t)+' -e '+str(e)+' '+'\n')
         fileName.close()
 
@@ -131,7 +131,7 @@ if __name__== "__main__":
 
     # eRange = [10,20,100]
     eRange = [0]
-    tRange = [7]
+    tRange = [4]
     iRange = [0]
     aRange = ['rLS']
     fRange = ['fit']

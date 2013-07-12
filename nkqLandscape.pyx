@@ -27,17 +27,17 @@ class NKQLandcape(nk.NKLandscape):
         else:
             self.readFile(fileName)
         self.Kbits = tl.genSeqBits(self.k+1)
-
+        
     def genFuncQ(self):
-        self.func = []
+        self.f = []
         for i in range(self.c):
             oneFunc = []
             for j in range(int(math.pow(2,self.k+1))):
                 oneFunc.append(np.random.randint(self.q))
-            self.func.append(oneFunc)
+            self.f.append(oneFunc)
 
     def genFuncQT(self):
-        self.func = []
+        self.f = []
         for i in range(self.c):
             oneFunc = []
             tAss = random.sample(range(int(math.pow(2,self.k+1))),self.t)
@@ -46,4 +46,4 @@ class NKQLandcape(nk.NKLandscape):
                     oneFunc.append(1)
                 else:
                     oneFunc.append(0)
-            self.func.append(oneFunc)
+            self.f.append(oneFunc)
