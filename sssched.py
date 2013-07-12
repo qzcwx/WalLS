@@ -8,7 +8,7 @@ import random
 from threading import Thread
 from optparse import OptionParser
 
-idleThres = 30
+idleThres = 50
 
 #
 # Machines use to run the tasks
