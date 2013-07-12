@@ -451,7 +451,7 @@ cdef class Individual:
     def curFitFromWalsh(self):
         # compute the current fitness from Walsh terms with signs
         fit = 0
-        print 'curFit\n*****';
+        # print 'curFit\n*****';
         for i in xrange(len(self.model.WA)):
             # print i,self.WAS[i].w
             # print self.WAS[i].w

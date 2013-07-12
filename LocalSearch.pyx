@@ -1035,15 +1035,15 @@ cdef class LocalSearch:
         # print self.MaxFit
         initT = time.time() - start
 
-        print '\nstart'
+        # print '\nstart'
         while self.fitEval < self.MaxFit:
             start = time.time()
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
-            print '\nbit', self.oldindiv.bit, 'ori.fit', self.oldindiv.fit
+            # print '\nbit', self.oldindiv.bit, 'ori.fit', self.oldindiv.fit
             # print 'curFitFromWalsh', self.oldindiv.curFitFromWalsh()
             # self.oldindiv.printWAS()
-            self.oldindiv.printSumArr()
-            print 'bestI', bestI
+            # self.oldindiv.printSumArr()
+            # print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
             
             # print 'steep', self.fitEval, improveN
@@ -1082,7 +1082,7 @@ cdef class LocalSearch:
                         # print i
                         # self.oldindiv.printSumArr()
 
-                    print 'restart end'
+                    # print 'restart end'
                     updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
                     # print 'step TLO', step, 'bsf', self.bsf.fit, '\n'
                     # print step, '\t', self.bsf.fit 
@@ -1112,10 +1112,10 @@ cdef class LocalSearch:
         # print 'dest'
         self.oldindiv.destructorWalU(fitName)
         # print 'init', initC, 'update', updateC
-        print 'bsf', self.bsf.bit
-        print 'before',self.bsf.fit
+        # print 'bsf', self.bsf.bit
+        # print 'before',self.bsf.fit
         self.bsf = self.evalPop(self.bsf)
-        print 'after',self.bsf.fit
+        # print 'after',self.bsf.fit
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
 
     cdef runFitSrestNextU(self,fitName, minimize, restart):

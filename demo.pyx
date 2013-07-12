@@ -164,7 +164,7 @@ def main():
     # maxFit = 2000
     
     runs = 1
-    maxFit = 20
+    maxFit = 1000
     
     t = opt.t
     
@@ -280,17 +280,17 @@ def main():
             freq = model.countFreqInFunc()
             # print sum(freq)
 
-        print 'enumerating all solutions'
-        print 'fit'
-        bit, fit = tl.compFit(model)
-        print max(fit)
-        for i in zip(bit,fit):
-            print i[0],i[1]
-        print 'mean'
-        bit, fit = tl.compMean(model)
-        print max(fit)
-        for i in zip(bit,fit):
-            print i[0],i[1]
+        # print 'enumerating all solutions'
+        # print 'fit'
+        # bit, fit = tl.compFit(model)
+        # print max(fit)
+        # for i in zip(bit,fit):
+        #     print i[0],i[1]
+        # print 'mean'
+        # bit, fit = tl.compMean(model)
+        # print max(fit)
+        # for i in zip(bit,fit):
+        #     print i[0],i[1]
 
         # bitA,fitA = tl.compMean(model)
         # for i in zip(bitF,fitF, bitA, fitA):
@@ -355,7 +355,7 @@ def main():
 
         """ store results to files """
         if opt.probName == 'NKQ':
-            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'.txt'
+            nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
 
