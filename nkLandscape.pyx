@@ -34,8 +34,7 @@ ctypedef struct InTer:
 cdef class NKLandscape:
     cdef ComArr** lookup
     # cdef InTer** Inter
-    cdef public list Inter # the list of variables that interact with
-                                          # ith variable
+    cdef public list Inter # the list of variables that interact with ith variable
     cdef public int n                            # number of variables
     cdef public int k                            
     cdef public int c                            # number of clauses
@@ -1163,13 +1162,12 @@ cdef class NonNKLandscape(NKLandscape):
         self.k = inK
         self.c = inC
         NKLandscape.__init__(self, inN, inK, inC, fileName)
-
+        
         if fileName == None:
             self.genNonNeigh() # clear from parental class, re-generate
         else:
             self.readFile(fileName)
-
-           
+            
         self.Kbits = tl.genSeqBits(self.k+1)
         # print 'after init', self.neighs
         

@@ -1,11 +1,19 @@
-import nkLandscape as nk
 import tool as tl
 import random
 import numpy as np
 import math
 import pdb
+import cython
+import nkLandscape as nk
 
-class NKQLandcape(nk.NKLandscape):
+class NKQLandscape(nk.NKLandscape):
+
+    # cdef public int n                            # number of variables
+    # cdef public int k                            
+    # cdef public int c                            # number of clauses
+    # cdef public int q
+    # cdef public int t
+    
     def __init__(self, inN, inK, inC, inQ, inT=-1, fileName = None):
         self.n = inN
         self.k = inK
@@ -47,3 +55,24 @@ class NKQLandcape(nk.NKLandscape):
                 else:
                     oneFunc.append(0)
             self.f.append(oneFunc)
+
+
+class NonNKQLandscape(NKQLandscape):
+    """ Non-uniform random NKQ-landscapes """
+    def __init__(self, inN, inK, inC, inQ, inT=-1, fileName = None):
+        self.n = inN
+        self.k = inK
+        self.c = inC
+        self.q = inQ
+        self.t = inT
+        NKQLandscape.__init__(self, inN, inK, inC, inQ, inT, fileName)
+        if fileName == None:
+            # regenerate neighs
+            NKQLandscape.genNonNeigh()
+            # if self.t == -1:
+            #     self.genFuncQ()
+            # else:
+            #     self.genFuncQT()
+        else:
+            self.readFile(fileName)
+
