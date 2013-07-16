@@ -157,14 +157,14 @@ def main():
     # maxFit = opt.e * opt.n
     # runs = 20
     
-    runs = 10
-    maxFit = 100000                      # 100 k, submit for running experiment
+    # runs = 10
+    # maxFit = 100000                      # 100 k, submit for running experiment
+    
     # maxFit = 1000000                      # 1 million
     
-    # maxFit = 2000
     
-    # runs = 1
-    # maxFit = 1000
+    runs = 1
+    maxFit = 1000
     
     t = opt.t
     
@@ -184,7 +184,6 @@ def main():
         TODO :
             need to perform multiple runs for each instance
         """
-
         model = mx.MAXSAT()
         res = []
 
@@ -238,9 +237,14 @@ def main():
         if opt.probName == 'NK':
             model = nk.NKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
         elif opt.probName == 'NKQ':
-            model = nkq.NKQLandcape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
+            model = nkq.NKQLandscape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
         elif opt.probName == 'NonNK':
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
+        elif opt.probName == 'NonNKQ':
+            model = nkq.NonNKQLandscape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
+
+        # print the variable distribution over clauses
+        print model.countFreqInFunc() 
             
         # Walsh analysis
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walWalkULen' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU' or opt.compMeth == 'walHS' or opt.compMeth == 'walBS':
@@ -263,7 +267,7 @@ def main():
             # model.countInterBits()
 
             """ store runtime to files """
-            if opt.probName == 'NKQ' :
+            if opt.probName == 'NKQ'  or opt.probName == 'NonNKQ':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'-Q'+str(opt.q)+'-T'+str(t)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = waltimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-N'+str(opt.n)+'-C'+str(opt.c)+'-K'+str(opt.k)+'.txt'
@@ -354,7 +358,7 @@ def main():
     #    plt.show()
 
         """ store results to files """
-        if opt.probName == 'NKQ':
+        if opt.probName == 'NKQ' or opt.probName == 'NonNKQ':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = nameOfDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
@@ -385,7 +389,7 @@ def main():
         
         if (opt.compMeth != 'bf'  and opt.compMeth!='partEval') and (opt.fitName == 'switchF' or opt.fitName == 'switchAvg' or opt.fitName == 'combF' or opt.fitName == 'combAvg'):
             """ store trace to files: 1. the number of descent steps """
-            if opt.probName == 'NKQ':
+            if opt.probName == 'NKQ'  or opt.probName == 'NonNKQ':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
@@ -394,7 +398,7 @@ def main():
                 print >>f,"%g\t%g\t%g" % (res[i]['platC'], res[i]['restC'], res[i]['updateC'])
             f.close()
         else:
-            if opt.probName == 'NKQ':
+            if opt.probName == 'NKQ' or opt.probName == 'NonNKQ':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
             elif opt.probName == 'NK' or opt.probName == 'NonNK':
                 nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
@@ -411,7 +415,7 @@ def main():
             """ store trace to files: the number of descent steps """
 
             for i in range(runs):
-                if opt.probName == 'NKQ':
+                if opt.probName == 'NKQ' or opt.probName == 'NonNKQ':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
@@ -429,7 +433,7 @@ def main():
                     f.close()
 
         """ store runtime to files """
-        if opt.probName == 'NKQ':
+        if opt.probName == 'NKQ' or opt.probName == 'NonNKQ':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
         elif opt.probName == 'NK' or opt.probName == 'NonNK':
             nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
@@ -458,7 +462,7 @@ def main():
         if opt.compMeth == 'walRestFlip':
             """ store trace of bit-flips to files """
             for i in range(runs):
-                if opt.probName == 'NKQ' :
+                if opt.probName == 'NKQ'  or opt.probName == 'NonNKQ':
                     nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-E'+str(opt.e)+'-R'+str(i)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
                 elif opt.probName == 'NK' or opt.probName == 'NonNK':
                     nameOfF = runtimeDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-E'+str(opt.e)+'-R'+str(i)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'

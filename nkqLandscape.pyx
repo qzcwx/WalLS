@@ -67,8 +67,8 @@ class NonNKQLandscape(NKQLandscape):
         self.t = inT
         NKQLandscape.__init__(self, inN, inK, inC, inQ, inT, fileName)
         if fileName == None:
-            # regenerate neighs
-            NKQLandscape.genNonNeigh()
+            # print 'regenerate neighs'
+            self.genNonNeigh()
             # if self.t == -1:
             #     self.genFuncQ()
             # else:
@@ -76,3 +76,27 @@ class NonNKQLandscape(NKQLandscape):
         else:
             self.readFile(fileName)
 
+    def genNonNeigh(self):
+        self.neighs = []
+        # enforce n=c
+        if self.c == self.n:
+            # print 'NonNK', 'N', self.n, 'C', self.c
+            
+            # generate permutation
+            pi = range(self.n)
+            random.shuffle(pi)
+            # print pi
+            for i in range(self.n):
+                # print 'i', i
+                oneNeigh = [i]
+                while len(oneNeigh)<self.k+1:
+                    index = np.random.binomial(len(pi), 0.5)
+                    # print 'index', index
+                    rand = pi[index]
+                    if rand not in oneNeigh:
+                        oneNeigh.append(rand)
+                        # print 'rand', rand
+                self.neighs.append(oneNeigh)
+            # print 'neighs', self.neighs
+        else:
+            print 'Non-uniform NK(q) landscape instances require c==n'

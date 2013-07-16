@@ -123,8 +123,13 @@ cdef class NKLandscape:
 
     cpdef double getFuncVal(self,i, j):
         return self.func[i][j]
-    
-                
+
+    def printVarDist(self):
+        """
+        print the frequencies where a variable appears in a clause
+        """
+        
+        
 
     def convertFuncDict(self):
         """
@@ -1107,7 +1112,7 @@ cdef class NKLandscape:
                 freq[j] = freq[j] + 1
 
         return freq
-
+    
 
     def __del__(self):
         """ 
