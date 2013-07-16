@@ -10,7 +10,7 @@ class Struct:
 
 def resultExist(probName,algoName,fitName,inst,s,c,n,k,q,w,m,t,e,l,d):
     """ check whether the results have been produced or not """
-    if probName == 'NKQ':
+    if probName == 'NKQ' or probName == 'NonNKQ':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-M'+m+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-C'+str(c)+'-Q'+str(q)+'-T'+str(t)+'-E'+str(e)+'-L'+str(l)+'.txt'
     elif probName == 'NK' or probName == 'NonNK':
         nameOfF = './result/'+probName+'-'+algoName+'-F'+fitName+'-C'+str(c)+'-I'+str(inst)+'-S'+str(s)+'-W'+str(w)+'-N'+str(n)+'-K'+str(k)+'-E'+str(e)+'-L'+str(l)+'.txt'
@@ -141,7 +141,9 @@ if __name__== "__main__":
     mRange = ['walHS']
     # mRange = ['walRestU','walWalkU']
     # mRange = ['walWalkULen']
-    pRange = ['NK','NKQ']
+    # pRange = ['NK','NKQ']
+    pRange = ['NonNK','NonNKQ']
+    
     dRange = range(4)
     
     # temp = [5*a for a in range(1,11)]
@@ -170,7 +172,7 @@ if __name__== "__main__":
                                             for v in vRange:
                                                 c = int(n*v)
                                                 for p in pRange :
-                                                    if p == 'NKQ':
+                                                    if p == 'NKQ' or p== 'NonNKQ':
                                                         for q in [2]:
                                                             if a == 'LS' or a == 'rLS':
                                                                 for w in wRange :
@@ -213,7 +215,7 @@ if __name__== "__main__":
                                             for v in vRange:
                                                 c = int(n*v)
                                                 for p in pRange :
-                                                    if p == 'NKQ':
+                                                    if p == 'NKQ' or p== 'NonNKQ':
                                                         for q in [2]:
                                                             if a == 'LS' or a == 'rLS':
                                                                 for w in wRange :

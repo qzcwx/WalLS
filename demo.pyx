@@ -157,14 +157,14 @@ def main():
     # maxFit = opt.e * opt.n
     # runs = 20
     
-    # runs = 10
-    # maxFit = 100000                      # 100 k, submit for running experiment
+    runs = 10
+    maxFit = 100000                      # 100 k, submit for running experiment
     
     # maxFit = 1000000                      # 1 million
     
     
-    runs = 1
-    maxFit = 1000
+    # runs = 1
+    # maxFit = 1000
     
     t = opt.t
     
@@ -244,7 +244,7 @@ def main():
             model = nkq.NonNKQLandscape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
 
         # print the variable distribution over clauses
-        print model.countFreqInFunc() 
+        # print model.countFreqInFunc()
             
         # Walsh analysis
         if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walWalkULen' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU' or opt.compMeth == 'walHS' or opt.compMeth == 'walBS':

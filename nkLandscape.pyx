@@ -64,7 +64,7 @@ cdef class NKLandscape:
             self.genFunc()
             print 'done'
         else:
-            print fileName
+            # print fileName
             self.readFile(fileName)
             
         self.Kbits = tl.genSeqBits(self.k+1)
