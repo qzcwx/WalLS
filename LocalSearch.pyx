@@ -160,6 +160,8 @@ cdef class LocalSearch:
         elif compM == 'walHS':            # Walsh-LS-HS^r
             # print 'HS', radius
             return self.runWalshHS(fitName, minimize, restart, radius)
+        elif compM == 'walHSfit':         # WAlsh-LS-HS^r with the original fitness reported, check every local optima
+            return self.runWalshHSfit(fitName, minimize, restart, radius)
         elif compM == 'walHB':
             print 'HB'
         else:
@@ -1118,6 +1120,145 @@ cdef class LocalSearch:
         # print 'after',self.bsf.fit
         return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'backC':backC}
 
+    cdef runWalshHSfit(self,fitName, minimize, restart, radius):
+        """
+        steepest descent local search running on S, without using C matrix, instead, using the U
+
+        with random restart
+
+        using Hamming sphere of radius r as surrogate fitness
+
+        maintaining the fitness, calculate the error in fitness
+        """
+        # print radius
+        # print 'runFitrestU'
+        
+        start = time.time()
+        self.fitEval = 0
+        self.model.transWal()
+        self.oldindiv = individual.Individual(n=self.dim)
+        self.oldindiv.init()
+        
+        # self.oldindiv = self.evalPop(self.oldindiv)
+        # print 'initWalUHS'
+        self.oldindiv.initWalUHS(self.model, radius)
+        # print 'initWalUHS'
+        self.bsf = individual.Individual(oldIndiv=self.oldindiv)
+        self.oldindiv.genImproveS(minimize)
+        self.oldindiv.fit = self.oldindiv.curFitFromWalsh()
+        # print 'init SumArr'
+        # self.oldindiv.printSumArr()
+        
+        initC = 1
+        updateC = 0
+        
+        descT = 0
+        pertT = 0
+        updatePertT = 0
+        updateT = 0
+        self.fitEval = 0
+
+        traceEval = []
+        traceFit = []
+        traceFitG = []
+        flip = []
+        diff = []
+        step =0 
+        backC = 0
+
+        # print self.MaxFit
+        initT = time.time() - start
+        
+        # print '\nstart'
+        while self.fitEval < self.MaxFit:
+            start = time.time()
+            improveN, bestI = self.oldindiv.steepFitDesc(minimize)
+            # print '\nbit', self.oldindiv.bit, 'ori.fit', self.oldindiv.fit
+            # print 'curFitFromWalsh', self.oldindiv.curFitFromWalsh()
+            # self.oldindiv.printWAS()
+            # self.oldindiv.printSumArr()
+            # print 'bestI', bestI
+            # print 'improveA', self.oldindiv.improveA
+            
+            # print 'steep', self.fitEval, improveN
+            descT = descT + time.time() - start
+            # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
+
+            if improveN == False:
+                initC = initC + 1
+                
+                if Set(diff) == Set(flip):
+                    # print 'fall back'
+                    backC = backC + 1
+                flip = []
+                
+                if restart == True:
+                    start = time.time()
+                    oldbit = self.oldindiv.bit
+                    oldfit = self.oldindiv.fit
+
+                    self.oldindiv = self.evalPop(self.oldindiv)
+                    traceFit.append(self.oldindiv.fit)
+                    traceFitG.append(oldfit)
+                    traceEval.append(self.fitEval)
+                    
+                    self.restart(fitName, minimize, False)
+                    # print 'after restart bit', self.oldindiv.bit
+                    # print 'restart', 'bsf', self.bsf.fit, '\n'
+                    pertT = pertT + time.time() - start
+
+                    start = time.time()
+                    diff = self.diffBits(oldbit, self.oldindiv.bit)
+                    # print 'restart'
+                    # print 'diff',diff
+                    self.oldindiv.fit = oldfit
+                    for i in diff:
+                        # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[i]# TODO: need to count it in the next experiment
+                        self.oldindiv.updateEval(i)
+                        self.oldindiv.updateU(i)
+                        self.oldindiv.updateWAS(i)
+                        # self.oldindiv.printSumArr()
+                        self.oldindiv.updatePertImprS(i, minimize)
+                        # print i
+                        # self.oldindiv.printSumArr()
+                        
+                    # print 'restart end'
+                    updatePertT = updatePertT + time.time() - start # TODO: need to count the number of evaluations it in the next experiment
+                    # print 'step TLO', step, 'bsf', self.bsf.fit, '\n'
+                    # print step, '\t', self.bsf.fit 
+                    # traceEval.append(step)
+                    # traceFit.append(self.bsf.fit)
+                    step = 0
+                    # self.fitEval = self.fitEval + len(diff) # TODO: need to count it in the next experiment
+                else:
+                    return { 'nEvals': self.fitEval, 'sol': self.oldindiv.fit, 'bit':self.oldindiv.bit}
+            else : # improveN is TRUE
+                flip.append(bestI)
+                start = time.time()
+                # self.oldindiv.fit = self.oldindiv.fit - 2*self.oldindiv.sumArr[bestI]
+                # print 'updateEval'
+                self.oldindiv.updateEval(bestI)
+                # print 'update'
+                self.oldindiv.updateU(bestI)
+                # print 'updateWAS'
+                self.oldindiv.updateWAS(bestI)
+                # print 'updateImprS'
+                self.oldindiv.updateImprS(bestI, minimize)
+                self.fitEval = self.fitEval + 1
+                self.oldindiv.flip(bestI)
+                updateT = updateT + time.time() - start
+                updateC = updateC + 1
+                step = step + 1
+        # print 'dest'
+        self.oldindiv.destructorWalU(fitName)
+        # print 'init', initC, 'update', updateC
+        # print 'bsf', self.bsf.bit
+        # print 'before',self.bsf.fit
+        self.bsf = self.evalPop(self.bsf)
+        # print 'after',self.bsf.fit
+        return {'nEvals': self.fitEval, 'sol': self.bsf.fit, 'bit':self.bsf.bit, 'init':initT, 'descT':descT, 'pertT':pertT, 'updateT':updateT, 'updatePertT':updatePertT, 'initC':initC, 'updateC':updateC, 'traceEval':traceEval, 'traceFit':traceFit, 'traceFitG':traceFitG, 'backC':backC}
+
+    
     cdef runFitSrestNextU(self,fitName, minimize, restart):
         """
         next descent local search running on S, without using C matrix, instead, using the U

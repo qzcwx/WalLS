@@ -157,14 +157,13 @@ def main():
     # maxFit = opt.e * opt.n
     # runs = 20
     
-    runs = 10
-    maxFit = 100000                      # 100 k, submit for running experiment
+    # runs = 10
+    # maxFit = 100000                      # 100 k, submit for running experiment
     
     # maxFit = 1000000                      # 1 million
     
-    
-    # runs = 1
-    # maxFit = 1000
+    runs = 2
+    maxFit = 1000
     
     t = opt.t
     
@@ -247,7 +246,7 @@ def main():
         # print model.countFreqInFunc()
             
         # Walsh analysis
-        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walWalkULen' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU' or opt.compMeth == 'walHS' or opt.compMeth == 'walBS':
+        if opt.compMeth == 'walWalk' or opt.compMeth == 'walRest' or opt.compMeth == 'supm' or opt.compMeth == 'bitImp' or opt.compMeth == 'walSearch' or opt.compMeth == 'checkOptWal' or opt.compMeth == 'checkHyper' or opt.compMeth == 'checkHyperRank' or opt.compMeth == 'hyperSearch' or opt.compMeth == 'hyperSqSearch' or opt.compMeth == 'hyperWalSearch' or opt.compMeth == 'walWalkNext' or opt.compMeth == 'walRestNext' or opt.compMeth == 'BeamWalkNext' or opt.compMeth=='BeamWalk' or opt.compMeth == 'walRestFlip' or opt.compMeth == 'walRestU' or opt.compMeth == 'walWalkULen' or opt.compMeth == 'walRestUDist' or opt.compMeth == 'walWalkU' or opt.compMeth == 'walWalkUDist' or opt.compMeth == 'walRestNextU' or opt.compMeth == 'walTLONextU' or opt.compMeth == 'walHS' or opt.compMeth=='walHSfit' or opt.compMeth == 'walBS':
             start = time.time()
             w = model.WalshCofLinearLinklist()
             walTime = time.time() - start
@@ -411,9 +410,8 @@ def main():
                     print >>f,"%g\t%g\t%g\t" % (res[i]['initC'], res[i]['updateC'], res[i]['backC'])
                 f.close()
 
+            
         if opt.compMeth != 'bf' and opt.compMeth != 'partEval':
-            """ store trace to files: the number of descent steps """
-
             for i in range(runs):
                 if opt.probName == 'NKQ' or opt.probName == 'NonNKQ':
                     nameOfF = traceDir+opt.probName+'-'+opt.algoName+'-F'+opt.fitName+'-M'+opt.compMeth+'-I'+str(opt.inst)+'-S'+str(opt.s)+'-W'+str(opt.w)+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-Q'+str(opt.q)+'-T'+str(t)+'-R'+str(i)+'-E'+str(opt.e)+'-L'+str(opt.l)+'-D'+str(opt.radius)+'.txt'
@@ -422,12 +420,13 @@ def main():
 
                 if 'TLO' not in opt.compMeth :
                     f = open(nameOfF, 'w')
-                    print >>f,"step\tbest\t"
-                    if (opt.fitName == 'fit'):
+
+                    if (opt.fitName == 'fit' and opt.compMeth != 'walHSfit'):
                         for j in zip(res[i]['traceEval'], res[i]['traceFit']):
                             # print >>f,"%g\t%g" % (j[0], j[1])
                             print >>f,"%g\t%g" % (j[0], j[1])
-                    else :
+                    else:
+                        print >>f,"eval\tfit\tfitG"
                         for j in zip(res[i]['traceEval'], res[i]['traceFit'],res[i]['traceFitG']):
                             print >>f,"%g\t%g\t%g" % (j[0], j[1], j[2])
                     f.close()
