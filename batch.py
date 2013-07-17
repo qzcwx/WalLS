@@ -138,7 +138,7 @@ if __name__== "__main__":
     # mRange = ['bfUpdateTLO']
     # mRange = ['walTLONextU']
     # mRange = ['walRestNextU']
-    mRange = ['walHS']
+    mRange = ['walHSfit']
     # mRange = ['walRestU','walWalkU']
     # mRange = ['walWalkULen']
     # pRange = ['NK','NKQ']
@@ -146,7 +146,8 @@ if __name__== "__main__":
     
     pRange = ['NK','NKQ','NonNK','NonNKQ']
     
-    dRange = range(4)
+    # dRange = range(4)
+    dRange = range(1,4)
     
     # temp = [5*a for a in range(1,11)]
     # temp.insert(0,1)
