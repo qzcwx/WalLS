@@ -142,7 +142,9 @@ if __name__== "__main__":
     # mRange = ['walRestU','walWalkU']
     # mRange = ['walWalkULen']
     # pRange = ['NK','NKQ']
-    pRange = ['NonNK','NonNKQ']
+    # pRange = ['NonNK','NonNKQ']
+    
+    pRange = ['NK','NKQ','NonNK','NonNKQ']
     
     dRange = range(4)
     
