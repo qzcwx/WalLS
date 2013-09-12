@@ -62,6 +62,7 @@ def main():
                         help="Dimension",
                         dest="n",
                         type=int,
+                        default = 0,
                         )
     parser.add_argument('-k',
                         action="store",
@@ -134,6 +135,7 @@ def main():
     parser.add_argument('-g',
                         action="append",
                         # nargs=3,
+                        type= int,
                         help = "lattice dimension",
                         dest="lattice",
                         )
@@ -143,6 +145,11 @@ def main():
     if opt.v != 0:
         opt.c = int(opt.v*opt.n)
 
+    if opt.n == 0:
+        opt.n = 1
+        for i in xrange(len(opt.lattice)):
+            opt.n = opt.n* opt.lattice[i]
+        print opt.n
     #tl.checkParam(sys.argv)
     opt.s = opt.popSize
     
