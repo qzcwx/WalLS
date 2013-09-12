@@ -149,8 +149,7 @@ def main():
         opt.n = 1
         for i in xrange(len(opt.lattice)):
             opt.n = opt.n* opt.lattice[i]
-        print opt.n
-    #tl.checkParam(sys.argv)
+        
     opt.s = opt.popSize
     
     nameOfDir = './result/'
@@ -486,5 +485,17 @@ def main():
         """
         for solving spin glasses
         """
-        model = sg.SpinGlass(opt.lattice)
-        
+        model = sg.SpinGlass(opt.n, opt.lattice)
+        algo = ls.LocalSearch(model, maxFit, opt.n)
+
+        tAll = np.zeros(runs)
+        res = []
+        # print
+        for i in range(runs):
+            # print 'run', i 
+            start = time.time()
+            res.append(algo.run(opt.fitName, minimize = False, restart = True,compM = opt.compMeth, beamWidth=opt.w, walklen = opt.l, radius = opt.radius))
+            tAll[i] = time.time() - start
+            
+                
+                
