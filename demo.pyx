@@ -1,5 +1,6 @@
 import nkLandscape as nk
 import nkqLandscape as nkq
+import SpinGlass as sg
 import WalshAnalysis as wal
 import geneticAlgorithm as ga
 import AutoCorrelation as ac
@@ -45,7 +46,6 @@ def main():
                         )
     parser.add_argument('-i',
                         action="store",
-
                         help="Instance ID",
                         dest="inst",
                         type=int,
@@ -131,7 +131,12 @@ def main():
                         type=int,
                         default=10,
                         )
-
+    parser.add_argument('-g',
+                        action="append",
+                        # nargs=3,
+                        help = "lattice dimension",
+                        dest="lattice",
+                        )
     
     opt = parser.parse_args()
 
@@ -147,7 +152,7 @@ def main():
     traceDir = './trace/'
     prefixNK = './benchmark/NK/'
     prefixNKQ = './benchmark/NKQ/'
-
+    
     # print 'radius', opt.radius
     
     # print opt.rseed
@@ -230,7 +235,7 @@ def main():
             print >>f,"%g" % (tAll[i])
         f.close()
 
-    else:
+    elif 'NK' in opt.probName:
         res = []
 
         if opt.probName == 'NK':
@@ -241,7 +246,7 @@ def main():
             model = nk.NonNKLandscape(opt.n,opt.k,opt.c,prefixNK+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst))
         elif opt.probName == 'NonNKQ':
             model = nkq.NonNKQLandscape(opt.n, opt.k, opt.c, opt.q, opt.t, prefixNKQ+opt.probName+'-N'+str(opt.n)+'-K'+str(opt.k)+'-C'+str(opt.c)+'-I'+str(opt.inst)+'-Q'+str(opt.q)+'-T'+str(t))
-
+            
         # print the variable distribution over clauses
         # print model.countFreqInFunc()
             
@@ -470,3 +475,9 @@ def main():
                     print >>f, "%d" %(j)
                 f.close()
 
+    elif 'spin' in opt.probName:
+        """
+        for solving spin glasses
+        """
+        model = sg.SpinGlass(opt.lattice)
+        
