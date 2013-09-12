@@ -37,7 +37,7 @@ cdef class SpinGlass:
         # print c
         for i in xrange(len(c)):
             if c[i] != 0:
-                t = list(v[i])
+                t = list(v[i]-1)
                 t.sort()
                 self.WA.append(Struct(arr=t, w = c[i]))
                 # print self.WA[i].arr
@@ -50,13 +50,17 @@ cdef class SpinGlass:
         """ 1 -> -1; 0 -> +1 """
         cdef int i
         cdef double s = 0.0
-        cdef int minusCount = 0
-        for i in range(self.m):
-            """ compose interacting bits """
-            interBit = self.WA[i].arr
-            """ extract corresponding bits """
-            for j in interBit:
-                if bitStr[int(j)] == '1':
+        cdef int minusCount
+        # print 'len',len(self.WA)
+        # print 'str len', len(bitStr)
+        for i in xrange(len(self.WA)):
+            # print 'i',i
+            print self.WA[i].arr
+            minusCount = 0
+            for j in self.WA[i].arr:
+                # print 'j',j
+                if bitStr[j] == '1':
                     minusCount = minusCount + 1
-            s = s + math.pow(-1,minusCount) * self.WA[i].w
-        return - s
+            print math.pow(-1,minusCount) * self.WA[i].w 
+            s = s + math.pow(-1,minusCount) * self.WA[i].w 
+        return -s

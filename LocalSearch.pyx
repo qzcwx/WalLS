@@ -2978,7 +2978,7 @@ cdef class LocalSearch:
         # self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-        self.fitEval = 0
+        self.fitEval = 1
         # print 'init'
         self.oldindiv = self.evalPop(self.oldindiv)
         # print 'init'
@@ -2988,14 +2988,14 @@ cdef class LocalSearch:
         initC = 1
         updateC = 0
         # print 'init oldindiv', self.oldindiv.bit, self.oldindiv.fit
-
+        
+        
         updateT = 0
 
         start = time.time()
 
         while self.fitEval < self.MaxFit:
-
-            # print 'fitEval', self.fitEval
+            print 'fitEval', self.fitEval
             # neighs = self.neighbors()
             #print
             # print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
@@ -3012,7 +3012,7 @@ cdef class LocalSearch:
             #     self.indiv = self.evalPop(self.indiv)
             #     #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
 
-                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i)
+                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i, bestFit)
                 # print  'i',i,'best', bestFit, 'current', self.indiv.fit, 'bsf', self.bsf.fit, 'len', len(improveA)
 
                 # if self.fitEval>=self.MaxFit:
@@ -4096,6 +4096,7 @@ cdef class LocalSearch:
         # print self.func
         # print 'len',len(indiv.bit)
         # print 'eval', self.fitEval
+        print indiv.bit
         indiv.fit = self.func(indiv.bit)
         # print 'evalPop'
         # self.fitEval = self.fitEval + 1
