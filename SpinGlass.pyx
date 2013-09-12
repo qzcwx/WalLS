@@ -13,10 +13,12 @@ cdef class SpinGlass:
     cdef public int m              # number of subfunctions
     cdef public int k              # number of variables per subfunction
     cdef public list WA
+    cdef public name
     
     def __init__(self, inN, inSize):
         self.n = inN
         self.dim = inSize
+        self.name = 'spin'
         # print self.dim
         self.readFile()
         
@@ -55,12 +57,12 @@ cdef class SpinGlass:
         # print 'str len', len(bitStr)
         for i in xrange(len(self.WA)):
             # print 'i',i
-            print self.WA[i].arr
+            # print self.WA[i].arr
             minusCount = 0
             for j in self.WA[i].arr:
                 # print 'j',j
                 if bitStr[j] == '1':
                     minusCount = minusCount + 1
-            print math.pow(-1,minusCount) * self.WA[i].w 
+            # print math.pow(-1,minusCount) * self.WA[i].w 
             s = s + math.pow(-1,minusCount) * self.WA[i].w 
-        return -s
+        return s

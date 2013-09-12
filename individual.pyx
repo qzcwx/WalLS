@@ -224,7 +224,8 @@ cdef class Individual:
         for i in xrange(self.dim):
             self.sumArr[i] = 0
             
-        self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
+        # self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.w.keys()))
+        self.WAS = <Was* > malloc(sizeof(Was)* len(self.model.WA))
         self.lookup = <ComArr**> malloc(sizeof(ComArr*)*self.dim)
         for i in xrange(self.dim):
             self.lookup[i] = NULL

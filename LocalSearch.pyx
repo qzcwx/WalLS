@@ -874,10 +874,12 @@ cdef class LocalSearch:
 
         with random restart
         """
+        # print 'minimize', minimize
         # print 'runFitrestU'
         start = time.time()
         self.fitEval = 0
-        self.model.transWal()
+        if (self.model.name!='spin'):
+            self.model.transWal()
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
         self.oldindiv = self.evalPop(self.oldindiv)
@@ -919,7 +921,7 @@ cdef class LocalSearch:
             improveN, bestI = self.oldindiv.steepFitDesc(minimize)
             # print 'bit', self.oldindiv.bit, 'fit', self.oldindiv.fit
             # self.oldindiv.printSumArr()
-            print 'bestI', bestI
+            # print 'bestI', bestI
             # print 'improveA', self.oldindiv.improveA
             
             # print 'steep', self.fitEval, improveN
@@ -2978,7 +2980,7 @@ cdef class LocalSearch:
         # self.oldindiv = self.initIndiv(self.dim)
         self.oldindiv = individual.Individual(n=self.dim)
         self.oldindiv.init()
-        self.fitEval = 1
+        self.fitEval = 0
         # print 'init'
         self.oldindiv = self.evalPop(self.oldindiv)
         # print 'init'
@@ -2995,30 +2997,33 @@ cdef class LocalSearch:
         start = time.time()
 
         while self.fitEval < self.MaxFit:
-            print 'fitEval', self.fitEval
+            # print 'fitEval', self.fitEval
             # neighs = self.neighbors()
             #print
             # print 'current', self.oldindiv.bit, 'fit', self.oldindiv.fit
             improveA = []
             bestFit = self.oldindiv.fit   # keep track of the best fitness
+            # print 'oldfit', self.oldindiv.fit
             # print 'oldindiv', self.oldindiv.bit, self.oldindiv.fit
             for i in xrange(self.dim):
                 self.indiv = individual.Individual(oldIndiv=self.oldindiv)
                 self.indiv.flip(i)
                 self.indiv = self.evalPop(self.indiv)
                 # print self.indiv.bit
+                # print i, self.indiv.fit
             # for i in neighs:
             #     self.indiv.bit = np.copy(i)
             #     self.indiv = self.evalPop(self.indiv)
             #     #print 'neigh: ', self.indiv.bit, 'fit', self.indiv.fit
 
-                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i, bestFit)
+                improveA, bestFit = self.selectionFit(minimize, improveA, bestFit, i, self.indiv.fit)
                 # print  'i',i,'best', bestFit, 'current', self.indiv.fit, 'bsf', self.bsf.fit, 'len', len(improveA)
 
                 # if self.fitEval>=self.MaxFit:
                 #     break
 
 #            self.trace.append(Struct(fitEval= self.fitEval,fit = self.oldindiv.fit))
+            # print improveA
             if len(improveA)==0: # issue restart
                 updateT = updateT + time.time() - start
                 initC = initC + 1
@@ -4096,7 +4101,7 @@ cdef class LocalSearch:
         # print self.func
         # print 'len',len(indiv.bit)
         # print 'eval', self.fitEval
-        print indiv.bit
+        # print indiv.bit
         indiv.fit = self.func(indiv.bit)
         # print 'evalPop'
         # self.fitEval = self.fitEval + 1
@@ -4145,8 +4150,8 @@ cdef class LocalSearch:
 
         if (minimize == True and bestFit - threshold > curFit) or (minimize==False and bestFit + threshold < curFit ): # no equal moves, new best move
             bestFit = curFit
-            improveA.clear()
-            improveA.add(i)
+            improveA = []
+            improveA.append(i)
         
         return improveA, bestFit
         # if minimize == True:
