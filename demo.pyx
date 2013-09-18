@@ -168,13 +168,13 @@ def main():
     # maxFit = opt.e * opt.n
     # runs = 20
     
-    runs = 10
+    runs = 1
     maxFit = 100000                      # 100 k, submit for running experiment
     
     # maxFit = 1000000                      # 1 million
     
-    runs = 1
-    maxFit = 5
+    # runs = 1
+    # maxFit = 5
     
     t = opt.t
     
@@ -496,6 +496,7 @@ def main():
             start = time.time()
             res.append(algo.run(opt.fitName, minimize = False, restart = True,compM = opt.compMeth, beamWidth=opt.w, walklen = opt.l, radius = opt.radius))
             tAll[i] = time.time() - start
-            
-                
+
+        # store runtime
+        
                 
